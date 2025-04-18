@@ -13,6 +13,15 @@ const LineStyled = styled(motion.div)`
     z-index: 9999;
 `;
 
+const WavyLine = styled(motion.svg)`
+    position: absolute;
+    top: 0px;
+    right: 30%;
+    height: 250vh;
+    width: 2px;
+    z-index: 9999;
+`;
+
 const lineVariants = {
     projectSht: {
         x: -865,
@@ -33,6 +42,14 @@ const lineVariants = {
         opacity: 1,
         skewX: 0,
         height: 1650,
+    },
+    archive: { 
+        x: 0,
+        y: -535,
+        rotate: 90, 
+        opacity: 1,
+        skewX: 0,
+        height: 1650,
     },    
     reset: { 
         x: -160, 
@@ -44,15 +61,17 @@ const lineVariants = {
 
 const Line = () => {
     const location = useLocation();
-    const [animation, setAnimation] = useState('reset'); // Set initial state to 'reset'
+    const [animation, setAnimation] = useState('reset');
 
     useEffect(() => {
         if (location.pathname === '/') {
-            setAnimation('reset'); // original home page
+            setAnimation('reset');
         } else if (location.pathname === '/about') {
-            setAnimation('about'); // Move the line to the about position
+            setAnimation('about');
+        } else if (location.pathname === '/archive') {
+            setAnimation('archive');
         } else if (location.pathname === '/projects') {
-            setAnimation('projects'); // Move the line to the projects position
+            setAnimation('projects');
         } else if (location.pathname.startsWith('/projects/')) {
             setAnimation('projectSht');
         }

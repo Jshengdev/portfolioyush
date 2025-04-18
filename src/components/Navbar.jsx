@@ -48,6 +48,9 @@ const Navbar = () => {
     const handleProjectClick = () => {
         navigate('/projects');
     };
+    const handleArchiveClick = () => {
+        navigate('/archive');
+    };
 
     return (
         <Section>
@@ -56,7 +59,7 @@ const Navbar = () => {
                     <List>
                         <ListItem onClick={handleAboutClick}>ABOUT</ListItem>
                         <ListItem onClick={handleProjectClick}>PROJECTS</ListItem>
-                        <ListItem>ARCHIVE</ListItem>
+                        <ListItem onClick={handleArchiveClick}>ARCHIVE</ListItem>
                         <ListItem>CONTACT</ListItem>
                     </List>
                 </Links>

@@ -60,8 +60,8 @@ const Title = styled.h1`
     transform: translateX(15px);
     letter-spacing: 2px;
     color: rgba(255, 255, 255, .7);
-    // transform: scale(1,1.1) skew(-2deg) translateX(0.5%);
 `
+
 const ShadowTitle = styled(Title)`
     color: rgba(255, 255, 255, .6 );
     transform: scale(1, -3);

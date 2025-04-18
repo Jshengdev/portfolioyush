@@ -8,6 +8,8 @@ import Line from './components/Line';
 import Projects from './components/Projects'; 
 import Grove from './components/Projectfiles/Grove';
 import CapsuleMachine from './components/Projectfiles/CapsuleMachine';
+import Ark from './components/Projectfiles/Ark';
+import AP from './components/Projectfiles/AP';
 import Lens from './components/Projectfiles/Lens';
 import Sticker from './components/Projectfiles/Sticker';
 import Hoodie from './components/Projectfiles/Hoodie';
@@ -15,6 +17,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Cursor from './Cursor';
 import './App.css';
 import ShaderVisual from './components/ShaderVisual';
+import Archive from './components/Archive';
+import NextProject from './components/NextProject';
 
 
 const Container = styled.div`
@@ -43,6 +47,7 @@ const Left = styled.div`
     transform: translateY(80%);
     padding: 60px;
     margin-left: -30px;
+    z-index: 100;
 `
 
 function PageWrapper({ children }) {
@@ -80,6 +85,14 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/archive"
+          element={
+            <PageWrapper>
+              <Archive />
+            </PageWrapper>
+          }
+        />
+        <Route
           path="/projects"
           element={
             <PageWrapper>
@@ -112,6 +125,25 @@ function AnimatedRoutes() {
         <PageWrapper>
           <Hoodie />
         </PageWrapper>} />
+        <Route path="/projects/NextProject" 
+        element={
+        <PageWrapper>
+          <NextProject />
+        </PageWrapper>} />
+        <Route path="/projects/Ark"
+          element={
+            <PageWrapper>
+              <Ark />
+            </PageWrapper>
+          }
+        />
+        <Route path="/projects/AlainaPamela"
+          element={
+            <PageWrapper>
+              <AP />
+            </PageWrapper>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );
