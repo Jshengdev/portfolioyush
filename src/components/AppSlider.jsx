@@ -59,14 +59,14 @@ const PositionLabel = styled.div`
 
 const AppSlider = () => {
   const items = [
-    "DESIGNER",
     "BATMANN",
+    "DESIGNER",
     "FILMMAKER",
-    "SEXYBABE",
+    "CREATOR",
     "DIRECTOR",
     "DEVELOPER",
-    "BIG-EATER",
-    "MUNCHER", 
+    "BUILDER",
+    "STORYTELLER", 
   ];
 
   const sliderHeight = 150; 

@@ -1,18 +1,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import './assets/fonts/fonts.css';
 import About from './components/About'; 
 import Hero from './components/Hero';
 import Navbar from './components/Navbar';
 import Line from './components/Line';
+import Contact from './components/Contact';
 import Projects from './components/Projects'; 
 import Grove from './components/Projectfiles/Grove';
 import CapsuleMachine from './components/Projectfiles/CapsuleMachine';
 import Ark from './components/Projectfiles/Ark';
 import AP from './components/Projectfiles/AP';
 import Lens from './components/Projectfiles/Lens';
-import Sticker from './components/Projectfiles/Sticker';
-import Hoodie from './components/Projectfiles/Hoodie';
+import Collection from './components/Projectfiles/Collection';
 import { AnimatePresence, motion } from 'framer-motion';
 import Cursor from './Cursor';
 import './App.css';
@@ -93,6 +94,14 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/contact"
+          element={
+            <PageWrapper>
+              <Contact />
+            </PageWrapper>
+          }
+        />
+        <Route
           path="/projects"
           element={
             <PageWrapper>
@@ -115,15 +124,10 @@ function AnimatedRoutes() {
         <PageWrapper>
           <Lens />
         </PageWrapper>} />
-        <Route path="/projects/Sticker" 
+        <Route path="/projects/TheCollection" 
         element={
         <PageWrapper>
-          <Sticker />
-        </PageWrapper>} />
-        <Route path="/projects/Hoodie" 
-        element={
-        <PageWrapper>
-          <Hoodie />
+          <Collection />
         </PageWrapper>} />
         <Route path="/projects/NextProject" 
         element={

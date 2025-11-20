@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const projectParty = [
   
   {
@@ -8,46 +6,34 @@ export const projectParty = [
     description: "AI-Powered Project Matching",
     image: "/assets/GROVE/landingpage wide.png"
   },
-  {
+  { 
     id: 2,
+    title: "Alaina Pamela", 
+    description: "Film Internship",
+    image: "/assets/AP/AP-thumbnail.png"
+  },
+  {
+    id: 3,
+    title: "The Collection",
+    description: "My films",
+    image: "/assets/C/C-landing.JPG",
+  },                  
+  { 
+    id: 4,
+    title: "Ark", 
+    description: "Skincare Wearable",
+    image: "/assets/ARK/ARK-landing.png"
+  },
+  {
+    id: 5,
     title: "Capsule Machine",
     description: "Interactive Installation",
     image: "/assets/CM/Capsule machine thumbnail.png"
   },
   { 
-    id: 3,
-    title: "Ark", 
-    description: "Skincare Wearable",
-    image: "/public/assets/ARK/ARK-landing.png"
-  },
-  { 
-    id: 4,
-    title: "Alaina Pamela", 
-    description: "Cinema Internship",
-    image: "/public/assets/AP/AP-thumbnail.png"
-  },
-  { 
-    id: 5,
-    title: "Fashion Design", 
-    description: "WIP",
-    image: "/assets/PLACEHOLDER.jpg"
-  },
-  { 
     id: 6,
-    title: "Travels", 
-    description: "my cinematic video adventures coming soon",
-    image: "/assets/PLACEHOLDER.jpg"
+    title: "Website Dev", 
+    description: "WIP",
+    image: "/assets/WD/WD-landing.png"
   },
-  { 
-    id: 7,
-    title: "Film", 
-    description: "coming soon. - mouseparty4949",
-    image: "/assets/PLACEHOLDER.jpg"
-  },
-  { 
-    id: 8,
-    title: "Coming soon", 
-    description: "Art",
-    image: "/assets/PLACEHOLDER.jpg"
-  }
-]; 
+]

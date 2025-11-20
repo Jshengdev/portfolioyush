@@ -11,7 +11,12 @@ import {
   SideBySideWrapper,
   TextColumn,
   ImageColumn,
-  GifContainer
+  GifContainer,
+  OverviewBox,
+  MetadataPanel,
+  MetadataSection,
+  MetadataLabel,
+  MetadataValue
 } from "../sharedStyles";
 import NextProject from '../NextProject';
 import { projectParty } from "../../data/projectname.jsx";
@@ -106,11 +111,18 @@ const HeroTitle = styled.h1`
   letter-spacing: 2px;
 `;
 
-const VideoContainer = styled.div`
+const VideoGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const VideoWrapper = styled.div`
   position: relative;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), 0 0 20px rgba(136, 169, 215, 0.2);
@@ -128,7 +140,6 @@ const VideoContainer = styled.div`
   }
 
   @media (max-width: 768px) {
-    max-width: 100%;
     iframe {
       height: 350px;
     }
@@ -139,39 +150,6 @@ const VideoContainer = styled.div`
       height: 250px;
     }
   }
-`;
-
-const MetadataPanel = styled.div`
-  position: relative;
-  margin: 2rem auto;
-  max-width: 600px;
-  border-radius: 50px;
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-`;
-
-const MetadataSection = styled.div`
-  display: flex;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-`;
-
-const MetadataLabel = styled.span`
-  font-weight: 300;
-  margin-right: 0.5rem;
-  color: rgba(255, 255, 255, 0.5);
-`;
-
-const MetadataValue = styled.span`
-  font-weight: 400;
 `;
 
 const SideBySideSection = ({ 
@@ -248,25 +226,22 @@ const AP = () => {
   const handleHomeClick = () => navigate("/");
 
   // Find the current project index and get next project
-  const currentIndex = projectParty.findIndex(p => p.title === "AP");
+  const currentIndex = projectParty.findIndex(p => p.title === "Alaina Pamela");
   const nextProject = currentIndex >= 0 && currentIndex < projectParty.length - 1 ? projectParty[currentIndex + 1] : null;
 
   return (
     <Container>
       <Left>
-        <Title onClick={handleHomeClick}>{'<'}1/24/25{'>'}</Title>
-        <Title>WORK</Title>
-        <Title>IN</Title> 
-        <Title>PROGRESS</Title>
+        <Title onClick={handleHomeClick}>{'<'}home{'>'}</Title>
       </Left>
       <Right>
         <ContentContainer>
           <HeroSection>
-            <HeroTitle>AP: CINEMATOGRAPHY PROJECT</HeroTitle>
+            <HeroTitle>ALAINA PAMELA</HeroTitle>
             <MetadataPanel>
               <MetadataSection>
                 <MetadataLabel>Role:</MetadataLabel>
-                <MetadataValue>Cinematographer</MetadataValue>
+                <MetadataValue>Director of Photography & Production Intern</MetadataValue>
               </MetadataSection>
               <MetadataSection>
                 <MetadataLabel>Timeline:</MetadataLabel>
@@ -274,49 +249,67 @@ const AP = () => {
               </MetadataSection>
               <MetadataSection>
                 <MetadataLabel>Skills:</MetadataLabel>
-                <MetadataValue>Cinematography, Visual Storytelling, Color Grading</MetadataValue>
+                <MetadataValue>Cinematography</MetadataValue>
               </MetadataSection>
             </MetadataPanel>
-            <VideoContainer>
-              <img src="/public/assets/AP/AP-thumbnail.png" alt="AP Thumbnail" style={{ width: '100%', height: 'auto' }} />
-            </VideoContainer>
+            <VideoGrid>
+              <VideoWrapper>
+                <iframe
+                  src="https://www.youtube.com/embed/VUj64OmN5yw"
+                  title="First Music Video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </VideoWrapper>
+              <VideoWrapper>
+                <iframe
+                  src="https://www.youtube.com/embed/KRmews63T3Q"
+                  title="Second Music Video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </VideoWrapper>
+            </VideoGrid>
           </HeroSection>
+
+          <OverviewBox>
+            <h2 className="title">Project Overview</h2>
+            <p className="overview">
+              Documenting my experience as a Director of Photography intern for Alaina Pamela. From technical execution to creative direction. it open the field of cinematography for me.
+            </p>
+          </OverviewBox>
 
           <ProblemSolutionWrapper>
             <ProblemBox>
-              <h2>Problem</h2>
-              <p>Creating compelling visual narratives that capture the essence of the story while maintaining technical excellence.</p>
+              <h2>Challenge</h2>
+              <p>
+                Stepping into high-production music sets— gaining high agency and figuring out how to contribute
+                meaningfully as both a DP intern and creative collaborator.
+              </p>
             </ProblemBox>
             <SolutionBox>
-              <h2>Solution</h2>
-              <p>Developing a unique visual language through careful composition, lighting, and color grading to enhance the emotional impact of the narrative.</p>
+              <h2>Approach</h2>
+              <p>
+                I leaned on intuition, technical trial-and-error, and trust. From lighting moody scenes to directing BTS
+                trailers, I treated every moment as a chance to build a visual language from the ground up.
+              </p>
             </SolutionBox>
           </ProblemSolutionWrapper>
 
-          <SideBySideSection
-            title="ACT I — VISUAL CONCEPT"
-            text="Our journey began with developing the visual concept:
-- Storyboard development and shot planning
-- Lighting design and mood boards
-- Camera movement and composition studies
-- Color palette development
 
-We focused on creating a visual language that would enhance the narrative and emotional impact of the story."
+          <SideBySideSection
+            title="ACT I — Let There Be Light"
+            text={`I was lighting scenes, manning the camera, and trying to understand the creative direction.
+Small team meant more freedom — most of what I learned came from experimenting.`}
             imageGroup={[
-              "/public/assets/AP/AP-storyboard.png",
-              "/public/assets/AP/AP-lighting.png",
-              "/public/assets/AP/AP-composition.png",
-              "/public/assets/AP/AP-color.png",
-              "/public/assets/AP/AP-moodboard.png"
+              "/assets/AP/AP-bts1.png",
+              "/assets/AP/AP-bts2.png"
             ]}
             maxWidth="100%"
             stackedMaxWidth="100%"
             imageStyles={[
               { width: '100%', display: 'block', marginBottom: '1rem' },
               { width: '100%', display: 'block', marginBottom: '1rem' },
-              { width: '100%', display: 'block', marginBottom: '1rem' },
-              { width: '100%', display: 'block', marginBottom: '1rem' },
-              { width: '100%', display: 'block' }
             ]}
             containerStyle={{ 
               display: 'flex', 
@@ -326,47 +319,47 @@ We focused on creating a visual language that would enhance the narrative and em
           />
 
           <SideBySideSection
-            title="ACT II — PRODUCTION"
-            text="Bringing the concept to life:
-- Camera setup and equipment selection
-- On-set lighting and composition
-- Directing and shot execution
-- Behind-the-scenes documentation
-
-We focused on maintaining technical excellence while capturing the emotional essence of each scene."
+            title="ACT II — Creative Direction"
+            text={`I directed and filmed BTS trailers for music video shoots, with full control over lighting and visual tone. 
+              Working with fog, diffusers, and colored LEDs, I learned how to light for emotion and these moments helped me shift from technician to storyteller`}
             imageGroup={[
-              "/public/assets/AP/AP-production1.png",
-              "/public/assets/AP/AP-production2.png"
+              "/assets/AP/AP-sample1.gif",
+              "/assets/AP/AP-sample3.gif"
             ]}
             maxWidth="100%"
             stackedMaxWidth="100%"
+            imageStyles={[
+              { width: '60%', display: 'block', marginBottom: '1rem' },
+              { width: '60%', display: 'block', marginBottom: '1rem' },
+            ]}
+            containerStyle={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              gap: '1rem'
+            }}
           />
 
           <SideBySideSection
-            title="ACT III — POST-PRODUCTION"
-            text="Refining the visual narrative:
-- Color grading and correction
-- Visual effects and compositing
-- Sound design and mixing
-- Final review and adjustments
+            title="ACT III — The Space Between"
+            text={`Thesis of my working style.
 
-We worked to ensure every frame contributed to the overall visual story."
-            imageGroup={[
-              "/public/assets/AP/AP-post1.png",
-              "/public/assets/AP/AP-post2.png"
-            ]}
-            maxWidth="100%"
-            stackedMaxWidth="100%"
+What I really learned is that I live somewhere between technical execution and creative intention.
+On higher-budget shoots, 
+I stepped into a hybrid role as a gaffer and production assistant. 
+
+I handled lighting rigs, adjusted little details, and suggested visual effects that shaped the final look. Even in fast-paced environments, I found space to contribute creatively gain experience.`}
+            gif="/assets/AP/AP-BTSsample2.gif"
+            gifCaption="Technical execution meets creative vision"
+            gifMaxWidth="60%"
+            gifBorderRadius="12px"
+            gifImageBorderRadius="12px"
           />
 
           <ChapterCard>
             <h2>REFLECTIONS</h2>
-            <p>This project taught me that cinematography is more than just capturing images - it's about creating a visual language that enhances and supports the narrative. Every technical decision should serve the story.</p>
-            
-            <h3>Key Learnings</h3>
-            <p>• Visual storytelling requires both technical skill and artistic vision<br/>
-            • Preparation and planning are crucial for successful execution<br/>
-            • Collaboration between departments enhances the final product</p>
+            <p>From the start, the chaotic nature of this type of work was honestly what made it great. No real rules, just a small team figuring things out.
+              I learned more through trial and error and while many times i was doing roles all over the place, i was able to find my own space.
+            </p>
           </ChapterCard>
         </ContentContainer>
         {nextProject && <NextProject currentProject={projectParty[currentIndex]} nextProject={nextProject} />}

@@ -10,6 +10,7 @@ const Container = styled.div`
   height: 100vh;
   overflow: hidden;
   position: relative;
+  z-index: 1;
 `;
 
 const Container2 = styled.div`
@@ -17,6 +18,7 @@ const Container2 = styled.div`
   width: 100%;
   left: 45px;
   top: 50px;
+  z-index: 0;
 `;
 
 const Left = styled(motion.div)`
@@ -32,6 +34,7 @@ const Left = styled(motion.div)`
   border-top: 1px rgba(255, 255, 255, 0.3) solid;
   scrollbar-width: none; 
   -ms-overflow-style: none;
+  z-index: 0;
 
   &::-webkit-scrollbar {
     display: none; 
@@ -40,16 +43,14 @@ const Left = styled(motion.div)`
 
 const Right = styled.div`
   width: 100%;
-  height: calc(100vh - 60px);
-  background: rgba(20, 20, 20, 0.3);
+  height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(2px);
   scrollbar-width: none;
   -ms-overflow-style: none;
   margin-top: 60px;
+  z-index: 2;
 
   &::-webkit-scrollbar {
     display: none;
@@ -61,54 +62,73 @@ const ScrollWrapper = styled.div`
   flex-direction: row;
   width: max-content;
   height: 100%;
-  gap: 120px;
-  padding: 0 60px;
+  gap: 20rem;
   will-change: transform;
 `;
 
 const ScrollItem = styled(motion.div)`
-  flex: 0 0 280px;
-  height: ${props => props.height || '70vh'};
+  flex: 0 0 auto;
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.7);
+  transform-origin: left center;
+  z-index: 3;
+  height: ${props => props.height || 'auto'};
 `;
 
 const ImageWrapper = styled.div`
   position: relative;
-  width: 100%;
-  height: calc(100% - 40px);
-  overflow: hidden;
+  width: auto;
+  height: 100%;
+  margin-bottom: 5px;
+  overflow: visible;
   border-radius: 12px;
-  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
 `;
 
 const Image = styled(motion.img)`
-  width: 100%;
+  width: auto;
   height: 100%;
-  object-fit: cover;
+  max-width: 70%;
+  max-height: 70%;
+  object-fit: contain;
   opacity: 0.8;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.6s ease, filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  transform: scale(0.7);
+  transform-origin: center center;
+  z-index: 5;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
 
   &:hover {
     opacity: 1;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.35));
   }
 `;
 
 const Caption = styled(motion.div)`
-  position: relative;
+  position: absolute;
+  left: 90%;
+  bottom: 28%;
   color: rgba(255, 255, 255, 0.95);
   font-family: 'Work Sans', sans-serif;
   font-size: 0.9rem;
   letter-spacing: 1px;
-  padding: 0;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  font-weight: 500;
-  z-index: 10;
-  width: 100%;
+  font-weight: 200;
+  z-index: 6;
+  border-radius: 4px;
+  white-space: nowrap;
   text-align: right;
+  width: fit-content;
+  margin-top: 20px;
+  mix-blend-mode: exclusion;
 `;
 
 const Title = styled.h1`
@@ -129,41 +149,73 @@ const Title = styled.h1`
 
 const projects = [
   {
-    title: 'Tokyo Creative Salon',
-    image: 'assets/Grove/V3 profile.png'
+    caption: 'Ming Portrait',
+    image: 'assets/archive/A-ming.png'
   },
   {
-    title: 'Shogo Tominaga',
-    image: 'assets/Grove/V3 profile.png',
+    caption: 'Bitcoin Trophy',
+    image: 'assets/archive/A-Reach for the bitcoin.png'
   },
   {
-    title: 'Anime Scene',
-    image: 'assets/Grove/V3 profile.png',
+    caption: 'Custom Tote Design',
+    image: 'assets/archive/A-custom tote.png'
   },
   {
-    title: 'Yona Yona Beer',
-    image: 'assets/Grove/V3 profile.png',
+    caption: 'Personality Cube',
+    image: 'assets/archive/A-Personality Cube.png'
   },
   {
-    title: 'Creative Design',
-    image: 'assets/Grove/V3 profile.png',
+    caption: 'Ocelot Illustration',
+    image: 'assets/archive/A-Ocelot by exo.png'
   },
   {
-    title: 'Art Gallery',
-    image: 'assets/Grove/background.jpg',
+    caption: 'Google Civica',
+    image: 'assets/archive/A-Google Civica.png'
   },
   {
-    title: 'Additional Project 1',
-    image: 'assets/Grove/V3 profile.png',
+    caption: 'Birds of a Feather',
+    image: 'assets/archive/A-birds of a feather.png'
   },
   {
-    title: 'Additional Project 2',
-    image: 'assets/Grove/V3 profile.png',
+    caption: 'Research Project',
+    image: 'assets/archive/A-Research.png'
   },
   {
-    title: 'Additional Project 3',
-    image: 'assets/Grove/V3 profile.png',
+    caption: 'Machine Learning',
+    image: 'assets/archive/A-Machine Learning.png'
   },
+  {
+    caption: 'Product Branding',
+    image: 'assets/archive/A-Product design:branding.png'
+  },
+  {
+    caption: 'Unity Game Development',
+    image: 'assets/archive/A-Unity Game Dev.png'
+  },
+  {
+    caption: 'Fashion Design',
+    image: 'assets/archive/A-Fashion design.png'
+  },
+  {
+    caption: 'Sticker Design',
+    image: 'assets/archive/A-sticker .png'
+  },
+  {
+    caption: 'Lens Studio',
+    image: 'assets/archive/A-Lens studio.png'
+  },
+  {
+    caption: 'Bukit Lawang',
+    image: 'assets/archive/A-bukit lawang.png'
+  },
+  {
+    caption: 'Visual Effects',
+    image: 'assets/archive/A-VFX.png'
+  },
+  {
+    caption: 'Motion Graphics',
+    image: 'assets/archive/A-MotionGraphics.png'
+  }
 ];
 
 const Archive = () => {
@@ -218,9 +270,15 @@ const Archive = () => {
     const direction = Math.random() > 0.5 ? 'marginTop' : 'marginBottom';
     const marginValue = Math.floor(Math.random() * 80) + 40;
     const heightValue = Math.floor(Math.random() * 30) + 60; // Random height between 60vh and 90vh
+    
+    // Generate random skew values between -5 and 5 degrees
+    const skewX = (Math.random() * 10 - 5).toFixed(1);
+    const skewY = (Math.random() * 10 - 5).toFixed(1);
+    
     return { 
       [direction]: `${marginValue}px`,
-      height: `${heightValue}vh`
+      height: `${heightValue}vh`,
+      transform: `skew(${skewX}deg, ${skewY}deg)`
     };
   };
 
@@ -244,7 +302,7 @@ const Archive = () => {
                 <ImageWrapper>
                   <Image
                     src={project.image}
-                    alt={project.title}
+                    alt={project.caption}
                     initial={{ scale: 1.1 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -255,7 +313,7 @@ const Archive = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
                 >
-                  {'['}{project.title}{']'}
+                  {'['}{project.caption}{']'}
                 </Caption>
               </ScrollItem>
             );

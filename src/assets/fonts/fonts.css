@@ -1,0 +1,14 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+/* Ade Display Font */
+@font-face {
+  font-family: 'Ade';
+  src: url('./AdeDisplay.woff2') format('woff2'),
+       url('./AdeDisplay.woff') format('woff'),
+       url('./AdeDisplay.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Work Sans Font */

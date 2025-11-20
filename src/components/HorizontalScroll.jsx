@@ -85,27 +85,27 @@ const Caption = styled(motion.div)`
 const projects = [
   {
     title: 'Tokyo Creative Salon',
-    image: 'assets/Grove/V3 profile.png'
+    image: '/public/assets/GROVE/V3 profile.png'
   },
   {
     title: 'Shogo Tominaga',
-    image: 'assets/Grove/V3 profile.png',
+    image: '/public/assets/GROVE/V3 profile.png',
   },
   {
     title: 'Anime Scene',
-    image: 'assets/Grove/V3 profile.png',
+    image: '/public/assets/GROVE/V3 profile.png',
   },
   {
     title: 'Yona Yona Beer',
-    image: 'assets/Grove/V3 profile.png',
+    image: '/public/assets/GROVE/V3 profile.png',
   },
   {
     title: 'Creative Design',
-    image: 'assets/Grove/V3 profile.png',
+    image: '/public/assets/GROVE/V3 profile.png',
   },
   {
     title: 'Art Gallery',
-    image: 'assets/Grove/background.jpg',
+    image: '/public/assets/GROVE/background.jpg',
   },
 ];
 

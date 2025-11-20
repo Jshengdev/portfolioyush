@@ -11,7 +11,12 @@ import {
   SideBySideWrapper,
   TextColumn,
   ImageColumn,
-  GifContainer
+  GifContainer,
+  OverviewBox,
+  MetadataPanel,
+  MetadataSection,
+  MetadataLabel,
+  MetadataValue
 } from "../sharedStyles";
 import NextProject from '../NextProject';
 import { projectParty } from "../../data/projectname.jsx";
@@ -141,39 +146,6 @@ const VideoContainer = styled.div`
   }
 `;
 
-const MetadataPanel = styled.div`
-  position: relative;
-  margin: 2rem auto;
-  max-width: 600px;
-  border-radius: 50px;
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-`;
-
-const MetadataSection = styled.div`
-  display: flex;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-`;
-
-const MetadataLabel = styled.span`
-  font-weight: 300;
-  margin-right: 0.5rem;
-  color: rgba(255, 255, 255, 0.5);
-`;
-
-const MetadataValue = styled.span`
-  font-weight: 400;
-`;
-
 const SideBySideSection = ({ 
   title, 
   text, 
@@ -254,23 +226,20 @@ const Ark = () => {
   return (
     <Container>
       <Left>
-        <Title onClick={handleHomeClick}>{'<'}1/24/25{'>'}</Title>
-        <Title>WORK</Title>
-        <Title>IN</Title> 
-        <Title>PROGRESS</Title>
+        <Title onClick={handleHomeClick}>{'<'}home{'>'}</Title>
       </Left>
       <Right>
         <ContentContainer>
           <HeroSection>
-            <HeroTitle>SKINARK: SWEAT SMARTER</HeroTitle>
+            <HeroTitle>ARK: SKIN HEALTH PLATFORM</HeroTitle>
             <MetadataPanel>
               <MetadataSection>
                 <MetadataLabel>Role:</MetadataLabel>
-                <MetadataValue>Product Designer</MetadataValue>
+                <MetadataValue>Creative Technologist</MetadataValue>
               </MetadataSection>
               <MetadataSection>
                 <MetadataLabel>Timeline:</MetadataLabel>
-                <MetadataValue>2025</MetadataValue>
+                <MetadataValue>2024</MetadataValue>
               </MetadataSection>
               <MetadataSection>
                 <MetadataLabel>Skills:</MetadataLabel>
@@ -278,9 +247,21 @@ const Ark = () => {
               </MetadataSection>
             </MetadataPanel>
             <VideoContainer>
-              <img src="/public/assets/Ark/ARK-landing.png" alt="SkinARK Thumbnail" style={{ width: '100%', height: 'auto' }} />
+              <img src="/assets/ARK/ARK-landing.png" alt="SkinARK Thumbnail" style={{ width: '100%', height: 'auto' }} />
             </VideoContainer>
           </HeroSection>
+
+          <OverviewBox>
+            <div className="title">Project Overview</div>
+            <div className="summary">Designing a digital platform for personalized skin health management</div>
+            <div className="overview">
+              Ark represents my exploration into healthcare technology and user-centered design. 
+              The project focused on creating a platform that makes skin health management accessible 
+              and personalized. Through extensive user research and iterative design, I developed 
+              solutions that bridge the gap between medical expertise and everyday skincare routines, 
+              emphasizing both functionality and emotional support in the user experience.
+            </div>
+          </OverviewBox>
 
           <ProblemSolutionWrapper>
             <ProblemBox>
@@ -303,11 +284,11 @@ const Ark = () => {
 
 We discovered that while the skincare market was crowded, there was a significant gap in post-workout skincare solutions, especially for men. This insight led us to reimagine the traditional sweat patch as a skincare tool."
             imageGroup={[
-              "/public/assets/Ark/ARK-Marketresearch.png",
-              "/public/assets/Ark/ARK-survey.png",
-              "/public/assets/Ark/ARK-TAMSAMSOM.png",
-              "/public/assets/Ark/ARK-feasibilitycompetititor.png",
-              "/public/assets/Ark/ARK-reimaginethesweatpatch.png"
+              "/assets/ARK/ARK-Marketresearch.png",
+              "/assets/ARK/ARK-survey.png",
+              "/assets/ARK/ARK-TAMSAMSOM.png",
+              "/assets/ARK/ARK-feasibilitycompetititor.png",
+              "/assets/ARK/ARK-reimaginethesweatpatch.png"
             ]}
             maxWidth="100%"
             stackedMaxWidth="100%"
@@ -334,8 +315,8 @@ We discovered that while the skincare market was crowded, there was a significan
 
 Our goal was to create a product that felt natural during workouts while providing valuable skincare insights."
             imageGroup={[
-              "/public/assets/Ark/ARK-product.png",
-              "/public/assets/Ark/ARK-UI.png"
+              "/assets/ARK/ARK-product.png",
+              "/assets/ARK/ARK-UI.png"
             ]}
             maxWidth="100%"
             stackedMaxWidth="100%"
@@ -351,8 +332,8 @@ Our goal was to create a product that felt natural during workouts while providi
 
 We focused on creating not just a product, but an entire ecosystem that supports users' skincare journey."
             imageGroup={[
-              "/public/assets/Ark/ARK-community and ecosystem.png",
-              "/public/assets/Ark/ARK-Socialmedia.png"
+              "/assets/ARK/ARK-community and ecosystem.png",
+              "/assets/ARK/ARK-Socialmedia.png"
             ]}
             maxWidth="100%"
             stackedMaxWidth="100%"
@@ -372,7 +353,7 @@ We focused on creating not just a product, but an entire ecosystem that supports
 
 We crafted a brand that speaks to both skincare enthusiasts and fitness-focused individuals, bridging the gap between these two worlds."
             imageGroup={[
-              "/public/assets/Ark/ARK-logo.png"
+              "/assets/ARK/ARK-logo.png"
             ]}
             maxWidth="100%"
             stackedMaxWidth="100%"

@@ -11,7 +11,13 @@ import {
   SideBySideWrapper,
   TextColumn,
   ImageColumn,
-  GifContainer
+  GifContainer,
+  Bold,
+  OverviewBox,
+  MetadataPanel,
+  MetadataSection,
+  MetadataLabel,
+  MetadataValue
 } from "../sharedStyles";
 import NextProject from '../NextProject';
 import { projectParty } from "../../data/projectname.jsx";
@@ -68,6 +74,7 @@ const ContentContainer = styled.div`
     font-size: 16px;
     line-height: 1.6;
     margin-bottom: 6rem;
+    font-weight: 100;
   }
 
   @media (max-width: 768px) {
@@ -81,13 +88,17 @@ const ContentContainer = styled.div`
     p { 
       font-size: 14px;
       margin-bottom: 4rem;
+      font-weight: 100;
     }
   }
 
   @media (max-width: 480px) {
     h1 { font-size: 1.4rem; }
     h2 { font-size: 1.2rem; }
-    p { font-size: 13px; }
+    p { 
+      font-size: 13px;
+      font-weight: 100;
+    }
   }
 `;
 
@@ -141,39 +152,6 @@ const VideoContainer = styled.div`
   }
 `;
 
-const MetadataPanel = styled.div`
-  position: relative;
-  margin: 2rem auto;
-  max-width: 600px;
-  border-radius: 50px;
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-`;
-
-const MetadataSection = styled.div`
-  display: flex;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-`;
-
-const MetadataLabel = styled.span`
-  font-weight: 300;
-  margin-right: 0.5rem;
-  color: rgba(255, 255, 255, 0.5);
-`;
-
-const MetadataValue = styled.span`
-  font-weight: 400;
-`;
-
 const SideBySideSection = ({ 
   title, 
   text, 
@@ -185,7 +163,9 @@ const SideBySideSection = ({
   gifMaxWidth,
   gifBorderRadius,
   gifImageBorderRadius,
-  gifCaption
+  gifCaption,
+  imageGroupStyle,
+  imageStyle
 }) => (
   <SideBySideWrapper style={{ marginBottom: '8rem' }}>
     <TextColumn style={{ marginTop: '2rem' }}>
@@ -231,9 +211,9 @@ const SideBySideSection = ({
       )}
       {image && !gif && <img src={image} alt={title} />}
       {imageGroup && (
-        <div className="stacked">
+        <div className="stacked" style={imageGroupStyle}>
           {imageGroup.map((src, idx) => (
-            <img key={idx} src={src} alt={`${title} ${idx + 1}`} />
+            <img key={idx} src={src} alt={`${title} ${idx + 1}`} style={imageStyle} />
           ))}
         </div>
       )}
@@ -252,19 +232,16 @@ const Grove = () => {
   return (
     <Container>
       <Left>
-        <Title onClick={handleHomeClick}>{'<'}1/24/25{'>'}</Title>
-        <Title>WORK</Title>
-        <Title>IN</Title> 
-        <Title>PROGRESS</Title>
+        <Title onClick={handleHomeClick}>{'<'}home{'>'}</Title>
       </Left>
       <Right>
         <ContentContainer>
           <HeroSection>
-            <HeroTitle>GROVE: AI-POWERED PROJECT MATCHING</HeroTitle>
+            <HeroTitle>GROVE</HeroTitle>
             <MetadataPanel>
               <MetadataSection>
                 <MetadataLabel>Role:</MetadataLabel>
-                <MetadataValue>Personal</MetadataValue>
+                <MetadataValue>Personal Project</MetadataValue>
               </MetadataSection>
               <MetadataSection>
                 <MetadataLabel>Timeline:</MetadataLabel>
@@ -285,38 +262,72 @@ const Grove = () => {
             </VideoContainer>
           </HeroSection>
 
+          <OverviewBox>
+            <h2>Building a community platform that connects people through shared interests</h2>
+            <p>
+              Grove emerged from the need to create meaningful connections while building projects. 
+              I focused on creating an experience that felt both personal and scalable, 
+              balancing the intimacy of small communities with the potential for growth. The project challenged 
+              me to think deeply about how digital spaces can foster genuine human connection while visualizing progress through a uniquely generated tree avatars. 
+            </p>
+          </OverviewBox>
           <ProblemSolutionWrapper>
             <ProblemBox>
               <h2>Problem</h2>
-              <p>72% of generalists say they lack direction in skill growth.
-              Most learning systems are built for specialists—not for people who do a bit of everything.</p>
+              <p>
+                <Bold>72% </Bold>of generalists say they lack direction in skill growth with half never seeing the fruits fo their labor.
+                Most learning systems are built for <Bold>efficiency</Bold> or <Bold>specialists</Bold>.
+                I didn't need more courses — I needed a way to find the right people to build with.
+              </p>
             </ProblemBox>
             <SolutionBox>
               <h2>Solution</h2>
-              <p>Grove is a gamified platform that matches generalists by complementary skills and turns projects into growth journeys. It helps people learn by doing—while building a creative, collaborative community.</p>
+              <p>
+                <Bold>Grove</Bold> is an onboarding experience designed to connect people with <Bold>complementary collaborators-- </Bold> It turns creative projects into personal growth journeys.
+                A learning system built for <Bold>alignment</Bold>, planting a grove of diverse creatives.
+              </p>
             </SolutionBox>
           </ProblemSolutionWrapper>
 
           <SideBySideSection
-            title="ACT I — RESEARCH"
-            text="Most platforms reward depth. Grove rewards range—matching generalists through gamified prompts and shared goals to turn exploration into momentum."
-            image="/assets/GROVE/FullProgress.png"
-            maxWidth="1000px"
+            title="THE SEED"
+            text={`Every great forest begins with a single seed.
+
+            But at its root, there's something deeper:
+
+            Why do most platforms ask who you are—before helping you figure that out for yourself?  
+            And how might we design for the ones who don't fit cleanly into boxes, but still crave connection?`}
+            image="/assets/GROVE/seednobackgorund.png"
+            maxWidth="350px"
           />
 
           <SideBySideSection
-            title="ACT II - What if you could grow like a tree?"
-            text="First: Who are you?
-Your answers shape the seed — your starting point. Everyone begins differently.
+            title="Just How do i create connections?"
+            text={`What are the right questions to ask to really understand someone?
+            The wireframes were the first interations to the the most important step, visualizing just who are you?`}
+            imageGroup={[
+              "/assets/GROVE/Grove-v1.png",
+              "/assets/GROVE/Grove-reference.png",
+              "/assets/GROVE/FullProgress.png"
+            ]}
+            stackedMaxWidth="100%"
+          />
 
-Then: what motivates you? This forms your biome — not where you are, but where you're headed.
+          <SideBySideSection
+            title="YOU GROW LIKE A TREE"
+            text={`Most creatives struggle to find a single term to describe themselves, so I wanted that answer to grow overtime.
+            Onboarding should feel like a personality test that reflects what drive your curiosity more than anything.
 
-Next: your current skills and projects become your bark — the structure you've already built.
+            Each answer shapes your tree:
 
-Finally: your interests become the fruit — because what you care about always finds a way to show up in what you create.
+            Your seed is your start.
+            Your biome is your direction.
+            Your bark is your past.
+            Your fruit is your passion.
 
-By the end:
-You're planting a version of yourself — and watching how it grows."
+            The more you respond, the more your tree evolves — a soft, visual way to see who you're becoming.
+            With a tree unique to you, people like visualizations of their progress.
+            It's personal, reflective, and honestly… cool.`}
             gif="/assets/GROVE/Grove-onboarding.gif"
             gifMaxWidth="300px"
             gifBorderRadius="48px"
@@ -325,19 +336,17 @@ You're planting a version of yourself — and watching how it grows."
           />
 
           <SideBySideSection
-            title="ACT III — COMMUNITY"
-            text="A single tree can survive —
-but it can thrive when it's part of something bigger.
+            title="THE FOREST FINDS YOU"
+            text={`How might we design a matching system that reflects how creativity actually grows-- nonlinearly like branches on a tree.
 
-Our match system takes your profile — and finds others who complement you.
+Most platforms sort people by what they do, Grove focuses on why they do it and rewards complementarity.
+I wanted people to find each other based on what kind of projects move them. Not just what skills they offer.
 
-Because the best forests aren't made of the same kind of tree.
-They're built on diversity — different roots, different needs, different strengths.
-And when those trees grow together, they support each other. They build ecosystems.
+everyone has a unique biome that have been adapted to through experiences.
+Your tree isn't a profile — it's your story.
 
-This is how I imagine Grove to plant the seeds for a community:
-By designing for biodiversity.
-By connecting you with collaborators who help you grow — and who grow because of you."
+Your tree reflects how you move through the world.
+and because connection is built on people, not profiles, every choice is a quiet opening to whole new environmenets`}
             gif="/assets/GROVE/Grove-matching.gif"
             gifMaxWidth="300px"
             gifBorderRadius="48px"
@@ -346,13 +355,21 @@ By connecting you with collaborators who help you grow — and who grow because 
           />
 
           <SideBySideSection
-            title="ACT IV — GAMIFICATION"
-            text="Growth isn't just measured in tasks—it's in seeds you collect through completing projects and learning.
+            title="PROGRESS you can see"
+            text={`How can we naturally visualize your progress?
 
-Each project you complete plants a new seed — shaping your tree's branches and bearing new fruit.
-With every collaboration, your tree evolves — each experience leaving a visible mark on how you grow.
+              While traditionaly gamifcation comes with tracking points or badges, Grove is designed to encourage breadth and reward depth
+              Your tree will respond visuallyto how you create, connect, and reflect. 
 
-Now, it's all about watching your tree grow in ways that mirrors your creative journey."
+              Wide branching canopy? You've touched a lot.
+
+Deep roots? You've gone hard on something.
+
+Crooked growth? you've reached out of your comfort zone.
+
+              Building on shared rituals, collaborative sprints and even failed projects will make your grove feel more and more like yours.
+Tasks become fruit. Collaborators become branches.
+What you grow is visible and every effort leaves a mark.`}
             gif="/assets/GROVE/Grove-gamification.gif"
             gifMaxWidth="300px"
             gifBorderRadius="48px"
@@ -361,12 +378,13 @@ Now, it's all about watching your tree grow in ways that mirrors your creative j
           />
 
           <SideBySideSection
-            title="ACT V — THE GROVE"
-            text="As you complete projects and collaborate, your friends or The people you've really enjoyed working with are added to your personal Grove — Over time, it becomes a reflection of your growth network:
-a garden of projects, collaborators, and ideas you've cultivated along the way.
-This Grove isn't just a summary of progress —
-it's your creative ecosystem, rooted in shared moments,
-growing together, season after season."
+            title="THE GROVE"
+            text={`A social project building community designed around how real connection happens.
+
+As you collaborate and create, your network becomes a reflection of your path.
+
+For the ones who grow by following a gut feeling and your every interation creates a pattern unique to you.
+as a living network, you dont need to annouce who you are because you'll wander through forests of potential instead of scrolling through profiles.`}
             gif="/assets/GROVE/Grove-grove.gif"
             gifMaxWidth="300px"
             gifBorderRadius="48px"
@@ -376,11 +394,14 @@ growing together, season after season."
 
           <ChapterCard>
             <h2>REFLECTIONS</h2>
-            <p>Grove started as a creative experiment but became a real way to rethink learning.</p>
-            <p>I learned that people thrive <strong>through collaboration</strong>, and that gamifying skill growth makes the process more <strong>organic and rewarding</strong>. More than anything, this project reinforced that AI should be a <strong>tool for creativity, not a replacement for it.</strong></p>
-            
-            <h3>What's Next?</h3>
-            <p>Expanding AI matching for mentorship, refining project recommendations, and maybe even turning Grove into a <strong>real prototype</strong>.</p>
+            <p>Grove was started as personal project to understand myself and ideate a solution for people like myself-- lateral thinkers, who grow through expereinces.
+              And just like how any tree grows and branches out, I realized it was more of a way to connect with people at its roots. From a onboarding experience you watch grow, 
+              to a social network designed around diversity and constantly looking for connections in overlooked spaces.</p>
+
+            <p><strong>People don't thrive because they specialize. They thrive because they connect.</strong></p>
+            <h3>WHAT'S NEXT?</h3>
+            <p>Next, I'd love to bring Grove into a space where this kind of collective growth is already happening.
+Not to replace the community — but to help it see itself. Something along the lines of growing my own grove whereever that may be.  </p>
           </ChapterCard>
         </ContentContainer>
         {nextProject && <NextProject currentProject={projectParty[currentIndex]} nextProject={nextProject} />}

@@ -11,7 +11,12 @@ import {
   SideBySideWrapper,
   TextColumn,
   ImageColumn,
-  GifContainer
+  GifContainer,
+  OverviewBox,
+  MetadataPanel,
+  MetadataSection,
+  MetadataLabel,
+  MetadataValue
 } from "../sharedStyles";
 import NextProject from '../NextProject';
 import { projectParty } from "../../data/projectname.jsx";
@@ -44,7 +49,7 @@ const Right = styled.div`
 
 const ContentContainer = styled.div`
   width: 100%;
-  max-width: 1200px;
+  max-width: 1200px; 
   margin: 0 auto;
   padding: 2rem;
   color: white;
@@ -116,8 +121,8 @@ const VideoContainer = styled.div`
   box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), 0 0 20px rgba(136, 169, 215, 0.2);
   transition: all 0.4s ease;
 
-  &:hover {
-    transform: scale(1.02);
+    &:hover {
+      transform: scale(1.02);
     box-shadow: 0 0 40px rgba(255, 255, 255, 0.15), 0 0 30px rgba(136, 169, 215, 0.3);
   }
 
@@ -139,38 +144,6 @@ const VideoContainer = styled.div`
       height: 250px;
     }
   }
-`;
-
-const MetadataPanel = styled.div`
-  position: relative;
-  margin: 2rem auto;
-  max-width: 600px;
-  border-radius: 50px;
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-`;
-
-const MetadataSection = styled.div`
-  display: flex;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-`;
-
-const MetadataLabel = styled.span`
-  margin-right: 0.5rem;
-  color: rgba(255, 255, 255, 0.5);
-`;
-
-const MetadataValue = styled.span`
-  font-weight: 400;
 `;
 
 const SideBySideSection = ({ 
@@ -315,15 +288,12 @@ const CapsuleMachine = () => {
   return (
     <Container>
       <Left>
-        <Title onClick={handleHomeClick}>{'<'}1/24/25{'>'}</Title>
-        <Title>WORK</Title>
-        <Title>IN</Title> 
-        <Title>PROGRESS</Title>
+        <Title onClick={handleHomeClick}>{'<'}home{'>'}</Title>
       </Left>
       <Right>
         <ContentContainer>
           <HeroSection>
-            <HeroTitle>CAPSULE MACHINE: A PERSONAL DESIGN CHALLENGE</HeroTitle>
+            <HeroTitle>CAPSULE MACHINE</HeroTitle>
             <MetadataPanel>
               <MetadataSection>
                 <MetadataLabel>Role:</MetadataLabel>
@@ -334,14 +304,26 @@ const CapsuleMachine = () => {
                 <MetadataValue>2024</MetadataValue>
               </MetadataSection>
               <MetadataSection>
-                <MetadataLabel>Skills Learned:</MetadataLabel>
+                <MetadataLabel>Skills:</MetadataLabel>
                 <MetadataValue>CAD, Woodworking, Mechanical Design</MetadataValue>
               </MetadataSection>
             </MetadataPanel>
             <VideoContainer>
-              <img src="/public/assets/CM/Capsule machine thumbnail.png" alt="Capsule Machine Thumbnail" style={{ width: '100%', height: 'auto' }} />
+              <img src="/assets/CM/Capsule machine thumbnail.png" alt="Capsule Machine Thumbnail" style={{ width: '100%', height: 'auto' }} />
             </VideoContainer>
           </HeroSection>
+
+          <OverviewBox>
+            <div className="title">Project Overview</div>
+            <div className="summary">Creating an interactive installation that blends physical and digital experiences</div>
+            <div className="overview">
+              The Capsule Machine project represents my exploration into the intersection of physical 
+              computing and user experience. Through this interactive installation, I sought to create 
+              a tangible connection between users and digital content, using Arduino and custom hardware 
+              to transform abstract interactions into physical experiences. The project challenged me to 
+              think about how technology can create moments of surprise and delight in physical spaces.
+            </div>
+          </OverviewBox>
 
           <ProblemSolutionWrapper>
             <ProblemBox>
@@ -364,9 +346,9 @@ const CapsuleMachine = () => {
 
 The learning curve was steep, but the satisfaction of seeing my designs come to life was worth it."
             imageGroup={[
-              "/assets/CM/CM-frame.gif",
-              "/assets/CM/CM-gears.gif",
-              "/assets/CM/CM-fullspin.gif"
+              "/assets/CM/gif/CM-frame.gif",
+              "/assets/CM/gif/CM-gears.gif",
+              "/assets/CM/gif/CM-fullspin.gif"
             ]}
             maxWidth="100%"
             stackedMaxWidth="100%"
@@ -379,83 +361,83 @@ The learning curve was steep, but the satisfaction of seeing my designs come to 
 
           <ImageGrid>
             <ImageCard>
-              <Image src="/public/assets/CM/CM1.png" alt="Initial Design" loading="lazy" />
+              <Image src="/assets/CM/CM1.png" alt="Initial Design" loading="lazy" />
               <CaptionBox>Scavenging for scrap wood and using old furniture</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM31.png" alt="Detail Shot" loading="lazy" />
+              <Image src="/assets/CM/CM31.png" alt="Detail Shot" loading="lazy" />
               <CaptionBox>Cleaning up scrap wood</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM30.png" alt="Final Product" loading="lazy" />
+              <Image src="/assets/CM/CM30.png" alt="Final Product" loading="lazy" />
               <CaptionBox>Trimming down edges to fight warp</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM29.png" alt="Quality Check" loading="lazy" />
+              <Image src="/assets/CM/CM29.png" alt="Quality Check" loading="lazy" />
               <CaptionBox>Cleaned up planks</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM28.png" alt="Final Assembly" loading="lazy" />
+              <Image src="/assets/CM/CM28.png" alt="Final Assembly" loading="lazy" />
               <CaptionBox>Wood assortment</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM27.png" alt="Finishing Touches" loading="lazy" />
+              <Image src="/assets/CM/CM27.png" alt="Finishing Touches" loading="lazy" />
               <CaptionBox>Glueing scrap wood to create the necessary size piece</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM26.png" alt="Mechanism Test" loading="lazy" />
+              <Image src="/assets/CM/CM26.png" alt="Mechanism Test" loading="lazy" />
               <CaptionBox>Sample of glued cutout without cleanup</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM25.png" alt="Gear System" loading="lazy" />
+              <Image src="/assets/CM/CM25.png" alt="Gear System" loading="lazy" />
               <CaptionBox>Side panel glued using mismatched wood</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM24.png" alt="Detail Work" loading="lazy" />
+              <Image src="/assets/CM/CM24.png" alt="Detail Work" loading="lazy" />
               <CaptionBox>Box assembled</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM23.png" alt="Assembly Start" loading="lazy" />
+              <Image src="/assets/CM/CM23.png" alt="Assembly Start" loading="lazy" />
               <CaptionBox>Cleaned panel</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM22.png" alt="First Cuts" loading="lazy" />
+              <Image src="/assets/CM/CM22.png" alt="First Cuts" loading="lazy" />
               <CaptionBox>Cleaned and cut 45-degree angle bottom piece</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM21.png" alt="Material Selection" loading="lazy" />
+              <Image src="/assets/CM/CM21.png" alt="Material Selection" loading="lazy" />
               <CaptionBox>Me sanding each panel</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM20.png" alt="Detail Shot" loading="lazy" />
+              <Image src="/assets/CM/CM20.png" alt="Detail Shot" loading="lazy" />
               <CaptionBox>Cleaned bottom piece</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM19.png" alt="Final Product" loading="lazy" />
+              <Image src="/assets/CM/CM19.png" alt="Final Product" loading="lazy" />
               <CaptionBox>Secured with pocket screws and plugged and sanded</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM18.png" alt="Quality Check" loading="lazy" />
+              <Image src="/assets/CM/CM18.png" alt="Quality Check" loading="lazy" />
               <CaptionBox>Side panels cut to 45 degrees</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM17.png" alt="Final Assembly" loading="lazy" />
+              <Image src="/assets/CM/CM17.png" alt="Final Assembly" loading="lazy" />
               <CaptionBox>sample example of assembly</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM16.png" alt="Finishing Touches" loading="lazy" />
+              <Image src="/assets/CM/CM16.png" alt="Finishing Touches" loading="lazy" />
               <CaptionBox>Finisher and oil applied</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM15.png" alt="Mechanism Test" loading="lazy" />
+              <Image src="/assets/CM/CM15.png" alt="Mechanism Test" loading="lazy" />
               <CaptionBox>applying oil and finish</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM14.png" alt="Gear System" loading="lazy" />
+              <Image src="/assets/CM/CM14.png" alt="Gear System" loading="lazy" />
               <CaptionBox>Working thorugh the night</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM13.png" alt="Detail Work" loading="lazy" />
+              <Image src="/assets/CM/CM13.png" alt="Detail Work" loading="lazy" />
               <CaptionBox>Finished assembly of the box</CaptionBox>
             </ImageCard>
           </ImageGrid>
@@ -478,39 +460,39 @@ The final machine represents not just a functional object, but a journey of lear
 
           <ImageGrid>
             <ImageCard>
-              <Image src="/public/assets/CM/CM12.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM12.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>3D printed components ready for assembly</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM11.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM11.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>Precision laser-cut frame pieces</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM10.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM10.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>All components laid out for assembly</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM9.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM9.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>Frame assembly taking shape</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM8.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM8.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>Coin mechanism fully constructed</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM7.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM7.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>Complete mechanism assembly</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM6.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM6.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>Precision-cut openings in the box</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM5.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM5.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>Frame integrated into the box</CaptionBox>
             </ImageCard>
             <ImageCard>
-              <Image src="/public/assets/CM/CM4.png" alt="Assembly Detail" loading="lazy" />
+              <Image src="/assets/CM/CM4.png" alt="Assembly Detail" loading="lazy" />
               <CaptionBox>The completed capsule machine</CaptionBox>
             </ImageCard>
           </ImageGrid>

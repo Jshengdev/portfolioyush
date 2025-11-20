@@ -62,32 +62,43 @@ const Aboutme = styled.div`
   position: absolute;
   color: rgba(255, 255, 255, 0.7);
   padding: 100px;
-  top: 50%;
+  top: 35%;
   font-size: 16px;
   font-family: 'ade';
   letter-spacing: 2px;
-  line-height: 1.5;
+  line-height: 1.8;
   border-radius: 10px;
+  max-width: 800px;
+  transform: translateY(-50%);
 `;
 
 const About = () => {
   const navigate = useNavigate();
 
   const handleHeroClick = () => {
-      navigate('/');
-    };
-    return (
-        <Section>
-            <Container2>
-                <Title onClick={handleHeroClick}>johnny sheng's about</Title>
-            </Container2>
-            <Container>
-                <Right>
-                    <Aboutme> Hi, i'm johnny and i practically do a little bit of everything in this world... I love to travel, eat, and failing more than poeple try. I am just using this as filler so i can see where i can position this Container </Aboutme>
-                </Right>
-            </Container>
-        </Section>
-    );
+    navigate('/');
+  };
+
+  return (
+    <Section>
+      <Container2>
+        <Title onClick={handleHeroClick}>johnny sheng's about</Title>
+      </Container2>
+      <Container>
+        <Right>
+          <Aboutme>
+            When they ask about what i do, I have many passions — somewhere between solo backpacking through Indonesian rainforests, ideating media content, coding at hackathons or just building a network at USC.
+            <br /><br />
+            I've always kinda stitched together a bunch of different obsessions while figuring things out in the moment.
+            <br /><br />
+            And i guess now, i have a museum of failures, an archive of memories, and the ongoing collection of dad lore I'm saving for my future kids.
+            <br /><br />
+            Right now, I'm obsessed with documenting the growth of my life, developing the website of my dreams, and bringing others along for the ride.
+          </Aboutme>
+        </Right>
+      </Container>
+    </Section>
+  );
 };
 
 export default About;

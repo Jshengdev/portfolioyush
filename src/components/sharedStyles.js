@@ -65,18 +65,25 @@ export const ChapterCard = styled.div`
 
 export const ProblemSolutionWrapper = styled.div`
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
   margin: 8rem auto;
   max-width: 1000px;
   @media (max-width: 768px) {
     flex-direction: column;
     margin: 6rem auto;
+    gap: 2rem;
   }
 `;
 
+export const Bold = styled.span`
+  font-size: 19px;
+  font-weight: 600;
+  color: rgba(249, 255, 251, 0.95);
+`;
+
 export const ProblemSolutionBox = styled.div`
-  flex: 1;
-  padding: 2.5rem;
+  flex: 0 1 auto;
+  padding: 1.5rem;
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -85,20 +92,24 @@ export const ProblemSolutionBox = styled.div`
   animation: ${fadeUp} 0.8s ease-out forwards;
   opacity: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+  width: fit-content;
 
   h2 {
     font-family: var(--font-heading);
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
     color: white;
     text-transform: uppercase;
   }
 
   p {
     font-family: var(--font-body);
-    font-size: 1.1rem;
-    line-height: 1.6;
+    font-size: 17px;
+    line-height: 1.75;
     color: var(--paragraph-color);
+    padding: 0;
+    margin: 0;
   }
 `;
 
@@ -201,4 +212,54 @@ export const GifContainer = styled.div`
   @media (max-width: 768px) {
     max-width: 100%;
   }
+`;
+
+export const OverviewBox = styled.div`
+  background-color: rgba(255, 255, 255, 0.03);
+  padding: 2rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: fit-content;
+  height: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+  animation: ${fadeUp} 0.8s ease-out forwards;
+  opacity: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+`;
+
+export const MetadataPanel = styled.div`
+  position: relative;
+  margin: 2rem auto;
+  max-width: 600px;
+  border-radius: 50px;
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+`;
+
+export const MetadataSection = styled.div`
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+`;
+
+export const MetadataLabel = styled.span`
+  font-weight: 300;
+  margin-right: 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+`;
+
+export const MetadataValue = styled.span`
+  font-weight: 400;
+  text-align: left;
 `; 
