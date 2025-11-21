@@ -11,6 +11,14 @@ const fadeUp = keyframes`
   }
 `;
 
+// Main layout container used across project detail pages
+export const Container = styled.div`
+  display: grid;
+  grid-template-columns: 10% 92%;
+  width: 100%;
+  height: 100vh;
+`;
+
 export const Container2 = styled.div`
   position: fixed;
   width: 100%;

@@ -2,14 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled, { keyframes} from "styled-components";
 import ReactMarkdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
-import { Title } from '../sharedStyles';
-
-const Container = styled.div`
-  display: grid;
-  grid-template-columns: 10% 92%;
-  width: 100%;
-  height: 100vh; 
-`;
+import { Container } from "../sharedStyles";
 
 const Left = styled.div`
   display: flex;
