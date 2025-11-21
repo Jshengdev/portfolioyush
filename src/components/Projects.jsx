@@ -2,27 +2,9 @@ import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Container2, } from "./sharedStyles";
+import { Container2, glowAnimation } from "./sharedStyles";
 import { projectParty } from "../data/projectname.jsx";
 import NextProject from './NextProject';
-
-const glow = keyframes`
-  0% {
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.1),
-                 0 0 10px rgba(255, 255, 255, 0.1),
-                 0 0 15px rgba(255, 255, 255, 0.1);
-  }
-  50% {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3),
-                 0 0 20px rgba(255, 255, 255, 0.2),
-                 0 0 30px rgba(255, 255, 255, 0.1);
-  }
-  100% {
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.1),
-                 0 0 10px rgba(255, 255, 255, 0.1),
-                 0 0 15px rgba(255, 255, 255, 0.1);
-  }
-`;
 
 const softGlow = keyframes`
   0% {
@@ -225,7 +207,7 @@ const PreviewTitle = styled(motion.h1)`
   transition: opacity 0.8s ease;
   text-transform: uppercase;
   letter-spacing: 2px;
-  animation: ${props => props.isVisible ? glow : 'none'} 3s infinite;
+  animation: ${props => props.isVisible ? glowAnimation : 'none'} 3s infinite;
   mix-blend-mode: exclusion;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.2),
                0 0 50px rgba(255, 255, 255, 0.3),

@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import AppSlider from './AppSlider';
+import { Container2, Title } from './sharedStyles';
 
 const Section = styled.div`
   height: 100vh;
@@ -45,22 +46,6 @@ const Image = styled.img`
         }
     }
 `;
-
-const Container2 = styled.div`
-    position: fixed;
-    width: 100%;
-    left: 45px;
-    top: 50px;
-`
-
-const Title = styled.h1`
-    font-family: 'work sans';
-    font-weight: 300;
-    font-size: 36px;
-    transform: translateX(15px);
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, .7);
-`
 
 const ShadowTitle = styled(Title)`
     color: rgba(255, 255, 255, .6 );

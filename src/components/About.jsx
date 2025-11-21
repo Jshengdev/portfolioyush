@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
+import { Container2, Title } from './sharedStyles';
 
 const Section = styled.div`
   height: 100vh;
@@ -36,28 +37,6 @@ const Right = styled.div`
   top: 10%;
 `;
 
-const Container2 = styled.div`
-  position: fixed;
-  width: 100%;
-  left: 45px;
-  top: 50px;
-`;
-
-const Title = styled.h1`
-    font-family: 'work sans';
-    font-weight: 300;
-    font-size: 36px;
-    transform: translateX(15px);
-    letter-spacing: 2px;
-    transform-origin: 0 0;
-    transition: transform 0.5s, color 0.3s ease-in-out;
-    color: rgba(255, 255, 255, .7);
-        &:hover {
-        transform: scale(1.01);
-        color: white;
-    }
-    // transform: scale(1,1.1) skew(-2deg) translateX(0.5%);
-`
 const Aboutme = styled.div`
   position: absolute;
   color: rgba(255, 255, 255, 0.7);

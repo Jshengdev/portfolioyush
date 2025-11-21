@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Container2, Title } from './sharedStyles';
 
 const Container = styled.div`
   display: grid;
@@ -11,14 +12,6 @@ const Container = styled.div`
   overflow: hidden;
   position: relative;
   z-index: 1;
-`;
-
-const Container2 = styled.div`
-  position: fixed;
-  width: 100%;
-  left: 45px;
-  top: 50px;
-  z-index: 0;
 `;
 
 const Left = styled(motion.div)`
@@ -130,22 +123,6 @@ const Caption = styled(motion.div)`
   margin-top: 20px;
   mix-blend-mode: exclusion;
 `;
-
-const Title = styled.h1`
-    font-family: 'work sans';
-    font-weight: 300;
-    font-size: 36px;
-    transform: translateX(15px);
-    letter-spacing: 2px;
-    transform-origin: 0 0;
-    transition: transform 0.5s, color 0.3s ease-in-out;
-    color: rgba(255, 255, 255, .7);
-        &:hover {
-        transform: scale(1.01);
-        color: white;
-    }
-    // transform: scale(1,1.1) skew(-2deg) translateX(0.5%);
-`
 
 const projects = [
   {

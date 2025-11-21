@@ -11,6 +11,24 @@ const fadeUp = keyframes`
   }
 `;
 
+export const glowAnimation = keyframes`
+  0% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.1),
+                 0 0 10px rgba(255, 255, 255, 0.1),
+                 0 0 15px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3),
+                 0 0 20px rgba(255, 255, 255, 0.2),
+                 0 0 30px rgba(255, 255, 255, 0.1);
+  }
+  100% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.1),
+                 0 0 10px rgba(255, 255, 255, 0.1),
+                 0 0 15px rgba(255, 255, 255, 0.1);
+  }
+`;
+
 export const Container2 = styled.div`
   position: fixed;
   width: 100%;
