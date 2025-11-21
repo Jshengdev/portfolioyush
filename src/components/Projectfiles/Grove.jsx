@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { 
-  Container2, 
-  Title, 
-  ChapterCard, 
-  ProblemSolutionWrapper, 
-  ProblemBox, 
+import {
+  Container,
+  Container2,
+  Title,
+  ChapterCard,
+  ProblemSolutionWrapper,
+  ProblemBox,
   SolutionBox,
   SideBySideWrapper,
   TextColumn,
@@ -21,13 +22,6 @@ import {
 } from "../sharedStyles";
 import NextProject from '../NextProject';
 import { projectParty } from "../../data/projectname.jsx";
-
-const Container = styled.div`
-  display: grid;
-  grid-template-columns: 10% 92%;
-  width: 100%;
-  height: 100vh; 
-`;
 
 const Left = styled.div`
   display: flex;
