@@ -14,7 +14,6 @@ const Container = styled.div`
   z-index: 1;
 `;
 
-
 const Left = styled(motion.div)`
   display: flex;
   flex-direction: column;
