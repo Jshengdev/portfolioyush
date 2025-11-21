@@ -11,6 +11,14 @@ const fadeUp = keyframes`
   }
 `;
 
+// Main layout container used across project detail pages
+export const Container = styled.div`
+  display: grid;
+  grid-template-columns: 10% 92%;
+  width: 100%;
+  height: 100vh;
+`;
+
 export const Container2 = styled.div`
   position: fixed;
   width: 100%;
@@ -19,9 +27,9 @@ export const Container2 = styled.div`
 `;
 
 export const Title = styled.h1`
-  font-family: "work sans";
+  font-family: 'work sans';
   font-weight: 300;
-  font-size: 24px;
+  font-size: 36px;
   transform: translateX(15px);
   transform-origin: 0 0;
   letter-spacing: 2px;
