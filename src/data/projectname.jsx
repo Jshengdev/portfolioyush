@@ -1,5 +1,19 @@
+/**
+ * Project metadata for main projects displayed on /projects page
+ * Each project includes id, title, description, and thumbnail image
+ *
+ * @type {Array<{id: number, title: string, description: string, image: string}>}
+ *
+ * Used by:
+ * - Projects.jsx (main project listing)
+ * - NextProject.jsx (navigation between projects)
+ * - Individual project pages (for NextProject component)
+ *
+ * Note: title is used for routing - spaces are removed for URL
+ * Example: "The Collection" → /projects/TheCollection
+ */
 export const projectParty = [
-  
+
   {
     id: 1,
     title: "Grove",

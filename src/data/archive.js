@@ -1,3 +1,15 @@
+/**
+ * Archive gallery items for horizontal scrolling gallery on /archive page
+ * Each item includes a caption and image path
+ *
+ * @type {Array<{caption: string, image: string}>}
+ *
+ * Used by:
+ * - Archive.jsx (horizontal scrolling gallery)
+ *
+ * Note: Images are displayed in a horizontal scrolling layout
+ * with random skew transforms and margins for visual interest
+ */
 export const archiveItems = [
   {
     caption: 'Ming Portrait',

@@ -1,5 +1,17 @@
+/**
+ * Shared styled-components used across the application
+ * Reduces duplication and ensures consistent styling
+ * @module sharedStyles
+ *
+ * Used by: All project detail pages (Grove, CapsuleMachine, Ark, AP, Collection, Lens)
+ * Contains: Layout containers, typography, cards, metadata displays, and animations
+ */
 import styled, { keyframes } from 'styled-components';
 
+/**
+ * Fade-up animation keyframe
+ * Animates elements from bottom to top with opacity fade
+ */
 const fadeUp = keyframes`
   from {
     opacity: 0;
@@ -11,7 +23,10 @@ const fadeUp = keyframes`
   }
 `;
 
-// Main layout container used across project detail pages
+/**
+ * Main layout container with 10% left margin and 92% content area
+ * Used by: All project detail pages
+ */
 export const Container = styled.div`
   display: grid;
   grid-template-columns: 10% 92%;
@@ -19,6 +34,10 @@ export const Container = styled.div`
   height: 100vh;
 `;
 
+/**
+ * Fixed title container positioned at top-left
+ * Used by: Project detail pages for page titles
+ */
 export const Container2 = styled.div`
   position: fixed;
   width: 100%;
@@ -26,6 +45,11 @@ export const Container2 = styled.div`
   top: 50px;
 `;
 
+/**
+ * Page title component
+ * Responsive with hover scale effect
+ * Used by: All project detail pages
+ */
 export const Title = styled.h1`
   font-family: 'work sans';
   font-weight: 300;
@@ -41,6 +65,11 @@ export const Title = styled.h1`
   }
 `;
 
+/**
+ * Card component for chapter sections (e.g., Reflections, Conclusion)
+ * Includes fade-up animation on mount
+ * Used by: Project detail pages for reflections and conclusions
+ */
 export const ChapterCard = styled.div`
   background-color: rgba(255, 255, 255, 0.03);
   padding: 2rem;
@@ -71,6 +100,10 @@ export const ChapterCard = styled.div`
   }
 `;
 
+/**
+ * Wrapper for Problem/Solution box pair
+ * Responsive flex layout with mobile stacking
+ */
 export const ProblemSolutionWrapper = styled.div`
   display: flex;
   gap: 3rem;
@@ -83,12 +116,21 @@ export const ProblemSolutionWrapper = styled.div`
   }
 `;
 
+/**
+ * Bold text emphasis component
+ * Used for highlighting important text within paragraphs
+ */
 export const Bold = styled.span`
   font-size: 19px;
   font-weight: 600;
   color: rgba(249, 255, 251, 0.95);
 `;
 
+/**
+ * Base styled component for Problem and Solution boxes
+ * Includes glass-morphism effect with backdrop blur
+ * Extended by ProblemBox and SolutionBox
+ */
 export const ProblemSolutionBox = styled.div`
   flex: 0 1 auto;
   padding: 1.5rem;
@@ -121,14 +163,27 @@ export const ProblemSolutionBox = styled.div`
   }
 `;
 
+/**
+ * Problem statement box with red accent border
+ * Extends ProblemSolutionBox
+ */
 export const ProblemBox = styled(ProblemSolutionBox)`
   border-left: 4px solid rgba(255, 128, 128, 0.5);
 `;
 
+/**
+ * Solution statement box with blue accent border
+ * Extends ProblemSolutionBox
+ */
 export const SolutionBox = styled(ProblemSolutionBox)`
   border-left: 4px solid rgba(136, 169, 215, 0.5);
 `;
 
+/**
+ * Side-by-side layout wrapper for text and image columns
+ * Responsive flex layout that wraps on mobile
+ * Used by: Project detail pages for ACT sections
+ */
 export const SideBySideWrapper = styled.div`
   width: 100%;
   max-width: 1600px;
@@ -146,6 +201,11 @@ export const SideBySideWrapper = styled.div`
   }
 `;
 
+/**
+ * Text column for side-by-side layouts
+ * Flexible width with minimum 250px, max 400px
+ * Includes fade-up animations for h2 and p elements
+ */
 export const TextColumn = styled.div`
   flex: 0 1 400px;
   min-width: 250px;
@@ -168,6 +228,13 @@ export const TextColumn = styled.div`
   }
 `;
 
+/**
+ * Image column for side-by-side layouts
+ * Supports dynamic maxWidth prop and stacked image layout
+ * Includes hover scale and glow effects
+ * @prop {string} maxWidth - Maximum width for single images (default: '600px')
+ * @prop {string} stackedMaxWidth - Maximum width for stacked images (default: '400px')
+ */
 export const ImageColumn = styled.div`
   flex: 0 1 600px;
   min-width: 250px;
@@ -195,6 +262,13 @@ export const ImageColumn = styled.div`
   }
 `;
 
+/**
+ * Container for GIF/video content with customizable dimensions
+ * Includes hover scale effect and shadow
+ * @prop {string} maxWidth - Maximum width (default: '800px')
+ * @prop {string} borderRadius - Border radius (default: '24px')
+ * @prop {string} imageBorderRadius - Inner image border radius (default: inherit)
+ */
 export const GifContainer = styled.div`
   position: relative;
   width: 100%;
@@ -222,6 +296,11 @@ export const GifContainer = styled.div`
   }
 `;
 
+/**
+ * Overview box for project summaries
+ * Includes fade-up animation on mount
+ * Used by: Project detail pages for overview sections
+ */
 export const OverviewBox = styled.div`
   background-color: rgba(255, 255, 255, 0.03);
   padding: 2rem;
@@ -238,6 +317,11 @@ export const OverviewBox = styled.div`
 
 `;
 
+/**
+ * Metadata panel displaying project details (Role, Timeline, Skills)
+ * Pill-shaped container with glass-morphism effect
+ * Used by: Project detail pages
+ */
 export const MetadataPanel = styled.div`
   position: relative;
   margin: 2rem auto;
@@ -254,6 +338,10 @@ export const MetadataPanel = styled.div`
   -webkit-backdrop-filter: blur(5px);
 `;
 
+/**
+ * Individual metadata section within MetadataPanel
+ * Contains label and value pairs
+ */
 export const MetadataSection = styled.div`
   display: flex;
   align-items: center;
@@ -261,12 +349,20 @@ export const MetadataSection = styled.div`
   font-size: 0.9rem;
 `;
 
+/**
+ * Label text for metadata (e.g., "Role:", "Timeline:")
+ * Lighter color to distinguish from value
+ */
 export const MetadataLabel = styled.span`
   font-weight: 300;
   margin-right: 0.5rem;
   color: rgba(255, 255, 255, 0.5);
 `;
 
+/**
+ * Value text for metadata
+ * Slightly bolder than label for emphasis
+ */
 export const MetadataValue = styled.span`
   font-weight: 400;
   text-align: left;
