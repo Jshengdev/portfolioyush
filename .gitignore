@@ -37,6 +37,16 @@ ehthumbs.db
 Thumbs.db
 
 # Large media files
-assets/CM/*.mov
-assets/CM/*.MOV 
+public/assets/CM/*.mov
+public/assets/CM/*.MOV
+
+# Vite timestamp files
+vite.config.js.timestamp-*
+
+# Claude Code settings
+.claude/
+
+# Root assets directory (duplicate - only /public/assets/ should exist)
+/assets/
+
 .vercel
