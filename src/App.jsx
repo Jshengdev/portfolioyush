@@ -1,26 +1,28 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 import { theme } from './theme';
 import './assets/fonts/fonts.css';
-import About from './components/About'; 
-import Hero from './components/Hero';
+// Lazy loaded page components
+const About = lazy(() => import('./components/About'));
+const Hero = lazy(() => import('./components/Hero'));
+const Contact = lazy(() => import('./components/Contact'));
+const Projects = lazy(() => import('./components/Projects'));
+const Grove = lazy(() => import('./components/Projectfiles/Grove'));
+const CapsuleMachine = lazy(() => import('./components/Projectfiles/CapsuleMachine'));
+const Ark = lazy(() => import('./components/Projectfiles/Ark'));
+const AP = lazy(() => import('./components/Projectfiles/AP'));
+const Lens = lazy(() => import('./components/Projectfiles/Lens'));
+const Collection = lazy(() => import('./components/Projectfiles/Collection'));
+const Archive = lazy(() => import('./components/Archive'));
+const NextProject = lazy(() => import('./components/NextProject'));
+// Always loaded components (needed for initial render)
 import Navbar from './components/Navbar';
 import Line from './components/Line';
-import Contact from './components/Contact';
-import Projects from './components/Projects'; 
-import Grove from './components/Projectfiles/Grove';
-import CapsuleMachine from './components/Projectfiles/CapsuleMachine';
-import Ark from './components/Projectfiles/Ark';
-import AP from './components/Projectfiles/AP';
-import Lens from './components/Projectfiles/Lens';
-import Collection from './components/Projectfiles/Collection';
 import { AnimatePresence, motion } from 'framer-motion';
 import Cursor from './Cursor';
 import './App.css';
 import ShaderVisual from './components/ShaderVisual';
-import Archive from './components/Archive';
-import NextProject from './components/NextProject';
 
 
 const Container = styled.div`
@@ -52,6 +54,17 @@ const Left = styled.div`
     z-index: 100;
 `
 
+const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Work Sans', sans-serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+`
+
 /**
  * Page transition wrapper component
  * Provides fade-in/fade-out animations for route changes
@@ -74,12 +87,14 @@ function PageWrapper({ children }) {
 /**
  * Animated route container with Framer Motion transitions
  * Uses AnimatePresence for smooth route transitions with "wait" mode
+ * Wrapped with Suspense for lazy-loaded components
  */
 function AnimatedRoutes() {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
+      <Suspense fallback={<LoadingContainer>Loading...</LoadingContainer>}>
+        <Routes location={location} key={location.pathname}>
         <Route
           path="/"
           element={
@@ -160,6 +175,7 @@ function AnimatedRoutes() {
           }
         />
       </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 }
