@@ -52,12 +52,18 @@ const Left = styled.div`
     z-index: 100;
 `
 
+/**
+ * Page transition wrapper component
+ * Provides fade-in/fade-out animations for route changes
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to wrap
+ */
 function PageWrapper({ children }) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}   
-      animate={{ opacity: 1 }}   
-      exit={{ opacity: 0 }}      
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: .5 }}
     >
       {children}
@@ -65,6 +71,10 @@ function PageWrapper({ children }) {
   );
 }
 
+/**
+ * Animated route container with Framer Motion transitions
+ * Uses AnimatePresence for smooth route transitions with "wait" mode
+ */
 function AnimatedRoutes() {
   const location = useLocation();
   return (
@@ -154,6 +164,22 @@ function AnimatedRoutes() {
   );
 }
 
+/**
+ * Main application component with routing and layout
+ * - Defines all routes for the portfolio site
+ * - Provides ThemeProvider context for styled-components
+ * - Implements fixed frame layout with border design
+ * - Handles page transitions with Framer Motion
+ * - Includes global components: Cursor, ShaderVisual, Navbar, Line
+ *
+ * Routes:
+ * - / (Hero)
+ * - /about (About)
+ * - /projects (Projects listing)
+ * - /archive (Archive gallery)
+ * - /contact (Contact info)
+ * - /projects/:projectName (Individual project pages)
+ */
 function App() {
   return (
     <Router>

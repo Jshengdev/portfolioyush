@@ -1,3 +1,17 @@
+/**
+ * Centralized design system with all design tokens
+ * @module theme
+ *
+ * Usage: Access via styled-components ThemeProvider
+ * Example: ${props => props.theme.colors.text.primary}
+ *
+ * Contains:
+ * - colors: Text, background, and accent colors
+ * - fonts: Font family definitions
+ * - spacing: Layout spacing values
+ * - breakpoints: Responsive breakpoints
+ * - transitions: Animation timing functions
+ */
 export const theme = {
   colors: {
     text: {
