@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
-import { Container2, Title } from './sharedStyles';
+import { Title, Container2 } from './sharedStyles';
 
 const Section = styled.div`
   height: 100vh;

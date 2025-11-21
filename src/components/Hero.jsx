@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import AppSlider from './AppSlider';
-import { Container2, Title } from './sharedStyles';
+import { Title, Container2 } from './sharedStyles';
 
 const Section = styled.div`
   height: 100vh;
@@ -46,6 +46,7 @@ const Image = styled.img`
         }
     }
 `;
+
 
 const ShadowTitle = styled(Title)`
     color: rgba(255, 255, 255, .6 );

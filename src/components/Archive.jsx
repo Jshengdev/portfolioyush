@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Container2, Title } from './sharedStyles';
+import { Title, Container2 } from './sharedStyles';
 
 const Container = styled.div`
   display: grid;
@@ -123,6 +123,7 @@ const Caption = styled(motion.div)`
   margin-top: 20px;
   mix-blend-mode: exclusion;
 `;
+
 
 const projects = [
   {
