@@ -27,9 +27,9 @@ export const Container2 = styled.div`
 `;
 
 export const Title = styled.h1`
-  font-family: "work sans";
+  font-family: 'work sans';
   font-weight: 300;
-  font-size: 24px;
+  font-size: 36px;
   transform: translateX(15px);
   transform-origin: 0 0;
   letter-spacing: 2px;
