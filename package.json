@@ -1,15 +1,16 @@
 {
-  "homepage": "https://goofybugga.github.io/thewebsite",
-  "name": "react-app",
+  "name": "portfolioyush",
+  "version": "1.0.0",
+  "description": "Portfolio website showcasing design and creative projects",
+  "homepage": "https://jshengdev.github.io/portfolioyush",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "framer-motion": "^11.15.0",
