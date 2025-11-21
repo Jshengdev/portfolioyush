@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
+import { theme } from './theme';
 import './assets/fonts/fonts.css';
 import About from './components/About'; 
 import Hero from './components/Hero';
@@ -156,17 +157,19 @@ function AnimatedRoutes() {
 function App() {
   return (
     <Router>
-      <Cursor />
-      <Container>
-        <Frame>
-          <ShaderVisual />
-          <Left>
-            <Navbar/>
-          </Left>
-          <Line/>
-          <AnimatedRoutes />
-        </Frame>
-      </Container>
+      <ThemeProvider theme={theme}>
+        <Cursor />
+        <Container>
+          <Frame>
+            <ShaderVisual />
+            <Left>
+              <Navbar/>
+            </Left>
+            <Line/>
+            <AnimatedRoutes />
+          </Frame>
+        </Container>
+      </ThemeProvider>
     </Router>
   );
 }
