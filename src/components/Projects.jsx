@@ -21,6 +21,16 @@ const softGlow = keyframes`
   }
 `;
 
+const glowAnimation = keyframes`
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+`;
+
 const Section = styled.div`
   height: 100vh;
   display: flex;

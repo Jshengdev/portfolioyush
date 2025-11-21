@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Title, Container2 } from './sharedStyles';
+import { archiveItems } from '../data/archive';
 
 const Container = styled.div`
   display: grid;
