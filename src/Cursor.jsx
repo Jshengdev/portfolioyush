@@ -46,12 +46,19 @@ const Cursor = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRingX((prev) => prev + (dotX - prev) * 0.1);
-      setRingY((prev) => prev + (dotY - prev) * 0.1);
-    }, 5); // smoothness
+    let rafId
 
-    return () => clearInterval(interval);
+    const animate = () => {
+      setRingX(prev => prev + (dotX - prev) * 0.1)
+      setRingY(prev => prev + (dotY - prev) * 0.1)
+      rafId = requestAnimationFrame(animate)
+    }
+
+    rafId = requestAnimationFrame(animate)
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId)
+    }
   }, [dotX, dotY]);
 
   useEffect(() => {
