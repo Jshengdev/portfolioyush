@@ -44,11 +44,20 @@ rm -rf assets/
 npm run build
 ```
 
+**If errors occur**:
+```bash
+# If build fails after deletion
+1. Check error: npm run build 2>&1 | grep -i "asset"
+2. Search for hard-coded paths: grep -r '/assets' src/ --exclude-dir=node_modules | grep -v "public/assets"
+3. Fix any incorrect paths before re-attempting deletion
+```
+
 **Validation**:
-- [ ] `/assets/` directory deleted
-- [ ] Build succeeds without errors
-- [ ] No console warnings about missing assets
-- [ ] At least one image loads correctly in browser
+- [ ] `/assets/` directory deleted: `ls -la assets/ 2>&1 | grep "No such file"`
+- [ ] Build succeeds: `npm run build && echo "✓ Build successful"`
+- [ ] Dev server starts: `npm run dev` (wait 5s, check http://localhost:3000)
+- [ ] Verify image loads: Open /, check if background/hero images display
+- [ ] Check console: DevTools Console shows 0 errors
 
 **Output**: Commit with message "Remove duplicate assets directory (-351MB)"
 
@@ -75,9 +84,9 @@ npm run build
 ```
 
 **Validation**:
-- [ ] File deleted
-- [ ] No import errors in build
-- [ ] Grep shows no references
+- [ ] File deleted: `ls src/components/HorizontalScroll.jsx 2>&1 | grep "No such file"`
+- [ ] No import errors: `npm run build 2>&1 | grep -i "horizontalscroll" && echo "✗ Still referenced" || echo "✓ Clean"`
+- [ ] Grep shows no references: `grep -r "HorizontalScroll" src/ || echo "✓ No references"`
 
 **Output**: Commit with message "Remove unused HorizontalScroll component (-198 lines)"
 
@@ -104,9 +113,9 @@ npm run build
 ```
 
 **Validation**:
-- [ ] File deleted
-- [ ] No import errors
-- [ ] Projects page still loads correctly
+- [ ] File deleted: `ls src/components/ProjectMenu.jsx 2>&1 | grep "No such file"`
+- [ ] No import errors: `npm run build && echo "✓ Build passes"`
+- [ ] Projects page loads: Open http://localhost:3000/projects, verify grid displays 6 projects
 
 **Output**: Commit with message "Remove unused ProjectMenu component (-175 lines)"
 
@@ -658,218 +667,20 @@ npm run dev
 
 **Tasks**:
 
-1. **Replace `/README.md`** with comprehensive documentation:
+1. **Create comprehensive `/README.md`** with these sections:
 
-```markdown
-# Portfolio Website - Ayush
+   **Required Sections**:
+   - **Tech Stack**: List React 18.2, Vite 6.0, Router 7.0, styled-components 6.1, Framer Motion 11.15, Three.js 0.171
+   - **Project Structure**: Tree diagram showing src/, public/assets/, dist/ with key files
+   - **Getting Started**: npm install, npm run dev (port 3000), npm run build, npm run deploy
+   - **Routes**: Document 11 routes (/, /about, /archive, /contact, /projects, 6 project detail routes)
+   - **Architecture**: Explain theme system, shared components, data layer, performance patterns
+   - **Component Overview**: Brief description of 13 core components organized by category
+   - **Styling System**: Describe theme.js structure and usage with styled-components
+   - **Adding a New Project**: 4-step process (create component, add route, update data, add assets)
+   - **Maintenance**: Code quality standards, asset management, dependency updates
 
-> Modern portfolio website built with React + Vite, showcasing design and creative projects
-
-## Tech Stack
-
-- **Framework**: React 18.2.0
-- **Build Tool**: Vite 6.0.7
-- **Routing**: React Router DOM 7.0.2
-- **Styling**: styled-components 6.1.13 with centralized theme system
-- **Animation**: Framer Motion 11.15.0
-- **3D Graphics**: Three.js 0.171.0 (shader background)
-- **Markdown**: react-markdown 9.0.3
-
-## Project Structure
-
-```
-portfolioyush/
-├── src/
-│   ├── components/          # React components
-│   │   ├── Projectfiles/    # Individual project pages
-│   │   ├── sharedStyles.js  # Centralized styled-components
-│   │   ├── Navbar.jsx       # Navigation menu
-│   │   ├── Line.jsx         # Decorative animations
-│   │   └── ...
-│   ├── data/                # Centralized data layer
-│   │   ├── projectname.jsx  # Project metadata
-│   │   └── archive.js       # Archive gallery items
-│   ├── theme.js             # Design system (colors, fonts, spacing)
-│   ├── App.jsx              # Router and layout
-│   ├── main.jsx             # Entry point
-│   └── Cursor.jsx           # Custom cursor component
-├── public/
-│   └── assets/              # Images, videos, fonts (455MB)
-├── dist/                    # Build output
-└── package.json
-
-```
-
-## Getting Started
-
-### Prerequisites
-- Node.js 16+ and npm
-
-### Installation
-```bash
-npm install
-```
-
-### Development
-```bash
-npm run dev
-# Opens on http://localhost:3000
-```
-
-### Build
-```bash
-npm run build
-# Output to dist/
-```
-
-### Deploy
-```bash
-npm run deploy
-# Deploys to GitHub Pages
-```
-
-## Key Features
-
-1. **Fixed Frame Layout**: Unique border frame design across all pages
-2. **Custom Cursor**: Animated cursor with ring and dot
-3. **3D Shader Background**: Three.js Truchet pattern shader
-4. **Smooth Animations**: Framer Motion page transitions and hover effects
-5. **Responsive Design**: Mobile-friendly with breakpoints
-6. **Theme System**: Centralized design tokens in `src/theme.js`
-
-## Routes
-
-- `/` - Home (Hero component)
-- `/about` - About page
-- `/archive` - Horizontal scrolling gallery
-- `/contact` - Contact information
-- `/projects` - Project grid
-- `/projects/:projectId` - Individual project pages
-
-**Project Routes**:
-- `/projects/CapsuleMachine`
-- `/projects/AlainaPamela`
-- `/projects/ShootingTheSht`
-- `/projects/ARK`
-- `/projects/TheCollection`
-- `/projects/Lens`
-
-## Architecture Decisions
-
-### Design System
-- All colors, fonts, spacing in `src/theme.js`
-- Uses styled-components ThemeProvider
-- Consistent design tokens across components
-
-### Shared Components
-- Common styled-components in `src/components/sharedStyles.js`
-- Includes: Container, Title, SectionTitle, ProjectImage, etc.
-- Reduces duplication and ensures consistency
-
-### Data Layer
-- Project metadata in `src/data/projectname.jsx`
-- Archive items in `src/data/archive.js`
-- Centralized for easy updates
-
-### Performance
-- Custom cursor uses requestAnimationFrame (60fps)
-- Optimized animations with Framer Motion
-- Vite for fast builds and HMR
-
-## Component Overview
-
-### Core Components
-- **App.jsx**: Router, layout, frame structure
-- **Cursor.jsx**: Custom animated cursor
-- **Navbar.jsx**: Vertical navigation menu
-- **Line.jsx**: Decorative line animations
-
-### Page Components
-- **Hero.jsx**: Landing page
-- **About.jsx**: Bio and information
-- **Projects.jsx**: Project grid with previews
-- **Archive.jsx**: Horizontal scrolling gallery
-- **Contact.jsx**: Contact links
-
-### Project Pages
-- **Grove.jsx**: "Shooting the Sht" project
-- **CapsuleMachine.jsx**: Capsule Machine project
-- **Ark.jsx**: ARK project
-- **AP.jsx**: Alaina Pamela project
-- **Collection.jsx**: The Collection project
-- **Lens.jsx**: Lens project
-
-### Utility Components
-- **ShaderVisual.jsx**: Three.js shader background
-- **NextProject.jsx**: Navigation widget
-- **sharedStyles.js**: Reusable styled-components
-
-## Styling System
-
-### Theme Structure
-```javascript
-theme = {
-  colors: { text, background, accent },
-  fonts: { primary, display },
-  spacing: { frame, section, element },
-  breakpoints: { mobile, tablet, desktop },
-  transitions: { standard, slow }
-}
-```
-
-### Usage
-```javascript
-import styled from 'styled-components'
-
-const Component = styled.div`
-  color: ${props => props.theme.colors.text.primary};
-  font-family: ${props => props.theme.fonts.primary};
-`
-```
-
-## Adding a New Project
-
-1. Create project component in `src/components/Projectfiles/`
-2. Add route in `src/App.jsx`
-3. Add metadata to `src/data/projectname.jsx`
-4. Add assets to `public/assets/PROJECTNAME/`
-
-## Maintenance
-
-### Code Quality
-- All duplicate components consolidated
-- Dead code removed
-- Consistent naming conventions
-- Comments for complex logic
-
-### Assets
-- Images in `public/assets/`
-- Reference with `/assets/...` in code
-- Optimize images before adding
-
-### Dependencies
-- Keep dependencies up to date
-- Run `npm audit` regularly
-- Remove unused packages
-
-## Browser Support
-
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## License
-
-Private portfolio project
-
-## Contact
-
-- LinkedIn: [Add link]
-- Email: [Add email]
-
----
-
-**For AI Agents**: This codebase follows React best practices with centralized theming and shared components. Key files to understand: `src/theme.js`, `src/components/sharedStyles.js`, `src/App.jsx`, and `src/data/` directory.
-```
+   **Final Note**: Add "For AI Agents" section referencing key files: theme.js, sharedStyles.js, App.jsx, data/
 
 2. **Test**:
 - Verify markdown renders correctly
@@ -982,113 +793,19 @@ export const archiveItems = [...]
 
 **Tasks**:
 
-1. **Update `/index.html`**:
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+1. **Update `/index.html`** with SEO meta tags:
+   - Add primary meta tags: title, description, author
+   - Add Open Graph tags: og:type, og:url, og:title, og:description, og:image
+   - Add Twitter Card tags: twitter:card, twitter:url, twitter:title, twitter:description, twitter:image
+   - Use "Johnny Sheng's Portfolio - Designer/Developer" as title
+   - Keep existing font imports and script tags
 
-    <!-- Primary Meta Tags -->
-    <title>Ayush's Portfolio - Product Designer</title>
-    <meta name="title" content="Ayush's Portfolio - Product Designer">
-    <meta name="description" content="Portfolio showcasing product design work, UX/UI projects, and creative explorations. Built with React, Framer Motion, and Three.js.">
-    <meta name="author" content="Ayush">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://jshengdev.github.io/portfolioyush/">
-    <meta property="og:title" content="Ayush's Portfolio - Product Designer">
-    <meta property="og:description" content="Portfolio showcasing product design work, UX/UI projects, and creative explorations.">
-    <meta property="og:image" content="/assets/og-image.jpg">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://jshengdev.github.io/portfolioyush/">
-    <meta property="twitter:title" content="Ayush's Portfolio - Product Designer">
-    <meta property="twitter:description" content="Portfolio showcasing product design work, UX/UI projects, and creative explorations.">
-    <meta property="twitter:image" content="/assets/og-image.jpg">
-
-    <!-- Existing font imports -->
-    <!-- ... keep existing code ... -->
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
-```
-
-2. **Create `/ARCHITECTURE.md`** - Component map for agents:
-```markdown
-# Architecture Documentation
-
-## Component Hierarchy
-
-```
-App (ThemeProvider)
-├── Cursor (global)
-├── Navbar (fixed navigation)
-├── Line (decorative animations)
-├── ShaderVisual (background)
-└── Routes
-    ├── Hero (/)
-    ├── About (/about)
-    ├── Archive (/archive)
-    ├── Contact (/contact)
-    ├── Projects (/projects)
-    └── Project Pages (/projects/:id)
-        ├── Grove
-        ├── CapsuleMachine
-        ├── Ark
-        ├── AP
-        ├── Collection
-        └── Lens
-```
-
-## Data Flow
-
-```
-Data Sources → Components
-├── theme.js → ThemeProvider → All components
-├── data/projectname.jsx → Projects.jsx
-└── data/archive.js → Archive.jsx
-```
-
-## Styling Architecture
-
-```
-Theme System (theme.js)
-  ↓
-ThemeProvider (App.jsx)
-  ↓
-Shared Components (sharedStyles.js)
-  ↓
-Page Components
-```
-
-## Key Patterns
-
-1. **All styling uses theme variables**: `${props => props.theme.colors.text.primary}`
-2. **Shared components imported from sharedStyles.js**
-3. **Data centralized in /src/data/ directory**
-4. **Assets in /public/assets/ referenced as /assets/ in code**
-
-## Performance Optimizations
-
-- Custom cursor uses requestAnimationFrame (60fps)
-- Framer Motion for GPU-accelerated animations
-- Vite for fast builds and HMR
-
-## For AI Agents
-
-When modifying this codebase:
-1. Always use theme variables, never hardcode colors/fonts
-2. Check sharedStyles.js before creating new styled-components
-3. Keep data in /src/data/ directory
-4. Follow existing naming conventions (PascalCase for components, camelCase for functions)
-```
+2. **Create `/ARCHITECTURE.md`** documenting:
+   - **Component Hierarchy**: Tree showing App → Cursor/Navbar/Line/ShaderVisual/Routes with all 11 routes
+   - **Data Flow**: Diagram showing theme.js, projectname.jsx, archive.js flowing to components
+   - **Styling Architecture**: Theme System → ThemeProvider → Shared Components → Pages
+   - **Key Patterns**: 4 rules (use theme variables, import from sharedStyles, centralize data, asset paths)
+   - **For AI Agents**: Guidelines on modifying codebase (naming conventions, file organization)
 
 **Validation**:
 - [ ] index.html has comprehensive meta tags
@@ -1212,12 +929,65 @@ npm run dev
 
 ---
 
-## Wave 6: Advanced Optimization (OPTIONAL - 3 PARALLEL - 4 hours)
+## Rollback Strategy
 
-**Goal**: Advanced refactoring for maximum maintainability
-**Dependencies**: All previous waves complete
-**Can run**: 3 parallel Claude Code sessions
-**Note**: These are optional but high-value
+### Per-Task Rollback
+If a task breaks something, revert the specific commit:
+```bash
+git log --oneline -10  # Find the commit
+git revert <commit-hash>  # Creates new commit undoing changes
+npm run build && npm run dev  # Verify fix
+```
+
+### Per-Wave Rollback
+If an entire wave causes issues:
+```bash
+# Option 1: Revert all commits in wave
+git log --oneline | grep "Wave 3"  # Find Wave 3 commits
+git revert <newest-hash>^..<oldest-hash>
+
+# Option 2: Hard reset (DESTRUCTIVE - only if not pushed)
+git reset --hard <wave-start-hash>
+```
+
+### Best Practice: Branch Strategy
+```bash
+# At start of each wave
+git checkout main
+git checkout -b wave-1-cleanup
+
+# After wave completion and testing
+git checkout main
+git merge wave-1-cleanup --no-ff -m "Complete Wave 1: Cleanup"
+git tag wave-1-complete
+```
+
+###Emergency Recovery
+If everything is broken:
+```bash
+git stash                  # Save current changes
+git checkout main          # Return to main
+git pull origin main       # Get latest good state
+npm install && npm run build && npm run dev
+```
+
+---
+
+## Wave 6: Advanced Optimization (OPTIONAL - Choose Based on Risk Tolerance)
+
+**Goal**: Advanced refactoring for maximum maintainability  
+**Dependencies**: All previous waves complete  
+**Risk Level**: MIXED (Low to High)
+
+### Task Risk Assessment
+
+| Task | Risk | Impact | Time | Recommendation |
+|------|------|--------|------|----------------|
+| W6-T1: Lazy Loading | Low | 🔥🔥🔥 | 1.5h | ✅ **Execute** - Standard React pattern |
+| W6-T2: Simplify Line.jsx | **HIGH** | 🔥🔥🔥 | 2h | ⚠️ **Skip** unless design approved |
+| W6-T3: Extract Shaders | Low | 🔥 | 1h | ✅ **Execute** - Low risk |
+
+**Recommended**: Execute W6-T1 and W6-T3. Skip W6-T2 unless you can QA all routes visually.
 
 ### W6-T1: Implement Code Splitting with Lazy Loading
 **Time**: 1.5 hours | **Risk**: Medium | **Impact**: 🔥🔥🔥
@@ -1228,39 +998,11 @@ npm run dev
 
 **Tasks**:
 
-1. **Update `/src/App.jsx`** to use lazy loading:
-
-```javascript
-import { lazy, Suspense } from 'react'
-
-// Lazy load page components
-const Hero = lazy(() => import('./components/Hero'))
-const About = lazy(() => import('./components/About'))
-const Projects = lazy(() => import('./components/Projects'))
-const Archive = lazy(() => import('./components/Archive'))
-const Contact = lazy(() => import('./components/Contact'))
-
-// Lazy load project pages
-const Grove = lazy(() => import('./components/Projectfiles/Grove'))
-const CapsuleMachine = lazy(() => import('./components/Projectfiles/CapsuleMachine'))
-const Ark = lazy(() => import('./components/Projectfiles/Ark'))
-const AP = lazy(() => import('./components/Projectfiles/AP'))
-const Collection = lazy(() => import('./components/Projectfiles/Collection'))
-const Lens = lazy(() => import('./components/Projectfiles/Lens'))
-
-// Wrap routes with Suspense
-function App() {
-  return (
-    <ThemeProvider theme={theme}>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          {/* routes */}
-        </Routes>
-      </Suspense>
-    </ThemeProvider>
-  )
-}
-```
+1. **Update `/src/App.jsx`** to use React lazy loading:
+   - Import `lazy` and `Suspense` from 'react'
+   - Convert 11 component imports to lazy: `const Hero = lazy(() => import('./components/Hero'))`
+   - Wrap Routes with `<Suspense fallback={<div>Loading...</div>}>`
+   - Keep Cursor, Navbar, Line, ShaderVisual as regular imports (always needed)
 
 2. **Test**:
 ```bash
@@ -1291,54 +1033,17 @@ npm run dev
 
 **Tasks**:
 
-1. **Read `/src/components/Line.jsx`** thoroughly
+1. **Read `/src/components/Line.jsx`** thoroughly to understand current animation logic
 
 2. **Create simplified version** using position lookup:
+   - Replace 288 lines of variants with single position object mapping routes to {x, y, rotate, height}
+   - Use `useLocation()` to get current route
+   - Single `<motion.div>` with `animate={positions[location.pathname]}` 
+   - Fallback to home position if route not found
 
-```javascript
-import { motion } from 'framer-motion'
-import { useLocation } from 'react-router-dom'
+3. **Backup original**: `cp src/components/Line.jsx src/components/Line.jsx.backup`
 
-// Position lookup (much simpler than 288 lines of variants)
-const positions = {
-  '/': { x: -280, y: -235, rotate: 0, height: 1000 },
-  '/about': { x: 150, y: -135, rotate: 90, height: 1650 },
-  '/archive': { x: -280, y: -235, rotate: 0, height: 1000 },
-  '/contact': { x: 150, y: -135, rotate: 90, height: 1650 },
-  '/projects': { x: -280, y: -235, rotate: 0, height: 1000 },
-  '/projects/CapsuleMachine': { x: -865, y: -235, rotate: 0, height: 1000 },
-  '/projects/AlainaPamela': { x: -865, y: -235, rotate: 0, height: 1000 },
-  '/projects/ShootingTheSht': { x: -865, y: -235, rotate: 0, height: 1000 },
-  '/projects/ARK': { x: -865, y: -235, rotate: 0, height: 1000 },
-  '/projects/TheCollection': { x: -865, y: -235, rotate: 0, height: 1000 },
-  '/projects/Lens': { x: -865, y: -235, rotate: 0, height: 1000 },
-}
-
-export function Line() {
-  const location = useLocation()
-  const position = positions[location.pathname] || positions['/']
-
-  return (
-    <motion.div
-      animate={position}
-      transition={{ duration: 0.5, ease: 'easeInOut' }}
-      style={{
-        position: 'absolute',
-        width: '1px',
-        background: 'white',
-        opacity: 1,
-      }}
-    />
-  )
-}
-```
-
-3. **Backup original**:
-```bash
-cp src/components/Line.jsx src/components/Line.jsx.backup
-```
-
-4. **Replace with simplified version**
+4. **Replace with simplified version**: ~80 lines vs 391 lines
 
 5. **Test thoroughly**:
 ```bash
@@ -1431,6 +1136,57 @@ npm run dev
 
 ---
 
+## Automated Testing Scripts
+
+Create these helper scripts for faster validation:
+
+### 1. Route Checker (`/scripts/test-routes.sh`)
+```bash
+#!/bin/bash
+echo "Testing routes..."
+npm run build &>/dev/null || { echo "✗ Build failed"; exit 1; }
+npm run dev &>/dev/null &
+PID=$!
+sleep 5
+
+ROUTES=("/ " "/about" "/archive" "/contact" "/projects" "/projects/Grove")
+for route in "${ROUTES[@]}"; do
+  curl -s "http://localhost:3000$route" | grep -q "root" && echo "✓ $route" || echo "✗ $route FAILED"
+done
+
+kill $PID
+```
+
+### 2. Asset Checker (/scripts/check-assets.sh`)
+```bash
+#!/bin/bash
+echo "Checking for broken image references..."
+grep -r 'src="/assets' public/ src/ | while read line; do
+  path=$(echo $line | sed 's/.*src="\([^"]*\)".*/\1/')
+  [ -f "public$path" ] || echo "✗ Missing: $path"
+done
+echo "✓ Asset check complete"
+```
+
+### 3. Build Size Tracker (`/scripts/track-build-size.sh`)
+```bash
+#!/bin/bash
+npm run build &>/dev/null
+du -sh dist/ | awk '{print "Build size: " $1}'
+du -sh public/assets/ | awk '{print "Asset size: " $1}'
+find src -name "*.jsx" -o -name "*.js" | xargs wc -l | tail -1 | awk '{print "LOC: " $1}'
+```
+
+**Usage in Wave 7**:
+```bash
+chmod +x scripts/*.sh
+./scripts/test-routes.sh
+./scripts/check-assets.sh
+./scripts/track-build-size.sh
+```
+
+---
+
 ## Final Wave: Integration & Testing (1 task - 1 hour)
 
 **Goal**: Verify everything works together
@@ -1464,26 +1220,23 @@ ls -lh dist/
 npm run dev
 ```
 
-Test every route:
-- [ ] / (Home) - Verify hero, images load
-- [ ] /about - Verify content, layout
-- [ ] /archive - Verify horizontal scroll works
-- [ ] /contact - Verify links work
-- [ ] /projects - Verify grid, hover effects
-- [ ] /projects/CapsuleMachine - Verify content, navigation
-- [ ] /projects/AlainaPamela - Verify content, navigation
-- [ ] /projects/ShootingTheSht - Verify content, navigation
-- [ ] /projects/ARK - Verify content, navigation
-- [ ] /projects/TheCollection - Verify content, navigation
-- [ ] /projects/Lens - Verify content, navigation
+**If errors occur**:
+```bash
+# If routes fail loading
+1. Check browser console for specific errors
+2. Verify lazy loading: grep -r "lazy(" src/App.jsx
+3. Check Suspense wrapper exists
+4. Test route by route to isolate issue
+```
 
-Test features:
-- [ ] Custom cursor follows mouse
-- [ ] Line animations work on route changes
-- [ ] Shader background displays
-- [ ] Navigation menu works
-- [ ] All images load
-- [ ] No console errors
+**Validation** (use automated script above or manual):
+- [ ] Run `./scripts/test-routes.sh` - All routes return ✓
+- [ ] / - Hero title "johnny sheng's portfolio" visible, AppSlider animating
+- [ ] /projects - Grid shows 6 projects with hover previews
+- [ ] /projects/CapsuleMachine - Content loads, NextProject widget at bottom
+- [ ] Custom cursor - Ring follows with lag, dot tracks exactly
+- [ ] Line animations - Line moves/transforms on route change
+- [ ] DevTools Console - 0 errors
 
 3. **Performance check**:
 - Open DevTools Network tab
@@ -1643,3 +1396,60 @@ WAVE 7 - Integration (1 hr)
 ---
 
 **Ready to execute**: Start with Wave 1, run all 6 tasks in parallel, then proceed wave by wave!
+
+---
+
+## Troubleshooting Appendix
+
+### Common Issues & Solutions
+
+#### "Cannot find module 'styled-components'"
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+#### Build fails with "Module not found: Error: Can't resolve './theme'"
+- Verify `src/theme.js` exists
+- Check import path matches file location: `import { theme } from './theme'`
+- Ensure file has `export const theme = {...}`
+
+#### Images don't load (404 errors)
+```bash
+# Check if assets are referenced correctly
+grep -r 'src="/assets' src/ | head -5
+
+# Verify files exist in public/assets/
+ls -la public/assets/
+```
+
+#### Cursor doesn't follow mouse
+- Check browser console for JavaScript errors
+- Verify `App.css` has `cursor: none` body style
+- Ensure `Cursor.jsx` is imported and rendered in `App.jsx`
+- Check z-index isn't being overridden
+
+#### Shader background not visible
+- Check WebGL support: Visit https://get.webgl.org/
+- Open console, look for Three.js errors
+- Verify `ShaderVisual.jsx` is imported and rendered
+- Check if z-index: -1 is applied correctly
+
+#### Deploy fails with "dist/ not found"
+- Verify `package.json`: `"deploy": "gh-pages -d dist"`
+- Check `vite.config.js`: `build: { outDir: 'dist' }`
+- Run build first: `npm run build && npm run deploy`
+
+### Quick Diagnostic Commands
+
+```bash
+# Check project health
+npm run build && echo "✓ Build passes" || echo "✗ Build fails"
+grep -r "console.log" src/ | wc -l  # Should be 0
+find src -name "*.jsx" | wc -l  # Should be ~18 after cleanup
+
+# Check for common issues
+grep -r "import.*from '.*//" src/  # Double slashes in imports (bad)
+grep -r "undefined" src/ | grep -v node_modules  # Potential undefined references
+find public/assets -name "* *"  # Files with spaces (problematic)
+```
