@@ -28,18 +28,6 @@ const CursorDot = styled.div`
   transition: opacity 0.2s ease-out; /* Smooth fade effect */
 `;
 
-const CursorPeePee = styled.div`
-  position: absolute;
-  width: 39px;
-  height: 39px;
-  background-color: rgb(151, 209, 237);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  mix-blend-mode: exclusion; /* Cool blend mode */
-  z-index: 10000;
-`;
-
 const Cursor = () => {
   const [dotX, setDotX] = useState(0);
   const [dotY, setDotY] = useState(0);
@@ -98,13 +86,6 @@ const Cursor = () => {
           opacity: isClicking ? 0.5 : 1, // Dot disappears on click
         }}
       />
-      {/* <CursorPeePee
-        style={{
-          left: `${dotX}px`,
-          top: `${dotY}px`,
-          opacity: isClicking ? 0.5 : 1, // Dot disappears on click
-        }}
-      /> */}
     </>
   );
 };
