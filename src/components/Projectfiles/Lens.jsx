@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled, { keyframes} from "styled-components";
 import ReactMarkdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
+import { Title } from '../sharedStyles';
 
 const Container = styled.div`
   display: grid;
@@ -29,21 +30,6 @@ const Right = styled.div`
   -webkit-backdrop-filter: blur(10px); 
 `;
 
-const Title = styled.h1`
-  font-family: 'Work Sans', sans-serif;
-  font-weight: 300;
-  font-size: 18px;
-  letter-spacing: 2px;
-  transform-origin: 0 0;
-  transform: translateX(15px);
-  transition: transform 0.5s, color 0.3s ease-in-out;
-  color: rgba(255, 255, 255, 0.7);
-
-  &:hover {
-    transform: scale(1.01);
-    color: white;
-  }
-`;
 
 const fadeUp = keyframes`
   0% {
