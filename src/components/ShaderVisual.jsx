@@ -24,6 +24,7 @@ const ShaderVisual = () => {
         u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         u_lightPos: { value: new THREE.Vector2(0.5, 0.5) },
         u_mouse: { value: new THREE.Vector2(0, 0) },
+        u_energy: { value: 0.5 }, // Default energy level (Engineer 2: harmonic motion)
       },
       vertexShader,
       fragmentShader,
