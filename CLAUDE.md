@@ -193,6 +193,33 @@ backdrop-filter: blur(10px)   // Glass effect
 - Edit `/src/components/ShaderVisual.jsx`
 - GLSL shaders in `/src/shaders/truchet.vert.glsl` and `truchet.frag.glsl`
 
+### Shader Visual System (NEW!)
+
+**Route-Reactive Personalities**: Each route has a unique visual character defined by 5 attributes:
+
+| Route | Complexity | Energy | Focus | Warmth | Depth | Feel |
+|-------|-----------|---------|-------|--------|-------|------|
+| `/` (Home) | 0.5 | 0.6 | 0.5 | 0.5 | 0.4 | Confident, welcoming |
+| `/about` | 0.3 | 0.3 | 0.7 | 0.4 | 0.3 | Contemplative, minimal |
+| `/projects` | 0.8 | 0.7 | 0.6 | 0.5 | 0.7 | Professional, dynamic |
+| `/archive` | 0.9 | 0.5 | 0.5 | 0.5 | 0.8 | Rich, archival, layered |
+| `/contact` | 0.4 | 0.4 | 0.5 | 0.7 | 0.4 | Open, inviting |
+
+**Key Features**:
+- **Harmonic Motion**: John Whitney-inspired non-repeating animation using 3 sine waves with irrational frequency ratios (phi, sqrt(2), pi/4)
+- **Cursor Light Trails**: Gmunk-inspired interactive light sculpting with 20-point trail buffer and decay
+- **Multi-Layer Depth**: SANAA-inspired dimensional perception using 3 noise layers (2x, 4x, 8x scale) with depth-based blending
+- **Theme-Responsive**: Adapts background color to dark/light modes via ThemeContext
+- **Parallax**: Subtle mouse-based parallax on high-depth routes
+
+**Shader Uniforms** (15 total):
+- Standard: `u_time`, `u_resolution`, `u_mouse`
+- Theme: `u_backgroundColor`
+- Personality: `u_complexity`, `u_energy`, `u_focus`, `u_warmth`, `u_depth`
+- Trails: `u_trailCount`, `u_trailPositions[10]`, `u_trailStrengths[10]`
+
+📚 **Design Philosophy**: [docs/design/SHADER_PHILOSOPHY.md](docs/design/SHADER_PHILOSOPHY.md)
+
 📚 **Animation Patterns**: See "Animation Patterns" section in old CLAUDE.md
 
 ---
