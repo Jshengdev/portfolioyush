@@ -28,14 +28,14 @@ const List = styled.ul`
 `;
 
 const ListItem = styled.li`
-    color: rgba(255, 255, 255, 0.7);
+    color: ${props => props.theme.colors.text.secondary};
     font-size: 12px;
     font-family: 'ade';
     letter-spacing: 5px;
     cursor: pointer;
     transition: color .3s ease-in;
     &:hover {
-        color: white;
+        color: ${props => props.theme.colors.text.hover};
     }
 `;
 

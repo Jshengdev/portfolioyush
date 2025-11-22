@@ -1,10 +1,12 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useContext } from "react";
 import * as THREE from "three";
+import { ThemeContext } from '../context/ThemeContext';
 import vertexShader from '../shaders/truchet.vert.glsl?raw';
 import fragmentShader from '../shaders/truchet.frag.glsl?raw';
 
 const ShaderVisual = () => {
   const mountRef = useRef(null);
+  const { isDarkMode } = useContext(ThemeContext);
 
   useEffect(() => {
     // create scene
@@ -18,12 +20,20 @@ const ShaderVisual = () => {
 
     const geometry = new THREE.PlaneGeometry(2, 2); // create canvas
 
+    // Background color based on theme
+    // Dark mode: very dark gray/black (0.05, 0.05, 0.05)
+    // Light mode: very light gray/white (0.95, 0.95, 0.95)
+    const bgColor = isDarkMode
+      ? new THREE.Vector3(0.05, 0.05, 0.05)
+      : new THREE.Vector3(0.95, 0.95, 0.95);
+
     const material = new THREE.ShaderMaterial({
       uniforms: {
         u_time: { value: 1.0 },
         u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         u_lightPos: { value: new THREE.Vector2(0.5, 0.5) },
         u_mouse: { value: new THREE.Vector2(0, 0) },
+        u_backgroundColor: { value: bgColor },
       },
       vertexShader,
       fragmentShader,
@@ -59,7 +69,7 @@ const ShaderVisual = () => {
       window.removeEventListener("resize", onResize);
       mountRef.current.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [isDarkMode]); // Re-run when theme changes
 
   return (
     <div

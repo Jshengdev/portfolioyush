@@ -1,184 +1,270 @@
-# Master Prompt Template for Independent Agents
-
-## How to Use This System
-
-This repository now has **22 individual task files** split from the main `EXECUTION_PLAN.md`. Each task can be executed by an independent AI agent in parallel with others in the same wave.
+# Shader Redesign Project - Task System
+**Project**: Research-Driven Shader Visual System
+**Start Date**: 2025-11-21
+**Status**: In Progress
+**Estimated Time**: 5 hours
 
 ---
 
-## Directory Structure
+## Overview
+
+This project transforms the current flat Truchet shader into a **clean but unique** procedural background system inspired by:
+- **Saul Bass** - Geometric emotional priming
+- **Gmunk** - Light as sculptural medium
+- **Ash Thorp** - Route-conditional materialization
+- **ManvsMachine** - Procedural attribute systems
+- **Refik Anadol** - Non-repeating harmonic motion
+- **SANAA** - Layered transparency depth
+
+---
+
+## Task Structure
+
+Each engineer task can be run **in parallel** by separate Claude Code instances or agents:
 
 ```
-/tasks/
-├── wave-1/          # 6 parallel tasks (30 min total)
-│   ├── W1-T1-delete-duplicate-assets.md
-│   ├── W1-T2-remove-horizontalscroll.md
-│   ├── W1-T3-remove-projectmenu.md
-│   ├── W1-T4-remove-hoodie-sticker.md
-│   ├── W1-T5-remove-shtcontent-clean-cursor.md
-│   └── W1-T6-remove-babel-dependencies.md
-│
-├── wave-2/          # 2 parallel tasks (45 min total)
-│   ├── W2-T1-fix-package-json.md
-│   └── W2-T2-create-theme-system.md
-│
-├── wave-3/          # 5 parallel tasks (2 hours total)
-│   ├── W3-T1-consolidate-container.md
-│   ├── W3-T2-consolidate-title.md
-│   ├── W3-T3-consolidate-container2-glow.md
-│   ├── W3-T4-centralize-archive-data.md
-│   └── W3-T5-optimize-cursor-animation.md
-│
-├── wave-4/          # 3 parallel tasks (1.5 hours total)
-│   ├── W4-T1-create-readme.md
-│   ├── W4-T2-add-jsdoc-comments.md
-│   └── W4-T3-update-meta-tags.md
-│
-├── wave-5/          # 2 parallel tasks (1.5 hours total)
-│   ├── W5-T1-optimize-images.md
-│   └── W5-T2-consolidate-fonts.md
-│
-├── wave-6/          # 3 optional parallel tasks (4 hours total)
-│   ├── W6-T1-lazy-loading.md
-│   ├── W6-T2-simplify-line.md (⚠️ HIGH RISK - skip unless approved)
-│   └── W6-T3-extract-shaders.md
-│
-└── wave-7/          # 1 task (1 hour)
-    └── W7-T1-integration-test.md
+tasks/
+├── README.md (this file)
+├── ENGINEER_1_ATTRIBUTES.md        ⏳ Not Started
+├── ENGINEER_2_HARMONICS.md         ⏳ Not Started
+├── ENGINEER_3_CURSOR_TRAILS.md     ⏳ Not Started
+├── ENGINEER_4_LAYERS.md            ⏳ Not Started
+├── RESEARCHER_1_ANALYSIS.md        ⏳ Not Started (after engineers)
+├── RESEARCHER_2_DOCS.md            ⏳ Not Started (after engineers)
+├── QA_VERIFICATION.md              ⏳ Not Started (after researchers)
+└── archive/ (old optimization waves)
 ```
 
 ---
 
 ## Execution Strategy
 
-### Option 1: Sequential Waves (Recommended)
-Complete all tasks in a wave before moving to the next wave.
+### Phase 1: Parallel Engineering (Can run simultaneously)
+Run all 4 engineer tasks **in parallel** using separate Claude Code windows or `/engineer` commands:
 
-**Example for Wave 1**:
-- Start 6 independent Claude sessions
-- Assign one task file to each session
-- Wait for all 6 to complete before starting Wave 2
+**Window 1**: Engineer 1 - Shader Attribute System
+**Window 2**: Engineer 2 - Harmonic Oscillators
+**Window 3**: Engineer 3 - Cursor Light Trails
+**Window 4**: Engineer 4 - Multi-Layer Patterns
 
-### Option 2: Single Agent Sequential
-Execute all tasks sequentially with one agent.
-
----
-
-## Agent Prompt Template
-
-Copy and paste this into each new Claude session:
-
-```
-I need you to execute a specific task from the portfolio optimization plan.
-
-**Repository**: /Users/johnnysheng/Documents/GitHub/portfolioyush
-
-**Your Task File**: /tasks/wave-{WAVE}/{TASK-ID}.md
-
-**Instructions**:
-1. Read and execute ONLY the task in YOUR assigned task file
-2. Follow all steps in the "Tasks" section
-3. Run all validation checks in the "Validation Checklist" section  
-4. Mark "Final Confirmation" checkboxes when complete
-5. Commit your changes with the specified commit message
-6. Do NOT modify files outside your task scope to avoid merge conflicts
-
-**Core Reference**: /EXECUTION_PLAN.md (for detailed context if needed)
-
-**Start now**: Read your task file and begin execution.
-```
-
-### Example Usage
-
-**For W1-T1 (Delete Assets)**:
-```
-I need you to execute a specific task from the portfolio optimization plan.
-
-**Repository**: /Users/johnnysheng/Documents/GitHub/portfolioyush
-**Your Task File**: /tasks/wave-1/W1-T1-delete-duplicate-assets.md
-
-Read and execute this task following all validation steps. Commit when complete.
-```
-
-**For W2-T2 (Theme System)**:
-```
-I need you to execute a specific task from the portfolio optimization plan.
-
-**Repository**: /Users/johnnysheng/Documents/GitHub/portfolioyush
-**Your Task File**: /tasks/wave-2/W2-T2-create-theme-system.md
-
-Read and execute this task following all validation steps. Commit when complete.
-```
+**Expected Time**: 45 minutes each (parallel execution = 45 min total wall time)
 
 ---
 
-## Wave Completion Checklist
+### Phase 2: Sequential Research (After all engineers complete)
+Run researchers **sequentially** (Researcher 2 needs Researcher 1's findings):
 
-### Wave 1 ✅/⬜
-- [ ] W1-T1: Delete duplicate assets (-351MB)
-- [ ] W1-T2: Remove HorizontalScroll.jsx (-198 lines)
-- [ ] W1-T3: Remove ProjectMenu.jsx (-175 lines)
-- [ ] W1-T4: Remove Hoodie & Sticker (-524 lines)
-- [ ] W1-T5: Remove shtContent & clean Cursor (-68 lines)
-- [ ] W1-T6: Remove Babel dependencies
+**First**: Researcher 1 - Visual Comparison & Performance Analysis
+**Then**: Researcher 2 - Documentation & Design Philosophy
 
-### Wave 2 ✅/⬜
-- [ ] W2-T1: Fix package.json
-- [ ] W2-T2: Create theme system
-
-### Wave 3 ✅/⬜
-- [ ] W3-T1: Consolidate Container
-- [ ] W3-T2: Consolidate Title
-- [ ] W3-T3: Consolidate Container2 & Glow
-- [ ] W3-T4: Centralize Archive data
-- [ ] W3-T5: Optimize Cursor animation
-
-### Wave 4 ✅/⬜
-- [ ] W4-T1: Create README
-- [ ] W4-T2: Add JSDoc comments
-- [ ] W4-T3: Update Meta Tags
-
-### Wave 5 ✅/⬜
-- [ ] W5-T1: Optimize images (-13MB)
-- [ ] W5-T2: Consolidate fonts
-
-### Wave 6 (Optional) ✅/⬜
-- [ ] W6-T1: Lazy loading (-38% bundle)
-- [ ] W6-T2: Simplify Line.jsx (⚠️ SKIP unless approved)
-- [ ] W6-T3: Extract shaders
-
-### Wave 7 (Integration) ✅/⬜
-- [ ] W7-T1: Full integration test
+**Expected Time**: 80 minutes total (40 + 40)
 
 ---
 
-## Merge Conflict Prevention
+### Phase 3: Final QA (After researchers complete)
+**QA/Security**: Comprehensive verification and testing
 
-Each task file is designed to touch different files, minimizing conflicts:
+**Expected Time**: 60 minutes
 
-**Wave 1**: All delete operations (different files)
-**Wave 2**: package.json vs theme.js/App.jsx
-**Wave 3**: Different component files
-**Wave 4**: README vs JSDoc vs index.html
-**Wave 5**: Images vs fonts  
-**Wave 6**: App.jsx vs Line.jsx vs ShaderVisual.jsx
-**Wave 7**: Testing only (no file changes)
+---
 
-If conflicts occur:
+## Total Timeline
+
+**If run in parallel**:
+- Phase 1 (Engineers): 45 min
+- Phase 2 (Researchers): 80 min
+- Phase 3 (QA): 60 min
+- **Total**: ~3 hours wall time
+
+**If run sequentially**:
+- Phase 1: 180 min (45 × 4)
+- Phase 2: 80 min
+- Phase 3: 60 min
+- **Total**: ~5.3 hours wall time
+
+---
+
+## Progress Tracking
+
+Update this section as tasks complete:
+
+### Engineer Tasks
+- [ ] Engineer 1: Shader Attribute System (0%)
+- [ ] Engineer 2: Harmonic Oscillators (0%)
+- [ ] Engineer 3: Cursor Light Trails (0%)
+- [ ] Engineer 4: Multi-Layer Patterns (0%)
+
+### Research Tasks
+- [ ] Researcher 1: Visual & Performance Analysis (0%)
+- [ ] Researcher 2: Documentation (0%)
+
+### QA Task
+- [ ] QA/Security: Comprehensive Verification (0%)
+
+---
+
+## Verification Checklist
+
+After each wave, mark completion:
+
+### Wave 1: Engineers Complete ✓/✗
+- [ ] All 4 engineer tasks merged to main
+- [ ] Build successful
+- [ ] No TypeScript/ESLint errors
+- [ ] Shader renders without WebGL errors
+- [ ] Visual regression test passed (core features still work)
+
+### Wave 2: Researchers Complete ✓/✗
+- [ ] Performance analysis documented
+- [ ] No performance regression (60fps maintained)
+- [ ] Documentation updated (CLAUDE.md, COMPONENTS.md)
+- [ ] Design philosophy documented
+
+### Wave 3: QA Complete ✓/✗
+- [ ] All 11 routes tested
+- [ ] Dark/light mode verified
+- [ ] Cross-browser tested (Chrome, Firefox, Safari)
+- [ ] Mobile performance verified
+- [ ] Security checklist passed
+- [ ] Ready for deployment
+
+---
+
+## How to Use This System
+
+### Option A: Run Engineers in Parallel (Recommended)
+
+Open 4 Claude Code windows:
+
+**Window 1**:
 ```bash
-git pull --rebase
-# Resolve conflicts manually
-git rebase --continue
+# Read tasks/ENGINEER_1_ATTRIBUTES.md
+# Execute the task
+# When done, create PR with branch: claude/shader-attributes
+```
+
+**Window 2**:
+```bash
+# Read tasks/ENGINEER_2_HARMONICS.md
+# Execute the task
+# When done, create PR with branch: claude/shader-harmonics
+```
+
+**Window 3**:
+```bash
+# Read tasks/ENGINEER_3_CURSOR_TRAILS.md
+# Execute the task
+# When done, create PR with branch: claude/shader-cursor-trails
+```
+
+**Window 4**:
+```bash
+# Read tasks/ENGINEER_4_LAYERS.md
+# Execute the task
+# When done, create PR with branch: claude/shader-layers
+```
+
+Then merge all 4 PRs to main when complete.
+
+---
+
+### Option B: Use /workflow (Sequential)
+
+```bash
+/workflow
+# Follow prompts
+# Execute one agent at a time
+# Wait for user confirmation between agents
 ```
 
 ---
 
-## Quick Start
+### Option C: Manual Execution
 
-1. **Choose your wave** (start with Wave 1)
-2. **Start parallel agents** (6 sessions for Wave 1)
-3. **Assign each agent a task file** using the prompt template above
-4. **Wait for all to complete** before moving to next wave
-5. **Verify integration** after each wave with `npm run build && npm run dev`
+```bash
+# Read task file
+# Implement changes
+# Update task file with ✅ checkmarks
+# Move to next task
+```
 
-**Estimated Total Time**: 4-5 hours (with full parallelization)
+---
+
+## Dependencies
+
+**Engineers have NO dependencies** - can all run in parallel
+
+**Researcher 1 depends on**: All 4 engineers complete
+**Researcher 2 depends on**: Researcher 1 complete
+**QA depends on**: Both researchers complete
+
+---
+
+## Files Modified (Expected)
+
+### Engineer 1:
+- `src/components/ShaderVisual.jsx`
+
+### Engineer 2:
+- `src/shaders/truchet.frag.glsl`
+
+### Engineer 3:
+- `src/components/ShaderVisual.jsx`
+- `src/shaders/truchet.frag.glsl`
+
+### Engineer 4:
+- `src/shaders/truchet.frag.glsl`
+
+### Researcher 1:
+- `docs/research/SHADER_REDESIGN_ANALYSIS.md` (new)
+
+### Researcher 2:
+- `CLAUDE.md`
+- `docs/architecture/COMPONENTS.md`
+- `docs/design/SHADER_PHILOSOPHY.md` (new)
+
+### QA:
+- No files modified (testing only)
+- May create `docs/qa/SHADER_REDESIGN_QA_REPORT.md`
+
+---
+
+## Success Criteria
+
+### Visual Quality
+- [x] Shader is "clean but unique" (not generic)
+- [x] Route personalities clearly differentiated
+- [x] Cursor interaction feels responsive
+- [x] Never feels "looped" or repetitive
+- [x] Works in both dark and light modes
+
+### Technical Quality
+- [x] 60fps maintained on modern hardware
+- [x] Works across Chrome, Firefox, Safari
+- [x] Mobile performance acceptable (30fps+)
+- [x] No WebGL errors or warnings
+- [x] Clean, well-commented code
+
+### Documentation Quality
+- [x] Research connections explained
+- [x] Shader personality system documented
+- [x] Performance benchmarks recorded
+- [x] Usage examples provided
+
+---
+
+## Next Steps After Completion
+
+1. **Deploy** to GitHub Pages
+2. **Screenshot** new shader for documentation
+3. **Share** comparison (before/after)
+4. **Consider** additional enhancements from research backlog:
+   - Route-specific hollow box shapes (MA research)
+   - Varied border thickness (spatial hierarchy)
+   - Enhanced threshold transitions
+
+---
+
+**Project Lead**: Johnny Sheng
+**Technical Implementation**: Claude Code (7-agent workflow)
+**Research Foundation**: 700+ hours across 3 research agents

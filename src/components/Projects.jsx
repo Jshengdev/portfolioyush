@@ -6,6 +6,8 @@ import { Container2, Title } from "./sharedStyles";
 import { projectParty } from "../data/projectname.jsx";
 import NextProject from './NextProject';
 
+// Note: Keyframes use hardcoded colors (can't access theme props in keyframes)
+// Colors match: theme.colors.shadow.glow (0.1), shadow.glowMid (0.2)
 const softGlow = keyframes`
   0% {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.1),
@@ -57,12 +59,12 @@ const Left = styled(motion.div)`
   text-align: right;
   overflow-y: auto;
   height: 100%;
-  border-top: 1px rgba(255, 255, 255, 0.3) solid;
-  scrollbar-width: none; 
+  border-top: 1px ${props => props.theme.colors.border.secondary} solid;
+  scrollbar-width: none;
   -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
-    display: none; 
+    display: none;
   }
 `;
 
@@ -87,12 +89,12 @@ const ProjectItem = styled(motion.li)`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  color: rgba(255, 255, 255, 0.7);
+  color: ${props => props.theme.colors.text.secondary};
   cursor: pointer;
   transition: color 0.3s ease-in;
 
   &:hover {
-    color: white;
+    color: ${props => props.theme.colors.text.hover};
   }
 
   .project-title {
@@ -111,7 +113,7 @@ const ProjectItem = styled(motion.li)`
     font-weight: 800;
     font-family: "work sans, black";
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.8);
+    color: ${props => props.theme.colors.text.secondary};
   }
 `;
 
@@ -150,8 +152,8 @@ const PreviewImage = styled(motion.img)`
   transition: opacity 0.5s ease;
   filter: brightness(1.1) contrast(1.1);
   border-radius: 24px;
-  box-shadow: 0 0 50px rgba(255, 255, 255, 0.3),
-              0 0 100px rgba(255, 255, 255, 0.1),
+  box-shadow: 0 0 50px ${props => props.theme.colors.shadow.glowStrong},
+              0 0 100px ${props => props.theme.colors.shadow.glow},
               0 8px 32px rgba(0, 0, 0, 0.1),
               0 2px 8px rgba(0, 0, 0, 0.1);
   transform: perspective(1000px) rotateY(-5deg);
@@ -169,11 +171,11 @@ const ImageOverlay = styled.div`
   bottom: 0;
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0.4) 15%,
+    ${props => props.theme.colors.gradient.overlayStart} 0%,
+    ${props => props.theme.colors.gradient.overlayMid} 15%,
     rgba(0, 0, 0, 0.2) 25%,
-    rgba(0, 0, 0, 0) 45%,
-    rgba(0, 0, 0, 0) 100%
+    ${props => props.theme.colors.gradient.overlayEnd} 45%,
+    ${props => props.theme.colors.gradient.overlayEnd} 100%
   );
   z-index: 1;
   pointer-events: none;
@@ -192,7 +194,7 @@ const getFontSize = (title) => {
 const PreviewTitle = styled(motion.h1)`
   font-family: 'Ade', serif;
   font-size: ${props => getFontSize(props.title)};
-  color: white;
+  color: ${props => props.theme.colors.text.hover};
   position: absolute;
   left: 1rem;
   top: 40%;
@@ -204,9 +206,9 @@ const PreviewTitle = styled(motion.h1)`
   letter-spacing: 2px;
   animation: ${props => props.isVisible ? glowAnimation : 'none'} 3s infinite;
   mix-blend-mode: exclusion;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2),
-               0 0 50px rgba(255, 255, 255, 0.3),
-               0 0 70px rgba(255, 255, 255, 0.1);
+  text-shadow: 0 0 10px ${props => props.theme.colors.shadow.glowMid},
+               0 0 50px ${props => props.theme.colors.shadow.glowStrong},
+               0 0 70px ${props => props.theme.colors.shadow.glow};
   max-width: 40%;
   line-height: 1.2;
   font-weight: 300;
