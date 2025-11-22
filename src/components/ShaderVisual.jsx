@@ -128,10 +128,72 @@ const ShaderVisual = () => {
     };
     animate();
 
+    /**
+     * Add cursor position to trail buffer with decay timestamp
+     * Gmunk-inspired "light deposit" system
+     */
+    const updateTrailBuffer = (x, y) => {
+      const currentTime = Date.now();
+
+      // Add new point
+      trailBufferRef.current.unshift({
+        x,
+        y,
+        time: currentTime,
+        strength: 1.0, // Full strength when created
+      });
+
+      // Remove old points (keep last MAX_TRAIL_POINTS)
+      if (trailBufferRef.current.length > MAX_TRAIL_POINTS) {
+        trailBufferRef.current.pop();
+      }
+
+      // Calculate decay for all points
+      trailBufferRef.current = trailBufferRef.current.map(point => {
+        const age = currentTime - point.time;
+        const decayTime = 2000; // 2 seconds to fully decay
+        const strength = Math.max(0, 1.0 - (age / decayTime));
+
+        return { ...point, strength };
+      }).filter(point => point.strength > 0.01); // Remove nearly invisible points
+    };
+
+    /**
+     * Convert trail buffer to shader uniforms
+     * Passes last N trail points to fragment shader
+     */
+    const updateTrailUniforms = (material) => {
+      const trailCount = Math.min(trailBufferRef.current.length, 10); // Send max 10 points
+
+      // Update trail count
+      material.uniforms.u_trailCount.value = trailCount;
+
+      // Update trail positions and strengths
+      for (let i = 0; i < 10; i++) {
+        if (i < trailCount) {
+          const point = trailBufferRef.current[i];
+          material.uniforms.u_trailPositions.value[i].set(point.x, point.y);
+          material.uniforms.u_trailStrengths.value[i] = point.strength;
+        } else {
+          // Fill unused slots with zeros
+          material.uniforms.u_trailPositions.value[i].set(0, 0);
+          material.uniforms.u_trailStrengths.value[i] = 0;
+        }
+      }
+    };
+
     const onMouseMove = (e) => {
       const x = e.clientX / window.innerWidth;
       const y = 1 - e.clientY / window.innerHeight;
+
+      // Update current mouse position (existing)
       material.uniforms.u_mouse.value.set(x, y);
+
+      // Update trail buffer
+      updateTrailBuffer(x, y);
+
+      // Update shader uniforms with trail data
+      updateTrailUniforms(material);
     };
     window.addEventListener("mousemove", onMouseMove);
 

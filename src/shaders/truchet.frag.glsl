@@ -6,6 +6,11 @@ uniform vec2 u_lightPos;
 uniform vec2 u_mouse;
 uniform float u_energy; // Animation speed multiplier (from Engineer 1)
 
+// Cursor trail system (Gmunk-inspired light sculpting)
+uniform int u_trailCount;
+uniform vec2 u_trailPositions[10];
+uniform float u_trailStrengths[10];
+
 //=============================================================================
 // 1) RANDOM + NOISE UTILITIES
 
@@ -132,7 +137,42 @@ float hollowBox(vec2 p, vec2 center, float halfSize, float thickness) {
 }
 
 //=============================================================================
-// 4) MAIN FRAGMENT: COMBINE EVERYTHING
+// 4) CURSOR TRAIL LIGHT INFLUENCE
+
+/**
+ * Calculate cursor trail light influence at given position
+ * Gmunk-inspired: cursor deposits light that decays over time
+ *
+ * @param pos - Current fragment position
+ * @return float - Light intensity (0.0-1.0)
+ */
+float getCursorTrailInfluence(vec2 pos) {
+  float totalInfluence = 0.0;
+
+  for (int i = 0; i < 10; i++) {
+    if (i >= u_trailCount) break;
+
+    vec2 trailPos = u_trailPositions[i];
+    float strength = u_trailStrengths[i];
+
+    // Distance from trail point
+    float dist = distance(pos, trailPos);
+
+    // Influence radius (0.15 = ~15% of screen)
+    float radius = 0.15;
+
+    // Smooth falloff
+    float influence = smoothstep(radius, 0.0, dist) * strength;
+
+    totalInfluence += influence;
+  }
+
+  // Clamp to reasonable range
+  return min(totalInfluence, 1.0);
+}
+
+//=============================================================================
+// 5) MAIN FRAGMENT: COMBINE EVERYTHING
 
 void main() {
   // Normalize screen coordinates
@@ -162,8 +202,12 @@ void main() {
   vec3 lightDir = normalize(vec3(dynamicLightPos - u_mouse, 0.2));
   float lightVal = lightEffect(normal, lightDir);
 
-  // Tile color
+  // Cursor trail influence (Gmunk light sculpting)
+  float trailGlow = getCursorTrailInfluence(st);
+
+  // Tile color with trail glow
   vec3 tileColor = vec3(tVal.x * tVal.y * lightVal) + vec3(sphereEf);
+  tileColor += vec3(trailGlow * 0.3); // Subtle additive glow
 
   // --- PART B: HOLLOW BOX (square ring) ---
   float ringVal = hollowBox(
