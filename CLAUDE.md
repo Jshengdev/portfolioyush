@@ -527,6 +527,8 @@ Each agent has a specific role and time limit (30-60 min), ensuring:
 
 ### Quick Access
 
+- **[Slash Commands](docs/workflows/SLASH_COMMANDS.md)** ⭐ **START HERE** - Use `/workflow` to begin
+- **[Getting Started](docs/workflows/GETTING_STARTED.md)** - 5-minute quickstart
 - **[Workflow Guide](docs/workflows/WORKFLOW_GUIDE.md)** - How the 7-agent system works
 - **[Roadmap](docs/roadmap/ROADMAP.md)** - Current features & backlog
 - **[Prompt Templates](docs/workflows/PROMPT_TEMPLATES.md)** - Copy-paste prompts for each agent
@@ -534,6 +536,15 @@ Each agent has a specific role and time limit (30-60 min), ensuring:
 
 ### How to Use
 
+**Option 1: Slash Commands (Easiest)**
+```bash
+/workflow     # Full guided workflow
+/engineer     # Single engineering task
+/researcher   # Performance or documentation
+/qa           # Final verification
+```
+
+**Option 2: Manual Workflow**
 1. **Add feature to roadmap**: Edit `docs/roadmap/ROADMAP.md`
 2. **Use prompt templates**: Copy from `docs/workflows/PROMPT_TEMPLATES.md`
 3. **Run agents sequentially**: Engineer 1 → 2 → 3 → 4 → Researcher 1 → 2 → QA
