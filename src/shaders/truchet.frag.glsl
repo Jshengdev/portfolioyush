@@ -4,9 +4,12 @@ uniform float u_time;
 uniform vec2 u_resolution;
 uniform vec2 u_lightPos;
 uniform vec2 u_mouse;
-uniform float u_depth;   // Depth attribute (0.0-1.0) for layer blending
-uniform float u_focus;   // Focus/sharpness attribute (0.0-1.0)
-uniform vec3 u_backgroundColor;
+uniform float u_energy; // Animation speed multiplier (from Engineer 1)
+
+// Cursor trail system (Gmunk-inspired light sculpting)
+uniform int u_trailCount;
+uniform vec2 u_trailPositions[10];
+uniform float u_trailStrengths[10];
 
 //=============================================================================
 // 1) RANDOM + NOISE UTILITIES
@@ -74,6 +77,44 @@ float layeredNoise(vec2 st, float depth, float time) {
 }
 
 //=============================================================================
+// HARMONIC MOTION SYSTEM
+// Inspired by John Whitney's analog computer animations
+// Creates non-repeating organic motion through sine/cosine combinations
+
+/**
+ * Generate harmonic offset vector for time-based animation
+ * Uses multiple sine/cosine waves at different frequencies
+ * Result: endless variation without visible loops
+ *
+ * @param t - Current time value
+ * @param energy - Animation speed multiplier (0.0-1.0)
+ * @return vec2 - Offset to apply to UV coordinates
+ */
+vec2 getHarmonicOffset(float t, float energy) {
+  // Base time with energy multiplier
+  float animSpeed = 0.5 + (energy * 0.5); // 0.5-1.0 range
+  float time = t * animSpeed;
+
+  // Layer 1: Slow fundamental frequency
+  float x1 = sin(time * 0.5) * 0.1;
+  float y1 = cos(time * 0.4) * 0.1;
+
+  // Layer 2: Medium frequency (slightly out of phase)
+  float x2 = cos(time * 0.3) * 0.05;
+  float y2 = sin(time * 0.6) * 0.05;
+
+  // Layer 3: Fast detail frequency
+  float x3 = sin(time * 0.8) * 0.02;
+  float y3 = cos(time * 0.7) * 0.02;
+
+  // Combine all layers
+  float offsetX = x1 + x2 + x3;
+  float offsetY = y1 + y2 + y3;
+
+  return vec2(offsetX, offsetY);
+}
+
+//=============================================================================
 // 2) SHAPES & LIGHTING
 
 // Circle function for a sphere-like effect
@@ -127,45 +168,77 @@ float hollowBox(vec2 p, vec2 center, float halfSize, float thickness) {
 }
 
 //=============================================================================
-// 4) MAIN FRAGMENT: COMBINE EVERYTHING
+// 4) CURSOR TRAIL LIGHT INFLUENCE
+
+/**
+ * Calculate cursor trail light influence at given position
+ * Gmunk-inspired: cursor deposits light that decays over time
+ *
+ * @param pos - Current fragment position
+ * @return float - Light intensity (0.0-1.0)
+ */
+float getCursorTrailInfluence(vec2 pos) {
+  float totalInfluence = 0.0;
+
+  for (int i = 0; i < 10; i++) {
+    if (i >= u_trailCount) break;
+
+    vec2 trailPos = u_trailPositions[i];
+    float strength = u_trailStrengths[i];
+
+    // Distance from trail point
+    float dist = distance(pos, trailPos);
+
+    // Influence radius (0.15 = ~15% of screen)
+    float radius = 0.15;
+
+    // Smooth falloff
+    float influence = smoothstep(radius, 0.0, dist) * strength;
+
+    totalInfluence += influence;
+  }
+
+  // Clamp to reasonable range
+  return min(totalInfluence, 1.0);
+}
+
+//=============================================================================
+// 5) MAIN FRAGMENT: COMBINE EVERYTHING
 
 void main() {
   // Normalize screen coordinates
   vec2 st = gl_FragCoord.xy / u_resolution.xy;
 
-  // --- PART A: MULTI-LAYER PATTERN + PARALLAX ---
-  // Parallax offset based on mouse and depth
-  vec2 parallaxOffset = (u_mouse - 0.5) * u_depth * 0.05;
-  vec2 st_parallax = st + parallaxOffset;
+  // Apply harmonic offset for organic motion
+  vec2 harmonicOffset = getHarmonicOffset(u_time, u_energy);
+  vec2 st_animated = st + harmonicOffset;
 
-  // Multi-layer noise system
-  float layeredPattern = layeredNoise(st_parallax, u_depth, u_time);
-
-  // Apply focus attribute (sharpness)
-  float contrast = 0.5 + (u_focus * 0.5); // 0.5-1.0 range
-  layeredPattern = pow(layeredPattern, 1.0 / contrast);
-
-  // Shift + scale for additional effects
-  vec2 stTile = st - vec2(0.33, 0.4);
+  // --- PART A: TRUCHET + SPHERE + LIGHTING ---
+  // Shift + scale
+  vec2 stTile = st_animated - vec2(0.33, 0.4);
   stTile *= 3.5;
+
+  // Truchet pattern (now with harmonic motion)
+  vec2 tVal = truchetPattern(stTile, random(stTile * 1.5));
 
   // Sphere near the mouse (radius=0.0 => small effect)
   float sphereEf = sphere(stTile, u_mouse, 0.0);
 
+  // Add subtle harmonic motion to light position
+  vec2 lightHarmonic = getHarmonicOffset(u_time * 0.5, u_energy * 0.3);
+  vec2 dynamicLightPos = u_lightPos + lightHarmonic * 0.1;
+
   // Lighting
   vec3 normal   = normalize(vec3(stTile - u_mouse, 0.0));
-  vec3 lightDir = normalize(vec3(u_lightPos - u_mouse, 0.2));
+  vec3 lightDir = normalize(vec3(dynamicLightPos - u_mouse, 0.2));
   float lightVal = lightEffect(normal, lightDir);
 
-  // Combine layered pattern with lighting
-  vec3 patternColor = vec3(layeredPattern * lightVal);
+  // Cursor trail influence (Gmunk light sculpting)
+  float trailGlow = getCursorTrailInfluence(st);
 
-  // Keep Truchet as subtle overlay (optional)
-  vec2 tVal = truchetPattern(stTile, random(stTile * 1.5));
-  vec3 truchetOverlay = vec3(tVal.x * tVal.y) * 0.1; // Very subtle
-
-  // Tile color combines pattern, overlay, and sphere effect
-  vec3 tileColor = patternColor + truchetOverlay + vec3(sphereEf);
+  // Tile color with trail glow
+  vec3 tileColor = vec3(tVal.x * tVal.y * lightVal) + vec3(sphereEf);
+  tileColor += vec3(trailGlow * 0.3); // Subtle additive glow
 
   // --- PART B: HOLLOW BOX (square ring) ---
   float ringVal = hollowBox(
