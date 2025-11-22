@@ -127,26 +127,74 @@ const formattedTitle = projectTitle.toLowerCase().replace(/\s+/g, "-");
 
 ### ShaderVisual.jsx (`src/components/ShaderVisual.jsx:1-221`)
 
-- **Purpose**: Three.js WebGL animated background
+- **Purpose**: Three.js WebGL procedural background with route-reactive visual personalities
 - **Technology**: Custom GLSL vertex + fragment shaders (extracted to `.glsl` files in Wave 6)
-- **Effects**:
-  - Truchet tile pattern generation (2x2 grid patterns)
-  - Mouse-interactive lighting (follows cursor)
-  - Noise-based animations (time-based)
-  - Hollow box (square ring) in center
-  - Random/hash functions for variation
-- **Uniforms**: `u_time`, `u_resolution`, `u_lightPos`, `u_mouse`
-- **Performance**:
-  - Runs continuously via `requestAnimationFrame`
-  - 60fps target
-  - `u_time += 0.02` per frame
-  - May impact low-end devices
-  - No performance detection or pause mechanism
-- **Positioning**: Fixed, z-index: -1 (always behind content)
-- **Cleanup**: Properly removes event listeners and cancels animation frame
-- **Shader Files**:
-  - `src/shaders/truchet.vert.glsl` (85 bytes)
-  - `src/shaders/truchet.frag.glsl` (3.7KB)
+
+**State Management**:
+- `useContext(ThemeContext)` - Dark/light mode detection
+- `useLocation()` - Route detection for personality selection
+- `useRef(mountRef)` - DOM reference for Three.js canvas
+- `useRef(trailBufferRef)` - Cursor trail buffer (20 points with decay)
+- `useEffect()` - Scene setup, animation loop, event handlers, cleanup
+
+**Route Personalities** (5 attributes define visual character):
+- **Home** (`/`): complexity: 0.5, energy: 0.6, focus: 0.5, warmth: 0.5, depth: 0.4
+- **About** (`/about`): complexity: 0.3, energy: 0.3, focus: 0.7, warmth: 0.4, depth: 0.3
+- **Projects** (`/projects`): complexity: 0.8, energy: 0.7, focus: 0.6, warmth: 0.5, depth: 0.7
+- **Archive** (`/archive`): complexity: 0.9, energy: 0.5, focus: 0.5, warmth: 0.5, depth: 0.8
+- **Contact** (`/contact`): complexity: 0.4, energy: 0.4, focus: 0.5, warmth: 0.7, depth: 0.4
+
+**Key Features**:
+1. **Harmonic Motion System** (John Whitney-inspired)
+   - 3 sine waves with irrational frequency ratios (phi, sqrt(2), pi/4)
+   - Applied to pattern coordinates and light position
+   - Never-repeating organic motion
+   - Speed controlled by `u_energy` attribute
+
+2. **Cursor Light Trails** (Gmunk-inspired)
+   - 20-point trail buffer with position and strength
+   - Decay over 2 seconds
+   - Additive glow rendering
+   - Interactive light sculpting effect
+
+3. **Multi-Layer Depth System** (SANAA-inspired)
+   - 3 noise layers at 2x, 4x, 8x scales
+   - Depth-based blending (low depth = flat, high depth = dimensional)
+   - Focus attribute controls contrast/sharpness
+   - Parallax mouse offset on high-depth routes
+
+4. **Theme Integration**
+   - Background color adapts to dark/light mode
+   - Accessed via ThemeContext
+   - Passed as `u_backgroundColor` uniform
+
+**Shader Uniforms** (15 total):
+- **Standard**: `u_time` (animation clock), `u_resolution` (screen size), `u_mouse` (cursor position)
+- **Theme**: `u_backgroundColor` (vec3, from ThemeContext)
+- **Personality Attributes**: `u_complexity` (pattern density), `u_energy` (animation speed), `u_focus` (contrast/sharpness), `u_warmth` (color temperature), `u_depth` (z-space layering)
+- **Cursor Trails**: `u_trailCount` (active points), `u_trailPositions[10]` (vec2 array), `u_trailStrengths[10]` (float array)
+
+**Shader Functions**:
+- `getHarmonicOffset()` - 3-wave harmonic oscillator
+- `layeredNoise()` - 3-layer noise system with depth blending
+- `getCursorTrailInfluence()` - Trail glow calculation
+- `truchetPattern()` - Subtle pattern overlay (reduced prominence)
+
+**Performance**:
+- Runs continuously via `requestAnimationFrame`
+- 60fps target on modern GPUs
+- Bundle impact: +6KB (+0.7%)
+- GPU usage: 30-40%
+
+**Positioning**: Fixed, z-index: -1 (always behind content)
+
+**Cleanup**: Removes event listeners, cancels animation frame on unmount
+
+**Shader Files**:
+- `src/shaders/truchet.vert.glsl` (85 bytes)
+- `src/shaders/truchet.frag.glsl` (~5KB after additions)
+
+**Design Philosophy**: See [docs/design/SHADER_PHILOSOPHY.md](../design/SHADER_PHILOSOPHY.md)
 
 ## Page Components
 
