@@ -6,7 +6,7 @@ const CursorRing = styled.div`
   position: absolute;
   width: 40px;
   height: 40px;
-  border: 1px solid white;
+  border: 1px solid ${props => props.theme.colors.text.hover};
   border-radius: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -19,7 +19,7 @@ const CursorDot = styled.div`
   position: absolute;
   width: 8px;
   height: 8px;
-  background-color: white;
+  background-color: ${props => props.theme.colors.text.hover};
   border-radius: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
