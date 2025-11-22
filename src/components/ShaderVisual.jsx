@@ -104,6 +104,8 @@ const ShaderVisual = () => {
         u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         u_lightPos: { value: new THREE.Vector2(0.5, 0.5) },
         u_mouse: { value: new THREE.Vector2(0, 0) },
+        u_depth: { value: 0.7 },  // Default depth (0.0-1.0) - will be route-dependent
+        u_focus: { value: 0.6 },  // Default focus/sharpness (0.0-1.0) - will be route-dependent
         u_backgroundColor: { value: bgColor },
 
         // Shader personality attributes
