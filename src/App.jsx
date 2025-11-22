@@ -1,7 +1,7 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import styled, { ThemeProvider } from 'styled-components';
-import { theme } from './theme';
+import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components';
+import { ThemeProvider as CustomThemeProvider, ThemeContext } from './context/ThemeContext';
 import './assets/fonts/fonts.css';
 // Lazy loaded page components
 const About = lazy(() => import('./components/About'));
@@ -23,6 +23,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Cursor from './Cursor';
 import './App.css';
 import ShaderVisual from './components/ShaderVisual';
+import ThemeToggle from './components/ThemeToggle';
 
 
 const Container = styled.div`
@@ -181,12 +182,41 @@ function AnimatedRoutes() {
 }
 
 /**
+ * App content component that uses ThemeContext
+ * Wraps the app with StyledThemeProvider using the current theme from context
+ */
+function AppContent() {
+  const { theme } = useContext(ThemeContext);
+
+  return (
+    <StyledThemeProvider theme={theme}>
+      <Cursor />
+      <Container>
+        <Frame>
+          <ShaderVisual />
+          <Left>
+            <Navbar/>
+          </Left>
+          <Line/>
+          <AnimatedRoutes />
+        </Frame>
+        <ThemeToggle />
+      </Container>
+    </StyledThemeProvider>
+  );
+}
+
+/**
  * Main application component with routing and layout
  * - Defines all routes for the portfolio site
- * - Provides ThemeProvider context for styled-components
+ * - Provides CustomThemeProvider for theme context (light/dark mode)
+ * - Provides StyledThemeProvider for styled-components
  * - Implements fixed frame layout with border design
  * - Handles page transitions with Framer Motion
- * - Includes global components: Cursor, ShaderVisual, Navbar, Line
+ * - Includes global components: Cursor, ShaderVisual, Navbar, Line, ThemeToggle
+ *
+ * Structure:
+ * Router → CustomThemeProvider → AppContent → StyledThemeProvider → rest of app
  *
  * Routes:
  * - / (Hero)
@@ -199,19 +229,9 @@ function AnimatedRoutes() {
 function App() {
   return (
     <Router>
-      <ThemeProvider theme={theme}>
-        <Cursor />
-        <Container>
-          <Frame>
-            <ShaderVisual />
-            <Left>
-              <Navbar/>
-            </Left>
-            <Line/>
-            <AnimatedRoutes />
-          </Frame>
-        </Container>
-      </ThemeProvider>
+      <CustomThemeProvider>
+        <AppContent />
+      </CustomThemeProvider>
     </Router>
   );
 }
