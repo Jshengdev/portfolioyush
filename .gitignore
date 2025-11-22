@@ -44,8 +44,10 @@ public/assets/CM/*.MOV
 # Vite timestamp files
 vite.config.js.timestamp-*
 
-# Claude Code settings
-.claude/
+# Claude Code settings (ignore only local/generated files)
+.claude/settings.local.json
+.claude/context/embeddings/
+.claude/*.log
 
 # Root assets directory (duplicate - only /public/assets/ should exist)
 /assets/
