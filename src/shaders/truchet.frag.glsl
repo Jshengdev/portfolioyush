@@ -4,7 +4,12 @@ uniform float u_time;
 uniform vec2 u_resolution;
 uniform vec2 u_lightPos;
 uniform vec2 u_mouse;
-uniform float u_energy; // Animation speed multiplier (from Engineer 1)
+uniform vec3 u_backgroundColor; // Theme background color
+uniform float u_energy;         // Animation speed multiplier
+uniform float u_complexity;     // Pattern density (0.0-1.0)
+uniform float u_focus;          // Contrast/sharpness (0.0-1.0)
+uniform float u_warmth;         // Color temperature (0.0-1.0)
+uniform float u_depth;          // Z-space layering (0.0-1.0)
 
 // Cursor trail system (Gmunk-inspired light sculpting)
 uniform int u_trailCount;
@@ -213,31 +218,45 @@ void main() {
   vec2 harmonicOffset = getHarmonicOffset(u_time, u_energy);
   vec2 st_animated = st + harmonicOffset;
 
-  // --- PART A: TRUCHET + SPHERE + LIGHTING ---
-  // Shift + scale
-  vec2 stTile = st_animated - vec2(0.33, 0.4);
-  stTile *= 3.5;
+  // --- PART A: MULTI-LAYER PATTERN + LIGHTING ---
 
-  // Truchet pattern (now with harmonic motion)
-  vec2 tVal = truchetPattern(stTile, random(stTile * 1.5));
+  // Parallax offset based on mouse and depth
+  vec2 parallaxOffset = (u_mouse - 0.5) * u_depth * 0.05;
+  vec2 st_parallax = st_animated + parallaxOffset;
 
-  // Sphere near the mouse (radius=0.0 => small effect)
-  float sphereEf = sphere(stTile, u_mouse, 0.0);
+  // Multi-layer noise system (Engineer 4)
+  float layeredPattern = layeredNoise(st_parallax, u_depth, u_time);
+
+  // Apply focus attribute for sharpness/contrast
+  float contrast = 0.5 + (u_focus * 0.5); // 0.5-1.0 range
+  layeredPattern = pow(layeredPattern, 1.0 / contrast);
 
   // Add subtle harmonic motion to light position
   vec2 lightHarmonic = getHarmonicOffset(u_time * 0.5, u_energy * 0.3);
   vec2 dynamicLightPos = u_lightPos + lightHarmonic * 0.1;
 
-  // Lighting
-  vec3 normal   = normalize(vec3(stTile - u_mouse, 0.0));
+  // Lighting (using multi-layer pattern as base)
+  vec3 normal = normalize(vec3(st_parallax * 2.0 - 1.0, 0.3));
   vec3 lightDir = normalize(vec3(dynamicLightPos - u_mouse, 0.2));
   float lightVal = lightEffect(normal, lightDir);
+
+  // Combine layered pattern with lighting
+  vec3 patternColor = vec3(layeredPattern * lightVal);
+
+  // Keep Truchet as subtle overlay for detail
+  vec2 stTile = st_animated - vec2(0.33, 0.4);
+  stTile *= 3.5;
+  vec2 tVal = truchetPattern(stTile, random(stTile * 1.5));
+  vec3 truchetOverlay = vec3(tVal.x * tVal.y) * 0.1; // Very subtle
+
+  // Sphere effect near mouse
+  float sphereEf = sphere(stTile, u_mouse, 0.0);
 
   // Cursor trail influence (Gmunk light sculpting)
   float trailGlow = getCursorTrailInfluence(st);
 
-  // Tile color with trail glow
-  vec3 tileColor = vec3(tVal.x * tVal.y * lightVal) + vec3(sphereEf);
+  // Combine all layers
+  vec3 tileColor = patternColor + truchetOverlay + vec3(sphereEf);
   tileColor += vec3(trailGlow * 0.3); // Subtle additive glow
 
   // --- PART B: HOLLOW BOX (square ring) ---

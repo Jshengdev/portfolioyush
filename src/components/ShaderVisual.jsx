@@ -1,83 +1,8 @@
-import React, { useRef, useEffect, useContext } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
-import { ThemeContext } from '../context/ThemeContext';
-import vertexShader from '../shaders/truchet.vert.glsl?raw';
-import fragmentShader from '../shaders/truchet.frag.glsl?raw';
-
-/**
- * Shader personality configuration per route
- * Based on ManvsMachine's procedural attribute system
- *
- * Attributes (all 0.0-1.0):
- * - complexity: Pattern density (0=sparse, 1=dense)
- * - energy: Animation speed (0=slow/calm, 1=fast/energetic)
- * - focus: Contrast/sharpness (0=soft, 1=sharp)
- * - warmth: Color temperature (0=cool, 1=warm)
- * - depth: Z-space layering (0=flat, 1=deep)
- */
-const shaderPersonalities = {
-  '/': {
-    // Homepage: Confident, balanced, welcoming
-    complexity: 0.5,
-    energy: 0.6,
-    focus: 0.5,
-    warmth: 0.5,
-    depth: 0.4,
-  },
-  '/about': {
-    // About: Contemplative, calm, personal
-    complexity: 0.3,
-    energy: 0.3,
-    focus: 0.7,
-    warmth: 0.6,
-    depth: 0.3,
-  },
-  '/projects': {
-    // Projects: Energetic, structured, professional
-    complexity: 0.8,
-    energy: 0.7,
-    focus: 0.6,
-    warmth: 0.4,
-    depth: 0.7,
-  },
-  '/archive': {
-    // Archive: Dense, archival, layered
-    complexity: 0.9,
-    energy: 0.5,
-    focus: 0.5,
-    warmth: 0.5,
-    depth: 0.8,
-  },
-  '/contact': {
-    // Contact: Open, inviting, warm
-    complexity: 0.4,
-    energy: 0.4,
-    focus: 0.6,
-    warmth: 0.7,
-    depth: 0.4,
-  },
-  // Project detail pages: Contextual, focused
-  'default': {
-    complexity: 0.6,
-    energy: 0.5,
-    focus: 0.7,
-    warmth: 0.5,
-    depth: 0.5,
-  }
-};
 
 const ShaderVisual = () => {
   const mountRef = useRef(null);
-  const location = useLocation();
-  const { isDarkMode } = useContext(ThemeContext);
-
-  // Get personality for current route
-  const getPersonality = (path) => {
-    return shaderPersonalities[path] || shaderPersonalities['default'];
-  };
-
-  const currentPersonality = getPersonality(location.pathname);
 
   useEffect(() => {
     // create scene
@@ -91,32 +16,158 @@ const ShaderVisual = () => {
 
     const geometry = new THREE.PlaneGeometry(2, 2); // create canvas
 
-    // Background color based on theme
-    // Dark mode: very dark gray/black (0.05, 0.05, 0.05)
-    // Light mode: very light gray/white (0.95, 0.95, 0.95)
-    const bgColor = isDarkMode
-      ? new THREE.Vector3(0.05, 0.05, 0.05)
-      : new THREE.Vector3(0.95, 0.95, 0.95);
-
     const material = new THREE.ShaderMaterial({
       uniforms: {
         u_time: { value: 1.0 },
         u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         u_lightPos: { value: new THREE.Vector2(0.5, 0.5) },
         u_mouse: { value: new THREE.Vector2(0, 0) },
-        u_depth: { value: 0.7 },  // Default depth (0.0-1.0) - will be route-dependent
-        u_focus: { value: 0.6 },  // Default focus/sharpness (0.0-1.0) - will be route-dependent
-        u_backgroundColor: { value: bgColor },
-
-        // Shader personality attributes
-        u_complexity: { value: currentPersonality.complexity },
-        u_energy: { value: currentPersonality.energy },
-        u_focus: { value: currentPersonality.focus },
-        u_warmth: { value: currentPersonality.warmth },
-        u_depth: { value: currentPersonality.depth },
       },
-      vertexShader,
-      fragmentShader,
+      vertexShader: `
+      void main() {
+        // Pass-through to clip space
+        gl_Position = vec4(position, 1.0);
+      }
+      `,
+      fragmentShader: `
+      //=============================================================================
+      // UNIFORMS
+      uniform float u_time;
+      uniform vec2 u_resolution;
+      uniform vec2 u_lightPos;
+      uniform vec2 u_mouse;
+    
+      //=============================================================================
+      // 1) RANDOM + NOISE UTILITIES
+    
+      // Simple random used for Truchet pattern
+      float random(vec2 st) {
+        return fract(sin(dot(st, vec2(114.0, 4.0))) * 9999999.9);
+      }
+    
+      // "Hash" function for 2D -> 1D pseudo-random
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+      }
+    
+      // 2D noise using the hash at cell corners
+      float noise(vec2 st) {
+        vec2 i = floor(st);
+        vec2 f = fract(st);
+    
+        float a = hash(i);
+        float b = hash(i + vec2(1.0, 5.0));
+        float c = hash(i + vec2(0.0, 4.0));
+        float d = hash(i + vec2(1.0, 3.0));
+    
+        // Smooth interpolation (Hermite)
+        vec2 u = f * f * (3.0 - 2.0 * f);
+    
+        // Bilinear interpolation of corner values
+        return mix(
+        mix(a, b, u.x),
+        mix(c, d, u.x),
+        u.y
+        );
+      }
+    
+      //=============================================================================
+      // 2) SHAPES & LIGHTING
+    
+      // Circle function for a sphere-like effect
+      float sphere(vec2 st, vec2 center, float radius) {
+        float dist = length(st - center);
+        return 1.0 - smoothstep(
+        radius - 0.00001,
+        radius + 0.001,
+        dist
+        );
+      }
+    
+      // Simple lighting with noise
+      float lightEffect(vec3 normal, vec3 lightDir) {
+        float n = noise(normal.xy * 0.01 + u_time * 0.9); // lower freq
+        return max(dot(normal, lightDir) * 0.5 + n * 0.01, 0.04); // lower brightness and amplitude
+      }
+    
+      // Truchet tile pattern
+      vec2 truchetPattern(vec2 st, float index) {
+        index = fract((index - 0.5) * 2.0);
+    
+        if (index > 0.75) {
+        st = vec2(1.0) - st;              
+        } else if (index > 0.5) {
+        st = vec2(1.0 - st.x, st.y);     
+        } else if (index > 0.25) {
+        st = 0.01 - vec2(1.0 - st.x, st.y); 
+        }
+        return st;
+      }
+    
+      //=============================================================================
+      // 3) HOLLOW BOX UTILS (Square ring in 2D)
+    
+      // Distance to a box centered at c, with half-size halfSize
+      float boxSDF(vec2 p, vec2 c, vec2 halfSize) {
+        vec2 d = abs(p - c) - halfSize;
+        return length(max(d, 0.0));
+      }
+    
+      // A ring defined by outer & inner boxes
+      float hollowBox(vec2 p, vec2 center, float halfSize, float thickness) {
+        float distOuter = boxSDF(p, center, vec2(halfSize));
+        float distInner = boxSDF(p, center, vec2(halfSize - thickness));
+    
+        float ring = smoothstep(0.0, 0.01, distOuter)
+             - smoothstep(0.0, 0.01, distInner);
+    
+        return clamp(ring, 0.0, 1.0);
+      }
+    
+      //=============================================================================
+      // 4) MAIN FRAGMENT: COMBINE EVERYTHING
+    
+      void main() {
+        // Normalize screen coordinates
+        vec2 st = gl_FragCoord.xy / u_resolution.xy;
+    
+        // --- PART A: TRUCHET + SPHERE + LIGHTING ---
+        // Shift + scale
+        vec2 stTile = st - vec2(0.33, 0.4);
+        stTile *= 3.5;
+    
+        // Truchet pattern
+        vec2 tVal = truchetPattern(stTile, random(stTile * 1.5));
+    
+        // Sphere near the mouse (radius=0.0 => small effect)
+        float sphereEf = sphere(stTile, u_mouse, 0.0);
+    
+        // Lighting
+        vec3 normal   = normalize(vec3(stTile - u_mouse, 0.0));
+        vec3 lightDir = normalize(vec3(u_lightPos - u_mouse, 0.2));
+        float lightVal = lightEffect(normal, lightDir);
+    
+        // Tile color
+        vec3 tileColor = vec3(tVal.x * tVal.y * lightVal) + vec3(sphereEf);
+    
+        // --- PART B: HOLLOW BOX (square ring) ---
+        float ringVal = hollowBox(
+        st,
+        vec2(0.5, 0.5),
+        0.25,  // halfSize => 0.5 total
+        0.03   // thickness
+        );
+    
+        // ringVal = 1 => ring region, 0 => outside ring
+    
+        // Negative space ring => black ring
+        float shapeMask = 1.0 - ringVal;
+        vec3 finalColor = tileColor * shapeMask;
+    
+        // Output
+        gl_FragColor = vec4(finalColor, 0.5); // lower opacity
+      }
+      `,
       transparent: true
     });
 
@@ -130,72 +181,10 @@ const ShaderVisual = () => {
     };
     animate();
 
-    /**
-     * Add cursor position to trail buffer with decay timestamp
-     * Gmunk-inspired "light deposit" system
-     */
-    const updateTrailBuffer = (x, y) => {
-      const currentTime = Date.now();
-
-      // Add new point
-      trailBufferRef.current.unshift({
-        x,
-        y,
-        time: currentTime,
-        strength: 1.0, // Full strength when created
-      });
-
-      // Remove old points (keep last MAX_TRAIL_POINTS)
-      if (trailBufferRef.current.length > MAX_TRAIL_POINTS) {
-        trailBufferRef.current.pop();
-      }
-
-      // Calculate decay for all points
-      trailBufferRef.current = trailBufferRef.current.map(point => {
-        const age = currentTime - point.time;
-        const decayTime = 2000; // 2 seconds to fully decay
-        const strength = Math.max(0, 1.0 - (age / decayTime));
-
-        return { ...point, strength };
-      }).filter(point => point.strength > 0.01); // Remove nearly invisible points
-    };
-
-    /**
-     * Convert trail buffer to shader uniforms
-     * Passes last N trail points to fragment shader
-     */
-    const updateTrailUniforms = (material) => {
-      const trailCount = Math.min(trailBufferRef.current.length, 10); // Send max 10 points
-
-      // Update trail count
-      material.uniforms.u_trailCount.value = trailCount;
-
-      // Update trail positions and strengths
-      for (let i = 0; i < 10; i++) {
-        if (i < trailCount) {
-          const point = trailBufferRef.current[i];
-          material.uniforms.u_trailPositions.value[i].set(point.x, point.y);
-          material.uniforms.u_trailStrengths.value[i] = point.strength;
-        } else {
-          // Fill unused slots with zeros
-          material.uniforms.u_trailPositions.value[i].set(0, 0);
-          material.uniforms.u_trailStrengths.value[i] = 0;
-        }
-      }
-    };
-
     const onMouseMove = (e) => {
       const x = e.clientX / window.innerWidth;
       const y = 1 - e.clientY / window.innerHeight;
-
-      // Update current mouse position (existing)
       material.uniforms.u_mouse.value.set(x, y);
-
-      // Update trail buffer
-      updateTrailBuffer(x, y);
-
-      // Update shader uniforms with trail data
-      updateTrailUniforms(material);
     };
     window.addEventListener("mousemove", onMouseMove);
 
@@ -211,7 +200,7 @@ const ShaderVisual = () => {
       window.removeEventListener("resize", onResize);
       mountRef.current.removeChild(renderer.domElement);
     };
-  }, [isDarkMode, location.pathname, currentPersonality]);
+  }, []);
 
   return (
     <div
