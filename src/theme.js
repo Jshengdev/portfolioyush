@@ -19,13 +19,35 @@ export const theme = {
       secondary: 'rgba(255, 255, 255, 0.7)',
       tertiary: 'rgba(255, 255, 255, 0.6)',
       muted: 'rgba(255, 255, 255, 0.5)',
+      emphasis: 'rgba(255, 255, 255, 1)',
+      hover: 'rgba(255, 255, 255, 0.9)',
     },
     background: {
       primary: '#000000',
-      overlay: 'rgba(0, 0, 0, 0.8)',
+      secondary: 'rgba(20, 20, 20, 0.9)',
+      overlay: 'rgba(0, 0, 0, 0.9)',
+      overlayLight: 'rgba(20, 20, 20, 0.3)',
+    },
+    border: {
+      primary: 'rgba(136, 169, 215, 0.47)',
+      secondary: 'rgba(136, 169, 215, 0.3)',
+      subtle: 'rgba(255, 255, 255, 0.1)',
     },
     accent: {
+      blue: 'rgba(136, 169, 215, 0.47)',
+      blueBright: 'rgba(136, 169, 215, 0.8)',
+      red: 'rgba(255, 128, 128, 0.5)',
       glow: 'rgba(255, 255, 255, 0.8)',
+    },
+    shadow: {
+      soft: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      medium: '0 4px 16px rgba(0, 0, 0, 0.2)',
+      strong: '0 8px 32px rgba(0, 0, 0, 0.3)',
+      glow: '0 0 20px rgba(136, 169, 215, 0.3)',
+    },
+    gradient: {
+      primary: 'linear-gradient(135deg, rgba(136, 169, 215, 0.1) 0%, rgba(0, 0, 0, 0) 100%)',
+      overlay: 'linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.8) 100%)',
     },
   },
 

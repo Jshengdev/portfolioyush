@@ -28,7 +28,7 @@ import ShaderVisual from './components/ShaderVisual';
 const Container = styled.div`
   width: 100vw;
   height: 100vh;
-  border: 30px hsla(0, 0.00%, 0.00%, 0.90) solid;
+  border: 30px solid ${props => props.theme.colors.background.overlay};
   position: fixed;
   box-sizing: border-box;
 `;
@@ -39,7 +39,7 @@ const Frame = styled.div`
   right: 30px;
   top: 30px;
   bottom: 30px;
-  border: 2.5px solid rgba(136, 169, 215, 0.47);
+  border: 2.5px solid ${props => props.theme.colors.border.primary};
   overflow: hidden;
 `;
 
@@ -59,7 +59,7 @@ const LoadingContainer = styled.div`
   align-items: center;
   justify-content: center;
   height: 100vh;
-  color: rgba(255, 255, 255, 0.7);
+  color: ${props => props.theme.colors.text.secondary};
   font-family: 'Work Sans', sans-serif;
   font-size: 14px;
   letter-spacing: 2px;
