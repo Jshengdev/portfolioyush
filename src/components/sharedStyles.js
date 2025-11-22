@@ -57,11 +57,11 @@ export const Title = styled.h1`
   transform: translateX(15px);
   transform-origin: 0 0;
   letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.7);
+  color: ${props => props.theme.colors.text.secondary};
   transition: transform 0.5s, color 0.3s ease-in-out;
   &:hover {
     transform: scale(1.01);
-    color: white;
+    color: ${props => props.theme.colors.text.hover};
   }
 `;
 
@@ -71,28 +71,28 @@ export const Title = styled.h1`
  * Used by: Project detail pages for reflections and conclusions
  */
 export const ChapterCard = styled.div`
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: ${props => props.theme.colors.background.secondary};
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px ${props => props.theme.colors.shadow.subtle};
   margin-top: 2rem;
   margin-bottom: 2rem;
   animation: ${fadeUp} 0.8s ease-out forwards;
   opacity: 0;
 
   h2 {
-    font-family: var(--font-heading);
+    font-family: ${props => props.theme.fonts.display};
     font-size: 2rem;
     margin-bottom: 1.5rem;
-    color: white;
+    color: ${props => props.theme.colors.text.hover};
     text-transform: uppercase;
   }
 
   p {
-    font-family: var(--font-body);
+    font-family: ${props => props.theme.fonts.primary};
     font-size: 1.1rem;
     line-height: 1.6;
-    color: var(--paragraph-color);
+    color: ${props => props.theme.colors.text.secondary};
   }
 
   strong {
@@ -123,7 +123,7 @@ export const ProblemSolutionWrapper = styled.div`
 export const Bold = styled.span`
   font-size: 19px;
   font-weight: 600;
-  color: rgba(249, 255, 251, 0.95);
+  color: ${props => props.theme.colors.text.emphasis};
 `;
 
 /**
@@ -134,30 +134,30 @@ export const Bold = styled.span`
 export const ProblemSolutionBox = styled.div`
   flex: 0 1 auto;
   padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: ${props => props.theme.colors.background.secondary};
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px ${props => props.theme.colors.shadow.subtle};
   animation: ${fadeUp} 0.8s ease-out forwards;
   opacity: 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid ${props => props.theme.colors.border.subtle};
   text-align: left;
   width: fit-content;
 
   h2 {
-    font-family: var(--font-heading);
+    font-family: ${props => props.theme.fonts.display};
     font-size: 1.8rem;
     margin-bottom: 1rem;
-    color: white;
+    color: ${props => props.theme.colors.text.hover};
     text-transform: uppercase;
   }
 
   p {
-    font-family: var(--font-body);
+    font-family: ${props => props.theme.fonts.primary};
     font-size: 17px;
     line-height: 1.75;
-    color: var(--paragraph-color);
+    color: ${props => props.theme.colors.text.secondary};
     padding: 0;
     margin: 0;
   }
@@ -168,7 +168,7 @@ export const ProblemSolutionBox = styled.div`
  * Extends ProblemSolutionBox
  */
 export const ProblemBox = styled(ProblemSolutionBox)`
-  border-left: 4px solid rgba(255, 128, 128, 0.5);
+  border-left: 4px solid ${props => props.theme.colors.accent.red};
 `;
 
 /**
@@ -176,7 +176,7 @@ export const ProblemBox = styled(ProblemSolutionBox)`
  * Extends ProblemSolutionBox
  */
 export const SolutionBox = styled(ProblemSolutionBox)`
-  border-left: 4px solid rgba(136, 169, 215, 0.5);
+  border-left: 4px solid ${props => props.theme.colors.accent.blue};
 `;
 
 /**
@@ -212,17 +212,17 @@ export const TextColumn = styled.div`
   text-align: left;
   padding-top: 0;
   h2 {
-    font-family: var(--font-heading);
+    font-family: ${props => props.theme.fonts.display};
     font-size: 1.8rem;
     margin-bottom: 1.2rem;
-    color: white;
+    color: ${props => props.theme.colors.text.hover};
     animation: ${fadeUp} 0.5s ease forwards;
   }
   p {
-    font-family: var(--font-body);
+    font-family: ${props => props.theme.fonts.primary};
     font-size: 1.1rem;
     line-height: 1.6;
-    color: var(--paragraph-color);
+    color: ${props => props.theme.colors.text.secondary};
     animation: ${fadeUp} 0.8s ease forwards;
     margin-bottom: 0;
   }
@@ -244,11 +244,11 @@ export const ImageColumn = styled.div`
     width: 100%;
     max-width: ${props => props.maxWidth || '600px'};
     border-radius: 12px;
-    box-shadow: 0 0 30px rgba(255,255,255,0.08), 0 0 15px rgba(153, 190, 255, 0.2);
+    box-shadow: 0 0 30px ${props => props.theme.colors.shadow.glow}, 0 0 15px ${props => props.theme.colors.shadow.accentGlowStrong};
     transition: 0.3s ease;
     &:hover {
       transform: scale(1.02);
-      box-shadow: 0 0 40px rgba(255,255,255,0.12), 0 0 20px rgba(153, 190, 255, 0.3);
+      box-shadow: 0 0 40px ${props => props.theme.colors.shadow.glowStrong}, 0 0 20px ${props => props.theme.colors.shadow.accentGlowStrong};
     }
   }
   .stacked {
@@ -276,12 +276,12 @@ export const GifContainer = styled.div`
   margin: 0 auto;
   border-radius: ${props => props.borderRadius || '24px'};
   overflow: hidden;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), 0 0 20px rgba(136, 169, 215, 0.2);
+  box-shadow: 0 0 30px ${props => props.theme.colors.shadow.glow}, 0 0 20px ${props => props.theme.colors.shadow.accentGlow};
   transition: all 0.4s ease;
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: 0 0 40px rgba(255, 255, 255, 0.15), 0 0 30px rgba(136, 169, 215, 0.3);
+    box-shadow: 0 0 40px ${props => props.theme.colors.shadow.glowStrong}, 0 0 30px ${props => props.theme.colors.shadow.accentGlow};
   }
 
   img {
@@ -302,18 +302,18 @@ export const GifContainer = styled.div`
  * Used by: Project detail pages for overview sections
  */
 export const OverviewBox = styled.div`
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: ${props => props.theme.colors.background.secondary};
   padding: 2rem;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   min-height: fit-content;
   height: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px ${props => props.theme.colors.shadow.subtle};
   margin: 2rem 0;
   animation: ${fadeUp} 0.8s ease-out forwards;
   opacity: 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid ${props => props.theme.colors.border.subtle};
 
 `;
 
@@ -332,8 +332,8 @@ export const MetadataPanel = styled.div`
   align-items: center;
   justify-content: center;
   gap: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+  border: 1px solid ${props => props.theme.colors.border.subtle};
+  box-shadow: 0 0 20px ${props => props.theme.colors.shadow.glow};
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 `;
@@ -345,7 +345,7 @@ export const MetadataPanel = styled.div`
 export const MetadataSection = styled.div`
   display: flex;
   align-items: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: ${props => props.theme.colors.text.secondary};
   font-size: 0.9rem;
 `;
 
@@ -356,7 +356,7 @@ export const MetadataSection = styled.div`
 export const MetadataLabel = styled.span`
   font-weight: 300;
   margin-right: 0.5rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: ${props => props.theme.colors.text.muted};
 `;
 
 /**
