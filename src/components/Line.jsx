@@ -9,7 +9,7 @@ const LineStyled = styled(motion.div)`
     right: 30%;
     height: 250vh;
     width: 2px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: ${props => props.theme.colors.text.muted};
     z-index: 9999;
 `;
 
@@ -19,7 +19,7 @@ const SecondLine = styled(motion.div)`
     right: 25%;
     height: 250vh;
     width: 2px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: ${props => props.theme.colors.text.muted};
     z-index: 9999;
 `;
 
@@ -29,7 +29,7 @@ const ThirdLine = styled(motion.div)`
     right: 25%;
     width: 2px;
     height: 250vh;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: ${props => props.theme.colors.text.muted};
     z-index: 9999;
 `;
 
@@ -39,7 +39,7 @@ const LineWithDot = styled(motion.div)`
     right: 30%;
     height: 15vh;
     width: 2px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: ${props => props.theme.colors.text.muted};
     z-index: 9999;
 
     &::after {
@@ -47,7 +47,7 @@ const LineWithDot = styled(motion.div)`
         position: absolute;
         width: 15px;
         height: 15px;
-        background-color: rgba(255, 255, 255, 0.5);
+        background-color: ${props => props.theme.colors.text.muted};
         border-radius: 50%;
         top: 150%;
         left: 50%;
@@ -59,7 +59,7 @@ const CLetter = styled(motion.div)`
     position: absolute;
     font-family: work sans;
     font-size: 150px;
-    color: rgba(255, 255, 255, 0.5);
+    color: ${props => props.theme.colors.text.muted};
     z-index: 9999;
     font-weight: 100;
     pointer-events: none;
@@ -69,7 +69,7 @@ const CLetter2 = styled(motion.div)`
     position: absolute;
     font-family: work sans;
     font-size: 150px;
-    color: rgba(255, 255, 255, 0.5);
+    color: ${props => props.theme.colors.text.muted};
     z-index: 9999;
     font-weight: 100;
     pointer-events: none;
