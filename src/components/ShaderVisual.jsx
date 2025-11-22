@@ -1,6 +1,7 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useContext } from "react";
 import { useLocation } from 'react-router-dom';
 import * as THREE from "three";
+import { ThemeContext } from '../context/ThemeContext';
 import vertexShader from '../shaders/truchet.vert.glsl?raw';
 import fragmentShader from '../shaders/truchet.frag.glsl?raw';
 
@@ -69,6 +70,7 @@ const shaderPersonalities = {
 const ShaderVisual = () => {
   const mountRef = useRef(null);
   const location = useLocation();
+  const { isDarkMode } = useContext(ThemeContext);
 
   // Get personality for current route
   const getPersonality = (path) => {
@@ -89,12 +91,20 @@ const ShaderVisual = () => {
 
     const geometry = new THREE.PlaneGeometry(2, 2); // create canvas
 
+    // Background color based on theme
+    // Dark mode: very dark gray/black (0.05, 0.05, 0.05)
+    // Light mode: very light gray/white (0.95, 0.95, 0.95)
+    const bgColor = isDarkMode
+      ? new THREE.Vector3(0.05, 0.05, 0.05)
+      : new THREE.Vector3(0.95, 0.95, 0.95);
+
     const material = new THREE.ShaderMaterial({
       uniforms: {
         u_time: { value: 1.0 },
         u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         u_lightPos: { value: new THREE.Vector2(0.5, 0.5) },
         u_mouse: { value: new THREE.Vector2(0, 0) },
+        u_backgroundColor: { value: bgColor },
 
         // Shader personality attributes
         u_complexity: { value: currentPersonality.complexity },
@@ -107,21 +117,21 @@ const ShaderVisual = () => {
       fragmentShader,
       transparent: true
     });
-    
+
     const plane = new THREE.Mesh(geometry, material);
     scene.add(plane);
 
     const animate = () => {
       material.uniforms.u_time.value += 0.02; // Increment time for animation
       renderer.render(scene, camera); // Render the scene
-      requestAnimationFrame(animate); 
+      requestAnimationFrame(animate);
     };
     animate();
 
     const onMouseMove = (e) => {
-      const x = e.clientX / window.innerWidth; 
-      const y = 1 - e.clientY / window.innerHeight; 
-      material.uniforms.u_mouse.value.set(x, y); 
+      const x = e.clientX / window.innerWidth;
+      const y = 1 - e.clientY / window.innerHeight;
+      material.uniforms.u_mouse.value.set(x, y);
     };
     window.addEventListener("mousemove", onMouseMove);
 
@@ -137,7 +147,7 @@ const ShaderVisual = () => {
       window.removeEventListener("resize", onResize);
       mountRef.current.removeChild(renderer.domElement);
     };
-  }, [location.pathname, currentPersonality]);
+  }, [isDarkMode, location.pathname, currentPersonality]);
 
   return (
     <div

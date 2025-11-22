@@ -39,7 +39,7 @@ const Right = styled.div`
 
 const Aboutme = styled.div`
   position: absolute;
-  color: rgba(255, 255, 255, 0.7);
+  color: ${props => props.theme.colors.text.secondary};
   padding: 100px;
   top: 35%;
   font-size: 16px;

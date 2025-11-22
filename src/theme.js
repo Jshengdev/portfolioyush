@@ -2,7 +2,7 @@
  * Centralized design system with all design tokens
  * @module theme
  *
- * Usage: Access via styled-components ThemeProvider
+ * Usage: Access via ThemeContext or styled-components ThemeProvider
  * Example: ${props => props.theme.colors.text.primary}
  *
  * Contains:
