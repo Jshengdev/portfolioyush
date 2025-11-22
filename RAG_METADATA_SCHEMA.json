@@ -1,0 +1,453 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RAG Chunk Metadata Schema",
+  "description": "Complete metadata schema for RAG chunks in the portfolio project",
+  "type": "object",
+  "required": ["chunk_id", "text", "source"],
+  "properties": {
+    "chunk_id": {
+      "type": "string",
+      "description": "Unique identifier for chunk",
+      "examples": ["grove_chunk_0", "claude_md_chunk_5", "package_json_config_scripts_0"]
+    },
+    "text": {
+      "type": "string",
+      "description": "The actual chunk content/text"
+    },
+    "source": {
+      "type": "object",
+      "description": "Source document information",
+      "required": ["file", "file_type"],
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "File name",
+          "examples": ["Grove.jsx", "CLAUDE.md", "package.json"]
+        },
+        "file_path": {
+          "type": "string",
+          "description": "Absolute or relative file path",
+          "examples": ["src/components/Projectfiles/Grove.jsx", "CLAUDE.md"]
+        },
+        "file_type": {
+          "type": "string",
+          "enum": ["jsx", "js", "markdown", "md", "json", "yaml", "config"],
+          "description": "File type/extension"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "GitHub or web URL to source file",
+          "examples": ["https://github.com/Jshengdev/portfolioyush/blob/main/CLAUDE.md"]
+        },
+        "repository": {
+          "type": "string",
+          "description": "Repository name",
+          "examples": ["portfolioyush"]
+        }
+      }
+    },
+    "hierarchy": {
+      "type": "object",
+      "description": "Document hierarchy (for hierarchical documents like markdown)",
+      "properties": {
+        "level_1": {
+          "type": "string",
+          "description": "H1/Document level"
+        },
+        "level_2": {
+          "type": "string",
+          "description": "H2/Section level"
+        },
+        "level_3": {
+          "type": "string",
+          "description": "H3/Subsection level"
+        },
+        "level_4": {
+          "type": "string",
+          "description": "H4/Minor subsection level"
+        },
+        "breadcrumb": {
+          "type": "string",
+          "description": "Full hierarchical path",
+          "examples": ["Project Overview > Codebase Structure > Key Technologies"]
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "description": "React component metadata (for .jsx files)",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Component name",
+          "examples": ["Grove", "Hero", "Navbar"]
+        },
+        "type": {
+          "type": "string",
+          "enum": ["page", "widget", "utility", "layout"],
+          "description": "Component category"
+        },
+        "exports": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Named and default exports",
+          "examples": [["Grove"], ["default"]]
+        },
+        "imports": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "External dependencies imported"
+        },
+        "hooks_used": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["useState", "useEffect", "useContext", "useReducer",
+                    "useCallback", "useMemo", "useRef", "useNavigate", "useLocation"]
+          },
+          "description": "React hooks used in component"
+        },
+        "styled_components": {
+          "type": "boolean",
+          "description": "Uses styled-components"
+        },
+        "has_jsx": {
+          "type": "boolean",
+          "description": "Contains JSX markup"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "description": "Configuration file metadata",
+      "properties": {
+        "config_type": {
+          "type": "string",
+          "examples": ["npm_package", "vite_config", "env_config", "json_config"]
+        },
+        "section": {
+          "type": "string",
+          "description": "Config section/key",
+          "examples": ["dependencies", "scripts", "devDependencies"]
+        },
+        "keys": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Configuration keys in this chunk"
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "Content metrics and statistics",
+      "properties": {
+        "token_count": {
+          "type": "integer",
+          "description": "Approximate token count (useful for filtering by size)",
+          "minimum": 1
+        },
+        "char_count": {
+          "type": "integer",
+          "description": "Character count of chunk"
+        },
+        "line_count": {
+          "type": "integer",
+          "description": "Number of lines (for code)"
+        },
+        "language": {
+          "type": "string",
+          "description": "Content language (jsx, python, markdown, etc.)",
+          "examples": ["jsx", "markdown", "json", "javascript"]
+        },
+        "start_line": {
+          "type": "integer",
+          "description": "Start line number in original file"
+        },
+        "end_line": {
+          "type": "integer",
+          "description": "End line number in original file"
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "description": "Content classification and categorization",
+      "properties": {
+        "chunk_type": {
+          "type": "string",
+          "enum": ["imports", "styled_components", "hooks", "jsx", "logic",
+                  "documentation", "configuration", "example", "metadata"],
+          "description": "Type of content in chunk"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Main topic/theme",
+          "examples": ["React", "Animation", "Styling", "State Management"]
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["beginner", "intermediate", "advanced"],
+          "description": "Difficulty level"
+        },
+        "contains_code": {
+          "type": "boolean",
+          "description": "Chunk contains code examples"
+        },
+        "contains_table": {
+          "type": "boolean",
+          "description": "Chunk contains tables (markdown)"
+        },
+        "contains_list": {
+          "type": "boolean",
+          "description": "Chunk contains lists"
+        }
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Extracted or assigned keywords",
+      "examples": [["React", "Animation", "Styled-components", "WebGL"]]
+    },
+    "summary": {
+      "type": "string",
+      "description": "AI-generated one-sentence summary"
+    },
+    "potential_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Questions this chunk could answer",
+      "examples": [
+        "How is the Grove component structured?",
+        "What hooks does Grove use?",
+        "How are animations implemented?"
+      ]
+    },
+    "timestamps": {
+      "type": "object",
+      "description": "Timestamp information",
+      "properties": {
+        "indexed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When chunk was indexed"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When original document was created"
+        },
+        "modified_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification time of source"
+        },
+        "accessed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last time chunk was retrieved"
+        }
+      }
+    },
+    "embedding": {
+      "type": "object",
+      "description": "Embedding-related metadata",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "embedded", "failed"],
+          "description": "Embedding generation status"
+        },
+        "model": {
+          "type": "string",
+          "examples": ["text-embedding-ada-002", "text-embedding-3-small"],
+          "description": "Embedding model used"
+        },
+        "embedding_id": {
+          "type": "string",
+          "description": "Reference to embedding vector (in vector DB)"
+        },
+        "similarity_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Similarity to query (set during retrieval)"
+        }
+      }
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Relationships to other chunks",
+      "properties": {
+        "parent_chunk_id": {
+          "type": "string",
+          "description": "Parent chunk (for hierarchical chunking)"
+        },
+        "related_chunks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "IDs of semantically related chunks"
+        },
+        "depends_on": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Chunk IDs this chunk depends on",
+          "examples": ["sharedStyles_chunk_0", "projectname_chunk_0"]
+        }
+      }
+    },
+    "quality_metrics": {
+      "type": "object",
+      "description": "Quality assessment metrics",
+      "properties": {
+        "completeness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Chunk completeness (0-1 scale)"
+        },
+        "coherence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Chunk coherence (0-1 scale)"
+        },
+        "relevance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Relevance to document (0-1 scale)"
+        },
+        "issues": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Quality issues found"
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "description": "Usage statistics",
+      "properties": {
+        "retrieval_count": {
+          "type": "integer",
+          "description": "Number of times chunk has been retrieved"
+        },
+        "avg_rank": {
+          "type": "number",
+          "description": "Average ranking in search results"
+        },
+        "useful_count": {
+          "type": "integer",
+          "description": "Times marked as useful by users"
+        }
+      }
+    },
+    "metadata_version": {
+      "type": "string",
+      "description": "Version of metadata schema used",
+      "examples": ["1.0", "1.1"]
+    },
+    "custom_fields": {
+      "type": "object",
+      "description": "Application-specific custom metadata",
+      "additionalProperties": true
+    }
+  },
+  "examples": [
+    {
+      "chunk_id": "grove_chunk_0",
+      "text": "import React, { useState } from 'react';\nimport styled from 'styled-components';\n...",
+      "source": {
+        "file": "Grove.jsx",
+        "file_path": "src/components/Projectfiles/Grove.jsx",
+        "file_type": "jsx",
+        "url": "https://github.com/Jshengdev/portfolioyush/blob/main/src/components/Projectfiles/Grove.jsx",
+        "repository": "portfolioyush"
+      },
+      "component": {
+        "name": "Grove",
+        "type": "page",
+        "exports": ["Grove"],
+        "imports": ["React", "styled-components", "framer-motion"],
+        "hooks_used": ["useState", "useNavigate"],
+        "styled_components": true,
+        "has_jsx": true
+      },
+      "content": {
+        "token_count": 342,
+        "char_count": 1425,
+        "line_count": 28,
+        "language": "jsx",
+        "start_line": 1,
+        "end_line": 28
+      },
+      "classification": {
+        "chunk_type": "imports",
+        "topic": "React Components",
+        "difficulty": "intermediate",
+        "contains_code": true
+      },
+      "keywords": ["React", "Component", "Imports", "Animation"],
+      "summary": "Import statements and styled-component definitions for the Grove project component.",
+      "potential_questions": [
+        "What dependencies does Grove use?",
+        "How are styled-components defined?",
+        "What animation library is used?"
+      ],
+      "timestamps": {
+        "indexed_at": "2025-11-22T10:30:00Z",
+        "modified_at": "2025-11-21T15:45:00Z"
+      },
+      "embedding": {
+        "status": "embedded",
+        "model": "text-embedding-ada-002"
+      },
+      "metadata_version": "1.0"
+    },
+    {
+      "chunk_id": "claude_md_chunk_5",
+      "text": "## Codebase Structure\n\nThe portfolio is organized as follows...",
+      "source": {
+        "file": "CLAUDE.md",
+        "file_path": "CLAUDE.md",
+        "file_type": "markdown",
+        "url": "https://github.com/Jshengdev/portfolioyush/blob/main/CLAUDE.md",
+        "repository": "portfolioyush"
+      },
+      "hierarchy": {
+        "level_1": "CLAUDE.md - AI Assistant Guide",
+        "level_2": "Codebase Structure",
+        "breadcrumb": "CLAUDE.md > Codebase Structure"
+      },
+      "content": {
+        "token_count": 387,
+        "char_count": 1620,
+        "language": "markdown",
+        "start_line": 245,
+        "end_line": 280
+      },
+      "classification": {
+        "chunk_type": "documentation",
+        "topic": "Architecture",
+        "difficulty": "intermediate",
+        "contains_code": false,
+        "contains_table": true,
+        "contains_list": true
+      },
+      "keywords": ["Architecture", "Components", "Structure", "Organization"],
+      "summary": "Overview of the portfolio project's directory structure and file organization.",
+      "potential_questions": [
+        "How is the project organized?",
+        "Where are React components stored?",
+        "What files are in the src directory?"
+      ],
+      "timestamps": {
+        "indexed_at": "2025-11-22T10:30:00Z",
+        "modified_at": "2025-11-21T16:00:00Z"
+      },
+      "metadata_version": "1.0"
+    }
+  ]
+}
