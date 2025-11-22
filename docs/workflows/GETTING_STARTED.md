@@ -221,12 +221,28 @@ See the complete example: `docs/roadmap/examples/SKILLS_PAGE_EXAMPLE.md`
 
 ---
 
+## Slash Commands (NEW!)
+
+**Even easier**: Use slash commands instead of manual prompts!
+
+```bash
+/workflow     # Start full 7-agent feature workflow
+/engineer     # Execute single engineering task
+/researcher   # Run performance or documentation analysis
+/qa           # Final QA & security verification
+```
+
+**See**: [Slash Commands Reference](SLASH_COMMANDS.md) for complete guide
+
+---
+
 ## File Reference
 
 | File | Purpose |
 |------|---------|
 | `WORKFLOW_GUIDE.md` | How the system works (theory) |
 | `PROMPT_TEMPLATES.md` | Copy-paste prompts (practice) |
+| `SLASH_COMMANDS.md` | Slash command reference (easiest!) |
 | `GETTING_STARTED.md` | This file (quickstart) |
 | `../roadmap/ROADMAP.md` | Feature tracking (your work) |
 | `../roadmap/examples/SKILLS_PAGE_EXAMPLE.md` | Complete example (reference) |
@@ -234,5 +250,7 @@ See the complete example: `docs/roadmap/examples/SKILLS_PAGE_EXAMPLE.md`
 ---
 
 **Good luck! You're ready to build features with predictable, measurable progress.**
+
+**Quickest start**: Just type `/workflow` and follow the prompts!
 
 Questions? Check the [Workflow Guide](WORKFLOW_GUIDE.md) for detailed explanations.
