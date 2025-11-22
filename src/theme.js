@@ -19,6 +19,7 @@ export const theme = {
       secondary: 'rgba(255, 255, 255, 0.7)',
       tertiary: 'rgba(255, 255, 255, 0.6)',
       muted: 'rgba(255, 255, 255, 0.5)',
+      hover: '#ffffff',
     },
     background: {
       primary: '#000000',
@@ -26,6 +27,20 @@ export const theme = {
     },
     accent: {
       glow: 'rgba(255, 255, 255, 0.8)',
+    },
+    border: {
+      primary: 'rgba(255, 255, 255, 0.5)',
+      secondary: 'rgba(255, 255, 255, 0.3)',
+    },
+    shadow: {
+      glow: 'rgba(255, 255, 255, 0.1)',
+      glowMid: 'rgba(255, 255, 255, 0.2)',
+      glowStrong: 'rgba(255, 255, 255, 0.3)',
+    },
+    gradient: {
+      overlayStart: 'rgba(0, 0, 0, 0.7)',
+      overlayMid: 'rgba(0, 0, 0, 0.4)',
+      overlayEnd: 'rgba(0, 0, 0, 0)',
     },
   },
 
