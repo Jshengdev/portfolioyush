@@ -4,6 +4,8 @@ uniform float u_time;
 uniform vec2 u_resolution;
 uniform vec2 u_lightPos;
 uniform vec2 u_mouse;
+uniform float u_depth;   // Depth attribute (0.0-1.0) for layer blending
+uniform float u_focus;   // Focus/sharpness attribute (0.0-1.0)
 
 //=============================================================================
 // 1) RANDOM + NOISE UTILITIES
@@ -37,6 +39,37 @@ float noise(vec2 st) {
     mix(c, d, u.x),
     u.y
   );
+}
+
+/**
+ * Multi-layer noise for perceived depth
+ * SANAA principle: "Many transparent layers create opacity"
+ *
+ * @param st - UV coordinates
+ * @param depth - Depth attribute (0.0-1.0)
+ * @param time - Animated time value
+ * @return float - Blended noise value
+ */
+float layeredNoise(vec2 st, float depth, float time) {
+  // Layer 1: Large slow forms (background)
+  float layer1 = noise(st * 2.0 + time * 0.05);
+
+  // Layer 2: Medium detail (mid-ground)
+  float layer2 = noise(st * 4.0 + time * 0.08);
+
+  // Layer 3: Fine detail (foreground)
+  float layer3 = noise(st * 8.0 + time * 0.12);
+
+  // Weighted blending based on depth attribute
+  // Low depth (0.0) = mostly layer 1 (flat)
+  // High depth (1.0) = all layers (dimensional)
+  float weight1 = 1.0;
+  float weight2 = depth * 0.5;
+  float weight3 = depth * depth * 0.3; // Quadratic for subtle foreground
+
+  float totalWeight = weight1 + weight2 + weight3;
+
+  return (layer1 * weight1 + layer2 * weight2 + layer3 * weight3) / totalWeight;
 }
 
 //=============================================================================
@@ -99,13 +132,21 @@ void main() {
   // Normalize screen coordinates
   vec2 st = gl_FragCoord.xy / u_resolution.xy;
 
-  // --- PART A: TRUCHET + SPHERE + LIGHTING ---
-  // Shift + scale
+  // --- PART A: MULTI-LAYER PATTERN + PARALLAX ---
+  // Parallax offset based on mouse and depth
+  vec2 parallaxOffset = (u_mouse - 0.5) * u_depth * 0.05;
+  vec2 st_parallax = st + parallaxOffset;
+
+  // Multi-layer noise system
+  float layeredPattern = layeredNoise(st_parallax, u_depth, u_time);
+
+  // Apply focus attribute (sharpness)
+  float contrast = 0.5 + (u_focus * 0.5); // 0.5-1.0 range
+  layeredPattern = pow(layeredPattern, 1.0 / contrast);
+
+  // Shift + scale for additional effects
   vec2 stTile = st - vec2(0.33, 0.4);
   stTile *= 3.5;
-
-  // Truchet pattern
-  vec2 tVal = truchetPattern(stTile, random(stTile * 1.5));
 
   // Sphere near the mouse (radius=0.0 => small effect)
   float sphereEf = sphere(stTile, u_mouse, 0.0);
@@ -115,8 +156,15 @@ void main() {
   vec3 lightDir = normalize(vec3(u_lightPos - u_mouse, 0.2));
   float lightVal = lightEffect(normal, lightDir);
 
-  // Tile color
-  vec3 tileColor = vec3(tVal.x * tVal.y * lightVal) + vec3(sphereEf);
+  // Combine layered pattern with lighting
+  vec3 patternColor = vec3(layeredPattern * lightVal);
+
+  // Keep Truchet as subtle overlay (optional)
+  vec2 tVal = truchetPattern(stTile, random(stTile * 1.5));
+  vec3 truchetOverlay = vec3(tVal.x * tVal.y) * 0.1; // Very subtle
+
+  // Tile color combines pattern, overlay, and sphere effect
+  vec3 tileColor = patternColor + truchetOverlay + vec3(sphereEf);
 
   // --- PART B: HOLLOW BOX (square ring) ---
   float ringVal = hollowBox(
