@@ -6,6 +6,7 @@ uniform vec2 u_lightPos;
 uniform vec2 u_mouse;
 uniform float u_depth;   // Depth attribute (0.0-1.0) for layer blending
 uniform float u_focus;   // Focus/sharpness attribute (0.0-1.0)
+uniform vec3 u_backgroundColor;
 
 //=============================================================================
 // 1) RANDOM + NOISE UTILITIES
@@ -176,9 +177,12 @@ void main() {
 
   // ringVal = 1 => ring region, 0 => outside ring
 
-  // Negative space ring => black ring
+  // Negative space ring => blend with background
   float shapeMask = 1.0 - ringVal;
-  vec3 finalColor = tileColor * shapeMask;
+
+  // Mix tile pattern with theme background color
+  vec3 patternLayer = tileColor * shapeMask;
+  vec3 finalColor = u_backgroundColor + patternLayer * 0.15; // Subtle pattern over background
 
   // Output
   gl_FragColor = vec4(finalColor, 0.5); // lower opacity
