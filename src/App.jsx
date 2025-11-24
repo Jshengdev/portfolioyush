@@ -16,6 +16,15 @@ const Lens = lazy(() => import('./components/Projectfiles/Lens'));
 const Collection = lazy(() => import('./components/Projectfiles/Collection'));
 const Archive = lazy(() => import('./components/Archive'));
 const NextProject = lazy(() => import('./components/NextProject'));
+
+// Experimental shader pages
+const ExperimentNav = lazy(() => import('./components/experiments/ExperimentNav'));
+const ExperimentV1 = lazy(() => import('./components/experiments/v1'));
+const ExperimentV2 = lazy(() => import('./components/experiments/v2'));
+const ExperimentV3 = lazy(() => import('./components/experiments/v3'));
+const ExperimentV4 = lazy(() => import('./components/experiments/v4'));
+const ExperimentV5 = lazy(() => import('./components/experiments/v5'));
+
 // Always loaded components (needed for initial render)
 import Navbar from './components/Navbar';
 import Line from './components/Line';
@@ -175,6 +184,37 @@ function AnimatedRoutes() {
             </PageWrapper>
           }
         />
+        {/* Experimental shader pages */}
+        <Route path="/experiments" element={
+          <PageWrapper>
+            <ExperimentNav />
+          </PageWrapper>
+        } />
+        <Route path="/experiments/v1" element={
+          <PageWrapper>
+            <ExperimentV1 />
+          </PageWrapper>
+        } />
+        <Route path="/experiments/v2" element={
+          <PageWrapper>
+            <ExperimentV2 />
+          </PageWrapper>
+        } />
+        <Route path="/experiments/v3" element={
+          <PageWrapper>
+            <ExperimentV3 />
+          </PageWrapper>
+        } />
+        <Route path="/experiments/v4" element={
+          <PageWrapper>
+            <ExperimentV4 />
+          </PageWrapper>
+        } />
+        <Route path="/experiments/v5" element={
+          <PageWrapper>
+            <ExperimentV5 />
+          </PageWrapper>
+        } />
       </Routes>
       </Suspense>
     </AnimatePresence>
