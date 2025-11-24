@@ -36,7 +36,60 @@
 
 ### Example Ideas
 
-#### 1. Skills/Technologies Page
+#### 1. Chaotic Typography Experiment
+**Priority**: Low
+**Effort**: Medium-High (6 phases × 2-3 hours = 10-16 hours)
+**Status**: 🟡 Planning Complete
+
+**Description**:
+Experimental typography page with cursor-reactive chromatic aberration effects. Features:
+- 300 random letters with chaotic layout (random rotation/scale)
+- RGB chromatic aberration (prism/glitch effect)
+- Cursor proximity detection (100px radius)
+- Jiggle animation on hover
+- 60fps desktop, 30fps mobile performance
+
+**Implementation Plan**: [CHAOTIC_TYPOGRAPHY_PLAN.md](./features/CHAOTIC_TYPOGRAPHY_PLAN.md) (1,850 lines)
+**Quick Reference**: [TYPOGRAPHY_QUICK_REFERENCE.md](./features/TYPOGRAPHY_QUICK_REFERENCE.md)
+
+**Phase Breakdown**:
+- Phase 1: Static chaotic layout (2-3 hours)
+- Phase 2: Chromatic aberration CSS effect (1-2 hours)
+- Phase 3: Cursor detection system (2-3 hours)
+- Phase 4: Jiggle animation (2-3 hours)
+- Phase 5: Polish & optimization (2-3 hours)
+- Phase 6: Portfolio integration (1-2 hours)
+
+**Technical Approach**:
+- Pure DOM rendering (styled-components + Framer Motion)
+- Grid-with-jitter letter distribution
+- CSS text-shadow for chromatic aberration
+- requestAnimationFrame for cursor tracking
+- React.memo for performance optimization
+
+**Performance Targets**:
+- Desktop: 300 letters at 60fps
+- Mobile: 150 letters at 30fps+
+- CPU usage: <10%
+- No memory leaks
+
+**Route**: `/playground/typography` (lazy-loaded)
+
+**Dependencies**: None (uses existing patterns from Cursor.jsx, Line.jsx, ShaderVisual.jsx)
+
+**Rollback Strategy**:
+- If performance issues: Reduce letter count, spatial grid optimization, or canvas rendering
+- If integration issues: Keep as standalone page without portfolio frame
+- If too complex: Ship Phase 1-2 only (static chromatic typography)
+
+**Notes**:
+- Complements existing WebGL shader (ShaderVisual.jsx) with interactive DOM-based effect
+- Demonstrates experimental design skills for portfolio
+- Can be expanded with WebGL/Three.js for 1000+ letters in Phase 7
+
+---
+
+#### 2. Skills/Technologies Page
 **Priority**: Medium
 **Effort**: Medium (4 engineers + 2 researchers + 1 QA)
 
