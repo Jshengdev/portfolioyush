@@ -1,34 +1,47 @@
 # Portfolio Development Roadmap
 
-**Version**: 1.0
-**Last Updated**: 2025-11-21
+**Version**: 1.1
+**Last Updated**: 2025-11-24
 **Project**: Johnny Sheng's Portfolio Website
 
 ---
 
 ## Active Features (In Development)
 
-### Feature: [Your Feature Name Here]
+### Feature: Hero Page Experimental Effects
 **Status**: 🟡 Planning
 **Priority**: High
-**Estimated Time**: 3.5 hours (7 agents × 30 min avg)
-**Started**: [Date]
-**Target Completion**: [Date]
+**Estimated Time**: 4-5 hours (7 agents × 40 min avg)
+**Started**: 2025-11-24
+**Target Completion**: TBD
 
 **Description**:
-[What you want to build - be specific]
+Create experimental landing page prototypes with ambient/atmospheric light effects. Build 5 shader variations accessible via separate routes (`/experiments/v1` through `/experiments/v5`) for easy comparison and selection.
+
+**Concepts**:
+1. V1: Aurora Borealis - flowing color bands
+2. V2: Fog/Mist - layered translucent clouds
+3. V3: Light Bloom - soft drifting glows
+4. V4: Liquid Light - organic metaball blobs
+5. V5: Gradient Waves - subtle horizontal waves
 
 **Workflow Progress**:
-- [ ] Engineer 1: [Specific task]
-- [ ] Engineer 2: [Specific task]
-- [ ] Engineer 3: [Specific task]
-- [ ] Engineer 4: [Specific task]
-- [ ] Researcher 1: [Research topic]
-- [ ] Researcher 2: [Research topic]
-- [ ] QA/Security: Final verification
+- [ ] Engineer 1: Create infrastructure (directory structure, base shader template, routes)
+- [ ] Engineer 2: Implement V1 (Aurora) + test mouse interaction
+- [ ] Engineer 3: Implement V2 (Fog) + V3 (Bloom) shaders
+- [ ] Engineer 4: Implement V4 (Liquid) + V5 (Waves) + navigation component
+- [ ] Researcher 1: Performance analysis of all variants
+- [ ] Researcher 2: Documentation update (this file done, CLAUDE.md pending)
+- [ ] QA/Security: Test all variants, device compatibility, select winner
+
+**Documentation**:
+- [Hero Experiments Plan](../experiments/HERO_EXPERIMENTS_PLAN.md) - Full technical spec
 
 **Notes**:
-- [Any important context or decisions]
+- User preference: Ambient/Atmospheric direction (soft glows, gradients, subtle movements)
+- Architecture: Separate routes for easy A/B comparison
+- Each experiment lazy-loaded to avoid bundle bloat
+- Selection will replace or augment current Hero shader
 
 ---
 
