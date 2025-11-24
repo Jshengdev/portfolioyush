@@ -1,14 +1,44 @@
 # Tasks Directory
 
 **Purpose**: Workspace for active feature development tasks
-**Status**: 🟢 Active (currently empty - all tasks completed)
+**Status**: 🟡 Active - Red String of Fate feature in planning
 **Last Updated**: 2025-11-24
 
 ---
 
 ## Current Status
 
-**No active tasks** - All shader redesign work has been completed and archived.
+### Red String of Fate - Creative Interaction System 🧵
+
+**Status**: Research Complete, Ready for Implementation
+**Location**: `/tasks/red-string-of-fate/`
+
+**Concept**: Replace cursor with physics-based red string that connects you to your destinations, implementing the Japanese "Red String of Fate" (運命の赤い糸) mythology as a portfolio interaction metaphor.
+
+**Experiment Phases**:
+| Phase | Name | Status | Description |
+|-------|------|--------|-------------|
+| V6 | Red Ribbon Cursor | ⏳ Ready | Physics-based red string following cursor |
+| V7 | Navigation String | 🔒 Blocked | Connections between cursor and nav items |
+| V8 | Route-Reactive Personality | 🔒 Blocked | String behavior changes per route |
+
+**Research Files**:
+- `00_RESEARCH_SYNTHESIS.md` - Consolidated findings from 3 research agents
+- `V6_RED_RIBBON_CURSOR.md` - First experiment: cursor replacement
+- `V7_NAVIGATION_STRING.md` - Second experiment: navigation connections
+- `V8_ROUTE_REACTIVE_STRING.md` - Third experiment: route personalities
+
+**Key Inspirations Discovered**:
+- p5aholic.me (Keita Yamada) - Minimal Japanese creative coding aesthetic
+- Bruno Simon - Physics-based 3D portfolio navigation
+- Verlet Integration - Realistic rope/string physics
+- Codrops Custom Cursor Effects - Production-quality implementations
+
+**To Start Implementation**:
+```bash
+# Run the first engineer task
+/engineer "Implement V6 Red Ribbon Cursor physics engine"
+```
 
 ---
 
