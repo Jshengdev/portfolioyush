@@ -1,0 +1,62 @@
+{
+  "/": {
+    "loadTime": 791.3613750000001,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_home.png"
+  },
+  "/about": {
+    "loadTime": 1012.8577500000001,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_about.png"
+  },
+  "/projects": {
+    "loadTime": 737.2115419999991,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_projects.png"
+  },
+  "/archive": {
+    "loadTime": 810.5916250000009,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_archive.png"
+  },
+  "/contact": {
+    "loadTime": 890.3937910000022,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_contact.png"
+  },
+  "/projects/Grove": {
+    "loadTime": 1750.8940839999996,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_projects_Grove.png"
+  },
+  "/projects/CapsuleMachine": {
+    "loadTime": 739.0039169999982,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_projects_CapsuleMachine.png"
+  },
+  "/projects/Lens": {
+    "loadTime": 683.0176670000001,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_projects_Lens.png"
+  },
+  "/projects/TheCollection": {
+    "loadTime": 1746.2501249999987,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_projects_TheCollection.png"
+  },
+  "/projects/NextProject": {
+    "loadTime": 692.1422079999975,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_projects_NextProject.png"
+  },
+  "/projects/Ark": {
+    "loadTime": 698.5070409999971,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_projects_Ark.png"
+  },
+  "/projects/AlainaPamela": {
+    "loadTime": 1541.5851670000047,
+    "fps": 121,
+    "screenshot": "/Users/johnnysheng/Documents/GitHub/portfolioyush/docs/research/screenshots/after_projects_AlainaPamela.png"
+  }
+}
