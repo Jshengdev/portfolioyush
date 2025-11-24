@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useContext } from 'react';
+import React, { lazy, Suspense, useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import { ThemeProvider as CustomThemeProvider, ThemeContext } from './context/ThemeContext';
@@ -187,6 +187,11 @@ function AnimatedRoutes() {
  */
 function AppContent() {
   const { theme } = useContext(ThemeContext);
+
+  // Set body background color to match theme
+  useEffect(() => {
+    document.body.style.backgroundColor = theme.colors.background.primary;
+  }, [theme]);
 
   return (
     <StyledThemeProvider theme={theme}>

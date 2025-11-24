@@ -274,8 +274,15 @@ void main() {
 
   // Mix tile pattern with theme background color
   vec3 patternLayer = tileColor * shapeMask;
-  vec3 finalColor = u_backgroundColor + patternLayer * 0.15; // Subtle pattern over background
 
-  // Output
-  gl_FragColor = vec4(finalColor, 0.5); // lower opacity
+  // Adaptive pattern intensity based on background brightness
+  // Dark backgrounds (closer to 0,0,0) get very subtle patterns
+  // Light backgrounds (closer to 1,1,1) can have stronger patterns
+  float bgBrightness = (u_backgroundColor.r + u_backgroundColor.g + u_backgroundColor.b) / 3.0;
+  float patternIntensity = mix(0.03, 0.08, bgBrightness); // 3% for dark, 8% for light
+
+  vec3 finalColor = u_backgroundColor + patternLayer * patternIntensity;
+
+  // Output - fully opaque to prevent blending with body background
+  gl_FragColor = vec4(finalColor, 1.0);
 }

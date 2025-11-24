@@ -38,23 +38,23 @@ const SliderItem = styled.div`
   width: var(--width);
   height: var(--height);
   display: flex;
-  flex-direction: column; 
-  justify-content: center; 
-  align-items: center; 
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   font-family: "Ade", sans-serif;
-  color: rgba(255, 255, 255, 0.9);
+  color: ${props => props.theme.colors.text.primary};
   letter-spacing: 7px;
   font-size: 20px;
   text-align: center;
-  padding: 0 40px; 
+  padding: 0 40px;
 `;
 
 const PositionLabel = styled.div`
   font-size: 12px;
   font-family: "ade";
-  color: rgba(255, 255, 255, 0.2);
-  margin-bottom: 20px; 
-  margin-top: 20px; 
+  color: ${props => props.theme.colors.text.muted};
+  margin-bottom: 20px;
+  margin-top: 20px;
 `;
 
 const AppSlider = () => {
