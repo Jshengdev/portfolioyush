@@ -1,143 +1,134 @@
-# Shader Redesign Project - Task System
-**Project**: Research-Driven Shader Visual System
-**Start Date**: 2025-11-21
+# Tasks Directory
+
+**Purpose**: Workspace for active feature development tasks
+**Status**: 🟢 Active (currently empty - all tasks completed)
+**Last Updated**: 2025-11-24
+
+---
+
+## Current Status
+
+**No active tasks** - All shader redesign work has been completed and archived.
+
+---
+
+## Recent Completion
+
+### Shader Redesign Project ✅
 **Completion Date**: 2025-11-24
-**Status**: ✅ **COMPLETE - All Tasks Merged & Deployed**
-**QA Status**: ✅ **PASSED** - Light mode integration verified
+**Status**: All tasks completed and moved to archive
+
+**What Was Completed**:
+- ✅ 4 Engineer tasks (shader personality system)
+- ✅ 2 Researcher tasks (analysis & documentation)
+- ✅ 1 QA task (comprehensive verification)
+- ✅ Light mode integration fix (2025-11-24)
+
+**Results**:
+- Shader system with 5 personality attributes (complexity, energy, focus, warmth, depth)
+- John Whitney-inspired harmonic motion (non-repeating animation)
+- Gmunk-inspired cursor light trails
+- SANAA-inspired multi-layer depth perception
+- Full dark/light theme integration
+- 121fps performance maintained
+
+**Task Files Archived**: See `/tasks/archive/shader-redesign/`
 
 ---
 
-## ✅ PROJECT COMPLETE
+## How to Use This Directory
 
-All shader redesign tasks have been successfully completed, merged to main, and are now live.
+### For New Features
 
-**Final Commit**: `bc506d7 - Fix light mode theme integration and shader rendering`
+When starting a new feature development cycle:
 
-### What Was Delivered
+1. **Create task files** in this directory:
+   ```
+   /tasks/FEATURE_NAME_TASK_1.md
+   /tasks/FEATURE_NAME_TASK_2.md
+   etc.
+   ```
 
-**Engineering Work** (4 parallel tasks, ~3 hours):
-- ✅ Shader personality attributes (complexity, energy, focus, warmth, depth)
-- ✅ John Whitney-inspired harmonic motion (non-repeating animation)
-- ✅ Gmunk-inspired cursor trail light sculpting (10-point trail buffer)
-- ✅ SANAA-inspired multi-layer depth perception (3 noise layers)
+2. **Use the 7-agent workflow** (see `/docs/workflows/`):
+   - Engineers (parallel execution)
+   - Researchers (sequential)
+   - QA (final verification)
 
-**Research Work** (2 sequential tasks, ~80 min):
-- ✅ Performance benchmarking (maintained 121fps on MacBook Pro M2)
-- ✅ Visual comparison documentation with screenshots
-- ✅ Shader philosophy documentation (design principles)
-- ✅ Updated CLAUDE.md and COMPONENTS.md
+3. **Track progress** by updating task files
 
-**QA Work** (1 final verification, ~60 min):
-- ✅ All 11 routes tested
-- ✅ Cross-browser compatibility verified
-- ✅ Security audit passed (no vulnerabilities)
-- ✅ Dark/light mode integration verified (2025-11-24)
+4. **Archive when complete** by moving to `/tasks/archive/[feature-name]/`
 
-**Total Work**: ~5-6 hours across 7 agents
+### Task File Template
 
----
+```markdown
+# [Task Name]
 
-## Recent Fix (2025-11-24)
+**Agent**: Engineer 1 / Researcher 1 / QA
+**Time Estimate**: X minutes
+**Status**: ⏳ Not Started / 🔄 In Progress / ✅ Complete
 
-### Light Mode Theme Integration
+## Objective
+[Clear description of what needs to be done]
 
-**Issue**: Shader didn't respond to theme changes, AppSlider had hardcoded colors
+## Acceptance Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
 
-**Solution Applied**:
-1. **ShaderVisual.jsx**: Added ThemeContext integration, u_backgroundColor uniform
-2. **AppSlider.jsx**: Replaced hardcoded colors with theme tokens
-3. **truchet.frag.glsl**: Adaptive pattern intensity (3% dark, 8% light)
-4. **App.jsx**: Dynamic body backgroundColor sync
-5. **App.css**: Default black background
+## Implementation Notes
+[Technical details, file locations, etc.]
 
-**Result**: ✅ Both dark and light modes fully functional
-
----
-
-## Completed Tasks
-
-### Phase 1: Engineers (Parallel Execution)
-- [x] **Engineer 1**: Shader Attribute System - Merged PR #36
-- [x] **Engineer 2**: Harmonic Oscillators - Merged PR #37
-- [x] **Engineer 3**: Cursor Light Trails - Merged PR #38
-- [x] **Engineer 4**: Multi-Layer Patterns - Merged PR #39
-
-### Phase 2: Researchers (Sequential)
-- [x] **Researcher 1**: Visual & Performance Analysis - Completed
-- [x] **Researcher 2**: Documentation - Merged PR #40
-
-### Phase 3: QA
-- [x] **QA/Security**: Comprehensive Verification - Passed
-- [x] **Follow-up Fix**: Light mode integration - Commit bc506d7
+## Completion Checklist
+- [ ] Implementation complete
+- [ ] Tests passing
+- [ ] Documentation updated
+- [ ] Code reviewed
+```
 
 ---
 
-## Files Modified
+## Archive Structure
 
-### Core Implementation:
-- `src/components/ShaderVisual.jsx` (133 lines, -40% from original)
-- `src/shaders/truchet.frag.glsl` (288 lines with personality system)
-- `src/shaders/truchet.vert.glsl` (4 lines, pass-through)
-- `src/components/AppSlider.jsx` (theme color integration)
-- `src/App.jsx` (body background sync)
-- `src/App.css` (default background)
-
-### Documentation Created:
-- `docs/design/SHADER_PHILOSOPHY.md` (design principles)
-- `docs/research/SHADER_REDESIGN_ANALYSIS.md` (performance data)
-- `docs/qa/SHADER_REDESIGN_QA_REPORT.md` (test results)
-
-### Documentation Updated:
-- `CLAUDE.md` (shader system section)
-- `docs/architecture/COMPONENTS.md` (ShaderVisual details)
+```
+tasks/archive/
+├── shader-redesign/        # Completed shader system (2025-11-21 to 2025-11-24)
+├── wave-1/                 # Portfolio optimization wave 1
+├── wave-2/                 # Portfolio optimization wave 2
+├── wave-3/                 # Portfolio optimization wave 3
+├── wave-4/                 # Portfolio optimization wave 4
+├── wave-5/                 # Portfolio optimization wave 5
+├── wave-6/                 # Portfolio optimization wave 6
+└── wave-7/                 # Portfolio optimization wave 7
+```
 
 ---
 
-## Success Metrics
+## Related Documentation
 
-### Visual Quality ✅
-- ✅ Shader is "clean but unique" (not generic)
-- ✅ Route personalities clearly differentiated (5 attributes)
-- ✅ Cursor interaction feels responsive (light trails)
-- ✅ Never feels "looped" or repetitive (harmonic motion)
-- ✅ Works in both dark and light modes
-
-### Technical Quality ✅
-- ✅ 121fps maintained on M2 MacBook Pro (target: 60fps)
-- ✅ Works across Chrome, Firefox, Safari
-- ✅ Mobile performance acceptable
-- ✅ No WebGL errors or warnings
-- ✅ Clean, well-commented code
-
-### Documentation Quality ✅
-- ✅ Research connections explained (6 design references)
-- ✅ Shader personality system documented
-- ✅ Performance benchmarks recorded
-- ✅ Theme integration guide complete
+**Workflow System**: `/docs/workflows/WORKFLOW_GUIDE.md`
+**Slash Commands**: `/docs/workflows/SLASH_COMMANDS.md`
+**Prompt Templates**: `/docs/workflows/PROMPT_TEMPLATES.md`
+**Roadmap**: `/docs/roadmap/ROADMAP.md`
 
 ---
 
-## Archive Status
+## Quick Commands
 
-Old optimization wave documentation has been moved to `tasks/archive/`:
-- Wave 1-7: Original portfolio optimization (2025-11-20 to 2025-11-21)
-- Located in: `/tasks/archive/wave-{1-7}/`
+```bash
+# Start a new workflow (guided)
+/workflow
 
-Shader redesign tasks remain in `/tasks/` for reference.
+# Run a single engineer task
+/engineer
 
----
+# Run research analysis
+/researcher
 
-## Next Steps (Optional Future Enhancements)
-
-From research backlog:
-- [ ] Route-specific hollow box shapes (MA architecture research)
-- [ ] Varied border thickness (spatial hierarchy)
-- [ ] Enhanced threshold transitions
-- [ ] Route-specific color temperature adjustments
+# Run QA verification
+/qa
+```
 
 ---
 
-**Project Lead**: Johnny Sheng
-**Technical Implementation**: Claude Code (7-agent workflow system)
-**Research Foundation**: Saul Bass, Gmunk, Ash Thorp, ManvsMachine, Refik Anadol, SANAA
-**Status**: 🎉 **SHIPPED** - All features live on main branch
+**Maintained by**: Claude Code workflow system
+**Current Features**: See `/docs/roadmap/ROADMAP.md`
+**Active Development**: None (awaiting next feature)
