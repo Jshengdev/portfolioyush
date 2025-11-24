@@ -1,7 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import AppSlider from './AppSlider';
 import { Title, Container2 } from './sharedStyles';
+import { experiments } from './experiments/experimentConfig';
 
 const Section = styled.div`
   height: 100vh;
@@ -73,6 +75,23 @@ const Button = styled.button`
     border-radius: 10px;
 `
 
+const ExperimentsLink = styled(Link)`
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
+    z-index: 50;
+
+    &:hover {
+        color: rgba(255, 255, 255, 0.6);
+    }
+`;
 
 const Hero = () => {
     
@@ -93,6 +112,9 @@ const Hero = () => {
                     </a> */}
                 </Right>
             </Container>
+            <ExperimentsLink to="/experiments">
+                experiments ({experiments.length}) →
+            </ExperimentsLink>
         </Section>
     );
 };
