@@ -18,9 +18,13 @@ I need you to enhance each experiment page with navigation controls and back but
 ## Task
 Update each experiment's index.jsx to include:
 1. Back button to /experiments
-2. Previous/Next navigation between experiments
+2. Previous/Next navigation between experiments (data-driven for extensibility)
 3. Keyboard shortcuts (left/right arrows, Escape)
 4. Experiment title overlay
+
+## IMPORTANT: Extensibility Requirement
+The navigation should be DATA-DRIVEN so adding new experiments (v6, v7, etc.) is simple.
+Create a shared navigation config that all experiment pages use.
 
 ## Files to Update
 - `/src/components/experiments/v1/index.jsx`
@@ -29,15 +33,45 @@ Update each experiment's index.jsx to include:
 - `/src/components/experiments/v4/index.jsx`
 - `/src/components/experiments/v5/index.jsx`
 
-## Template for Each File
+## NEW: Create Shared Navigation Config
+Create `/src/components/experiments/experimentConfig.js`:
 
 ```jsx
-import React, { useEffect, useContext } from 'react';
+// Central config for all experiments - add new ones here
+export const experiments = [
+  { id: 'v1', name: 'Aurora', description: 'Flowing color bands like northern lights', colors: ['#1AE664', '#33B3E6', '#9933E6'] },
+  { id: 'v2', name: 'Fog', description: 'Layered translucent clouds that drift', colors: ['#E6E8F0', '#8C919A', '#5A5F66'] },
+  { id: 'v3', name: 'Bloom', description: 'Soft drifting light glows', colors: ['#FFD4A3', '#E6A3FF', '#A3FFE6'] },
+  { id: 'v4', name: 'Liquid', description: 'Organic blob shapes that merge', colors: ['#FF6B9D', '#C44BFF', '#4B9DFF'] },
+  { id: 'v5', name: 'Waves', description: 'Subtle horizontal gradient waves', colors: ['#6B8CFF', '#B86BFF', '#6BFFD4'] },
+];
+
+// Helper functions for navigation
+export const getExperimentById = (id) => experiments.find(e => e.id === id);
+export const getExperimentIndex = (id) => experiments.findIndex(e => e.id === id);
+export const getPrevExperiment = (id) => {
+  const idx = getExperimentIndex(id);
+  const prevIdx = idx === 0 ? experiments.length - 1 : idx - 1;
+  return experiments[prevIdx];
+};
+export const getNextExperiment = (id) => {
+  const idx = getExperimentIndex(id);
+  const nextIdx = idx === experiments.length - 1 ? 0 : idx + 1;
+  return experiments[nextIdx];
+};
+```
+
+## Template for Each File (Updated for Extensibility)
+
+```jsx
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import BaseExperimentShader from '../BaseExperimentShader';
 import fragmentShader from '../../../shaders/experiments/[NAME].frag.glsl?raw';
-import { ThemeContext } from '../../../context/ThemeContext';
+import { getPrevExperiment, getNextExperiment, getExperimentById } from '../experimentConfig';
+
+// NOTE: NavOverlay and NavButton can be extracted to sharedStyles.js for reuse
 
 const NavOverlay = styled.div`
   position: fixed;
@@ -57,9 +91,9 @@ const NavOverlay = styled.div`
 `;
 
 const NavButton = styled.button`
-  background: ${props => props.theme.colors.background.overlay || 'rgba(0,0,0,0.3)'};
-  border: 1px solid ${props => props.theme.colors.border.primary || 'rgba(255,255,255,0.2)'};
-  color: ${props => props.theme.colors.text.primary || 'rgba(255,255,255,0.7)'};
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
   padding: 8px 16px;
   font-family: 'Work Sans', sans-serif;
   font-size: 12px;
@@ -69,7 +103,7 @@ const NavButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.theme.colors.background.overlay || 'rgba(0,0,0,0.5)'};
+    background: rgba(0, 0, 0, 0.5);
   }
 `;
 
@@ -78,37 +112,43 @@ const NavGroup = styled.div`
   gap: 10px;
 `;
 
+const CURRENT_ID = 'v[N]'; // e.g., 'v1', 'v2', etc.
+
 const [NAME]Experiment = () => {
   const navigate = useNavigate();
-  const { isDarkMode } = useContext(ThemeContext);
+
+  // Data-driven navigation - automatically adapts when new experiments are added
+  const prev = getPrevExperiment(CURRENT_ID);
+  const next = getNextExperiment(CURRENT_ID);
+  const current = getExperimentById(CURRENT_ID);
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') navigate('/experiments');
-      if (e.key === 'ArrowLeft') navigate('/experiments/v[PREV]');
-      if (e.key === 'ArrowRight') navigate('/experiments/v[NEXT]');
+      if (e.key === 'ArrowLeft') navigate(`/experiments/${prev.id}`);
+      if (e.key === 'ArrowRight') navigate(`/experiments/${next.id}`);
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  }, [navigate, prev, next]);
 
   return (
     <>
       <BaseExperimentShader
         fragmentShader={fragmentShader}
-        title="V[N]: [NAME]"
+        title={`${CURRENT_ID.toUpperCase()}: ${current?.name || '[NAME]'}`}
       />
       <NavOverlay>
         <NavButton onClick={() => navigate('/experiments')}>
           ← BACK
         </NavButton>
         <NavGroup>
-          <NavButton onClick={() => navigate('/experiments/v[PREV]')}>
+          <NavButton onClick={() => navigate(`/experiments/${prev.id}`)}>
             ← PREV
           </NavButton>
-          <NavButton onClick={() => navigate('/experiments/v[NEXT]')}>
+          <NavButton onClick={() => navigate(`/experiments/${next.id}`)}>
             NEXT →
           </NavButton>
         </NavGroup>
@@ -119,6 +159,11 @@ const [NAME]Experiment = () => {
 
 export default [NAME]Experiment;
 ```
+
+## Benefits of Data-Driven Navigation
+1. Adding V6: Just add to experimentConfig.js - navigation auto-updates
+2. No manual prev/next updates needed per file
+3. Single source of truth for experiment metadata
 
 ## Navigation Map
 | Experiment | Prev | Next |

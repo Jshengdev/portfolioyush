@@ -10,7 +10,7 @@ import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { ThemeContext } from '../../context/ThemeContext';
-import { experiments, getGradient } from './experimentConfig';
+import { experiments } from './experimentConfig';
 
 /**
  * Fade-up animation keyframe
