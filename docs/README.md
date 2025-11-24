@@ -1,166 +1,245 @@
 # Portfolio Documentation Hub
 
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-11-24
 **Project**: Johnny Sheng's Portfolio Website
-**Version**: 4.0 (Post-Optimization Edition)
-
-Welcome to the comprehensive documentation for Johnny Sheng's portfolio website. This documentation is organized into guides, reference materials, and architecture documentation to help you quickly find the information you need.
+**Repository**: [portfolioyush](https://github.com/Jshengdev/portfolioyush)
 
 ---
 
-## Quick Navigation
-
-### "I need to..."
-
-**Get started quickly**
-→ [Quick Start Guide](guides/QUICK_START.md) - Install, run, and make your first change in 5 minutes
-
-**Add a new project to the portfolio**
-→ [Adding Projects Guide](guides/ADDING_PROJECTS.md) - Step-by-step guide to add project pages with assets and routing
-
-**Deploy to GitHub Pages**
-→ [Deployment Guide](guides/DEPLOYMENT.md) - Build process, deployment commands, and troubleshooting
-
-**Modify styles or colors**
-→ [Styling Guide](guides/STYLING.md) - Color scheme, typography, visual effects, and design system
-
-**Work with animations**
-→ [Animations Guide](guides/ANIMATIONS.md) - Framer Motion patterns, keyframe animations, and performance tips
-
-**Fix a problem**
-→ [Troubleshooting Guide](guides/TROUBLESHOOTING.md) - Common issues with assets, styling, performance, browser compatibility, and git
-
----
-
-### "I want to understand..."
-
-**How the application is structured**
-→ [Architecture Overview](architecture/OVERVIEW.md) - High-level architecture, component hierarchy, and design patterns
-
-**How data flows through the app**
-→ [Data Flow](architecture/DATA_FLOW.md) - projectParty data, archive items, state management, and component communication
-
-**How routing works**
-→ [Routing](architecture/ROUTING.md) - Route structure, formatting patterns, lazy loading, and navigation
-
-**How state is managed**
-→ [State Management](architecture/STATE_MANAGEMENT.md) - Local state patterns, hooks usage, and data flow
-
----
-
-### "I need to look up..."
-
-**Where files are located**
-→ [File Locations](reference/FILE_LOCATIONS.md) - Complete file directory with descriptions and quick search
-
-**Component details and APIs**
-→ [Components Reference](reference/COMPONENTS.md) - All 16 components with props, state, and dependencies
-
-**Technologies and dependencies**
-→ [Dependencies](reference/DEPENDENCIES.md) - Complete tech stack with versions and usage patterns
-
-**Asset organization and optimization**
-→ [Assets Reference](reference/ASSETS.md) - Asset structure, sizes, optimization tips, and best practices
-
-**Coding conventions**
-→ [Conventions](reference/CONVENTIONS.md) - Naming patterns, import order, code structure, and common patterns
-
-**Known issues and technical debt**
-→ [Known Issues](reference/KNOWN_ISSUES.md) - Current bugs, technical debt, and cleanup priorities
-
----
-
-## Documentation Structure
+## 📚 Documentation Structure
 
 ```
 docs/
-├── README.md                    (You are here - Navigation hub)
-│
-├── guides/                      (Task-oriented how-to guides)
-│   ├── QUICK_START.md          - Get up and running in 5 minutes
-│   ├── ADDING_PROJECTS.md      - Add new project pages step-by-step
-│   ├── DEPLOYMENT.md           - Build and deploy to production
-│   ├── STYLING.md              - Work with design system and styles
-│   ├── ANIMATIONS.md           - Animation patterns and best practices
-│   └── TROUBLESHOOTING.md      - Common issues and solutions
-│
-├── reference/                   (Detailed lookup documentation)
-│   ├── FILE_LOCATIONS.md       - File directory and organization
-│   ├── COMPONENTS.md           - Component catalog with APIs
-│   ├── DEPENDENCIES.md         - Technology stack and packages
-│   ├── ASSETS.md               - Asset management and optimization
-│   ├── CONVENTIONS.md          - Code standards and patterns
-│   └── KNOWN_ISSUES.md         - Bugs and technical debt tracker
-│
-└── architecture/                (System design documentation)
-    ├── OVERVIEW.md             - High-level architecture
-    ├── DATA_FLOW.md            - Data structures and flow patterns
-    ├── ROUTING.md              - Routing configuration and patterns
-    └── STATE_MANAGEMENT.md     - State management approach
+├── README.md (you are here)
+├── architecture/           # System design & components
+├── design/                # Visual design principles
+├── guides/                # How-to guides (planned)
+├── history/               # Optimization history
+├── qa/                    # Quality assurance reports
+├── reference/             # Technical reference
+├── research/              # Research findings
+├── roadmap/               # Feature planning
+├── workflows/             # Development workflows
+└── archive/               # Completed/outdated docs
+    ├── completed-work/    # Finished features
+    ├── execution/         # Old task executions
+    ├── experiments/       # Failed/abandoned attempts
+    ├── planning/          # Old planning docs
+    └── research/          # Old research notes
 ```
 
 ---
 
-## Project Overview
+## 🚀 Quick Start
 
-This is a production-ready React portfolio website featuring:
+**New to the project?** Start here:
+1. Read `/CLAUDE.md` (main project guide in root)
+2. Check `/README.md` (project overview in root)
+3. Browse `/docs/architecture/COMPONENTS.md` (component catalog)
 
-- **Modern Tech Stack**: React 18.2, Vite 6.0, Framer Motion 11.15, Three.js 0.171
-- **Performance Optimized**: Code splitting (15 chunks), lazy loading, 797KB main bundle (227KB gzip)
-- **Creative Features**: Custom WebGL shaders, animated cursor, route-reactive line animations
-- **Clean Architecture**: 16 active components, 4,676 lines of code, no dead code
-- **Well-Documented**: Comprehensive guides, references, and architecture documentation
+**Need to understand the architecture?**
+- Component details: `docs/architecture/COMPONENTS.md`
+- Shader system: `docs/design/SHADER_PHILOSOPHY.md`
+- Optimization history: `docs/history/OPTIMIZATIONS.md`
 
-**Health Score**: 9.5/10
-
----
-
-## Key Statistics
-
-- **Components**: 16 active React components (all functional)
-- **Routes**: 11 functional routes with lazy loading
-- **Bundle Size**: 797KB (227KB gzip) - 20% reduction from optimization
-- **Assets**: 443MB (optimized, WebP versions available)
-- **Code Quality**: No dead code, comprehensive documentation, modern patterns
+**Want to add features?**
+- Workflow system: `docs/workflows/WORKFLOW_GUIDE.md`
+- Slash commands: `docs/workflows/SLASH_COMMANDS.md`
+- Roadmap: `docs/roadmap/ROADMAP.md`
 
 ---
 
-## Search Keywords for AI Assistants
+## 📂 Directory Guide
 
-**Common Questions**:
-- "How do I add a project?" → [ADDING_PROJECTS.md](guides/ADDING_PROJECTS.md)
-- "Where are components located?" → [FILE_LOCATIONS.md](reference/FILE_LOCATIONS.md)
-- "How does routing work?" → [ROUTING.md](architecture/ROUTING.md)
-- "What are the color values?" → [STYLING.md](guides/STYLING.md)
-- "How to deploy?" → [DEPLOYMENT.md](guides/DEPLOYMENT.md)
-- "Animation not working?" → [TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)
-- "What dependencies are used?" → [DEPENDENCIES.md](reference/DEPENDENCIES.md)
-- "How is state managed?" → [STATE_MANAGEMENT.md](architecture/STATE_MANAGEMENT.md)
-- "Where are project images stored?" → [ASSETS.md](reference/ASSETS.md)
-- "What are the naming conventions?" → [CONVENTIONS.md](reference/CONVENTIONS.md)
+### `/architecture` - System Design
+**What's here**: Component architecture, data flow, state management
+
+**Key Files**:
+- `COMPONENTS.md` - Complete component catalog (16 components, routes, state)
+
+### `/design` - Visual Design Principles
+**What's here**: Design philosophy, shader system, visual references
+
+**Key Files**:
+- `SHADER_PHILOSOPHY.md` - Shader design principles (Bass, Gmunk, Thorp, SANAA)
+
+### `/history` - Optimization History
+**What's here**: Wave-by-wave optimization documentation (Waves 1-7)
+
+**Key Files**:
+- `OPTIMIZATIONS.md` - Complete optimization timeline (-11.3% LOC, -20% bundle)
+
+### `/qa` - Quality Assurance
+**What's here**: QA reports, test results, security audits
+
+**Key Files**:
+- `SHADER_REDESIGN_QA_REPORT.md` - Shader system QA (11 routes tested)
+- `QA_SUMMARY.md` - General QA status
+- `RECOVERY_PLAN.md` - Deployment recovery procedures (archived)
+
+### `/reference` - Technical Reference
+**What's here**: Dependencies, assets, conventions, known issues
+
+**Key Files**:
+- `KNOWN_ISSUES.md` - Active bugs and workarounds
+
+**Planned**:
+- `DEPENDENCIES.md` - Package inventory
+- `ASSETS.md` - Asset optimization guide
+- `CONVENTIONS.md` - Code standards
+
+### `/research` - Research Findings
+**What's here**: Performance analysis, design research
+
+**Key Files**:
+- `SHADER_REDESIGN_ANALYSIS.md` - Before/after comparison (screenshots, metrics)
+
+**Planned**:
+- Game UI research findings (archived in /archive/research/)
+
+### `/roadmap` - Feature Planning
+**What's here**: Feature backlog, planning docs, examples
+
+**Key Files**:
+- `ROADMAP.md` - Current features & backlog
+- `examples/SKILLS_PAGE_EXAMPLE.md` - Complete workflow example
+
+### `/workflows` - Development Workflows
+**What's here**: 7-agent workflow system, prompt templates, guides
+
+**Key Files**:
+- `WORKFLOW_GUIDE.md` - How the 7-agent system works
+- `SLASH_COMMANDS.md` - `/workflow`, `/engineer`, `/researcher`, `/qa` commands
+- `PROMPT_TEMPLATES.md` - Copy-paste prompts for each agent
+- `GETTING_STARTED.md` - 5-minute quickstart
+
+### `/archive` - Completed/Outdated
+**What's here**: Old docs, completed features, abandoned experiments
+
+**Subfolders**:
+- `completed-work/` - Finished features (theme system, shader fixes, old architecture)
+- `execution/` - Old CLAUDE.md versions, execution docs
+- `experiments/` - Failed attempts, prototypes
+- `planning/` - Old planning docs (shader redesign kickoff)
+- `research/` - Old research notes (game UI research)
 
 ---
 
-## Contributing
+## 🎯 Documentation Principles
 
-When adding to this documentation:
+### 1. **Living Documentation**
+Docs are updated as features are built, not after the fact.
 
-1. **Use consistent formatting**: H2 for main sections, H3 for subsections
-2. **Add frontmatter**: Include title, description, and keywords at top
-3. **Add "See also" links**: Cross-reference related documents
-4. **Use code blocks**: Always specify language (```javascript, ```bash, ```css)
-5. **Keep it searchable**: Use clear headings and keywords
-6. **Update this README**: Add links to new documents in appropriate sections
+### 2. **Archive Aggressively**
+Completed work moves to `/archive` to keep main docs clean.
 
----
+### 3. **Single Source of Truth**
+Each topic has ONE authoritative doc:
+- Project overview: `/CLAUDE.md` (root)
+- Component catalog: `/docs/architecture/COMPONENTS.md`
+- Shader system: `/docs/design/SHADER_PHILOSOPHY.md`
+- Known issues: `/docs/reference/KNOWN_ISSUES.md`
 
-## Quick Links
-
-- **Main Project README**: [/README.md](../README.md)
-- **Architecture Docs**: [/ARCHITECTURE.md](../ARCHITECTURE.md)
-- **Main Codebase Guide**: [/CLAUDE.md](../CLAUDE.md)
-- **Optimization History**: [/WAVE_VERIFICATION.md](../WAVE_VERIFICATION.md)
+### 4. **Discoverable Structure**
+Folder names are self-explanatory, README files guide navigation.
 
 ---
 
-**Need help?** Start with the [Quick Start Guide](guides/QUICK_START.md) or search for keywords above.
+## 📝 Recent Updates
+
+### 2025-11-24: Light Mode Integration & Cleanup
+- ✅ Fixed ShaderVisual theme integration
+- ✅ Fixed AppSlider hardcoded colors
+- ✅ Moved theme docs to archive (feature complete)
+- ✅ Moved old architecture docs to archive
+- ✅ Updated tasks README with completion status
+
+### 2025-11-21: Shader Redesign Complete
+- ✅ 7-agent workflow system executed
+- ✅ Shader personality system implemented
+- ✅ Performance analysis documented
+- ✅ Design philosophy documented
+
+### 2025-11-20 to 2025-11-21: Optimization Waves 1-7
+- ✅ -11.3% lines of code (-596 lines)
+- ✅ -20% bundle size (-198KB)
+- ✅ Code splitting (15 chunks)
+- ✅ Asset optimization (-12MB)
+- ✅ Documentation overhaul
+
+---
+
+## 🔍 Finding What You Need
+
+**"How do I add a new project page?"**
+→ `CLAUDE.md` (main guide, "Add a New Project" section)
+
+**"What components are available?"**
+→ `docs/architecture/COMPONENTS.md`
+
+**"How does the shader system work?"**
+→ `docs/design/SHADER_PHILOSOPHY.md`
+
+**"What are the current bugs?"**
+→ `docs/reference/KNOWN_ISSUES.md`
+
+**"How do I use the workflow system?"**
+→ `docs/workflows/GETTING_STARTED.md`
+
+**"What was changed in optimization waves?"**
+→ `docs/history/OPTIMIZATIONS.md`
+
+**"What's the project status?"**
+→ `/CLAUDE.md` (section: "Current Status")
+
+---
+
+## 🗂️ Archived Documentation
+
+Old docs are preserved in `/docs/archive/` for historical reference:
+
+**Theme System Docs** (completed work):
+- `THEME_ANALYSIS.md` - Original theme analysis
+- `THEME_IMPLEMENTATION_GUIDE.md` - Implementation guide
+- `THEME_IMPLEMENTATION_STATUS.md` - Status report
+- `THEME_VISUAL_STATUS.md` - Visual verification
+- `THEME_WORKFLOW_CHECKLIST.md` - Completion checklist
+- `SHADER_THEME_FIX.md` - Original theme fix attempt
+
+**Old Architecture** (superseded):
+- `ARCHITECTURE.md` - Old architecture doc (replaced by COMPONENTS.md)
+
+**Planning Docs** (completed):
+- `SHADER_REDESIGN_KICKOFF.md` - Shader redesign planning
+
+**QA Results** (completed):
+- `QA_RESULTS.md` - Old QA report (superseded by SHADER_REDESIGN_QA_REPORT.md)
+
+---
+
+## 🚧 Planned Documentation
+
+Docs to be created (extracted from old CLAUDE.md):
+
+**Reference**:
+- `DEPENDENCIES.md` - Package inventory & tech stack
+- `ASSETS.md` - Asset inventory & optimization
+- `CONVENTIONS.md` - Naming patterns & code organization
+
+**Guides**:
+- `QUICK_START.md` - Expanded setup guide
+- `ADDING_PROJECTS.md` - Step-by-step project workflow
+- `STYLING.md` - Design system & color scheme
+- `DEPLOYMENT.md` - Build & deploy process
+- `TROUBLESHOOTING.md` - Common issues & fixes
+
+**Architecture**:
+- `DATA_FLOW.md` - Data structures & flow
+- `ROUTING.md` - Route configuration details
+- `STATE_MANAGEMENT.md` - State patterns & hooks
+
+---
+
+**Maintained by**: Claude Code
+**Last Major Update**: 2025-11-24 (Light mode integration)
+**Documentation Health**: 🟢 Good - Recent cleanup, clear structure
