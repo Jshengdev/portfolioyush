@@ -323,52 +323,70 @@ Visual: Calm ocean, meditation app. Serene, peaceful.
 
 ---
 
-## WAVE 2: Integration & Polish (5 Parallel Tasks)
+## WAVE 2: Integration & Polish (5 Parallel Tasks) - UPDATED FOR EXTENSIBILITY
 
 **Run these 5 prompts simultaneously. All are independent.**
 
-### W2-T1: Experiment Page Navigation
+**NOTE**: W2-T1 creates `experimentConfig.js` which W2-T2 and W2-T4 depend on. Run W2-T1 first, OR have W2-T2/T4 create the config if it doesn't exist.
+
+### W2-T1: Experiment Page Navigation + Config (RUN FIRST)
 ```
-Enhance each experiment page with navigation controls.
+Enhance each experiment page with DATA-DRIVEN navigation controls.
 
-Update all 5 experiment files (v1-v5 index.jsx) to include:
-1. Back button to /experiments
-2. Prev/Next navigation (cyclic: v5→v1→v2→...→v5)
-3. Keyboard shortcuts: Escape=back, Left=prev, Right=next
-4. Styled navigation overlay (top of screen)
+## IMPORTANT: Create Shared Config First
+Create `/src/components/experiments/experimentConfig.js`:
 
-Navigation map:
-- v1: prev=v5, next=v2
-- v2: prev=v1, next=v3
-- v3: prev=v2, next=v4
-- v4: prev=v3, next=v5
-- v5: prev=v4, next=v1
+export const experiments = [
+  { id: 'v1', name: 'Aurora', description: 'Flowing color bands like northern lights', colors: ['#1AE664', '#33B3E6', '#9933E6'] },
+  { id: 'v2', name: 'Fog', description: 'Layered translucent clouds that drift', colors: ['#E6E8F0', '#8C919A', '#5A5F66'] },
+  { id: 'v3', name: 'Bloom', description: 'Soft drifting light glows', colors: ['#FFD4A3', '#E6A3FF', '#A3FFE6'] },
+  { id: 'v4', name: 'Liquid', description: 'Organic blob shapes that merge', colors: ['#FF6B9D', '#C44BFF', '#4B9DFF'] },
+  { id: 'v5', name: 'Waves', description: 'Subtle horizontal gradient waves', colors: ['#6B8CFF', '#B86BFF', '#6BFFD4'] },
+];
 
-Use styled-components, useNavigate from react-router-dom, useEffect for keyboard.
-Theme-aware button styling with backdrop-filter blur.
+export const getExperimentById = (id) => experiments.find(e => e.id === id);
+export const getExperimentIndex = (id) => experiments.findIndex(e => e.id === id);
+export const getPrevExperiment = (id) => {
+  const idx = getExperimentIndex(id);
+  return experiments[idx === 0 ? experiments.length - 1 : idx - 1];
+};
+export const getNextExperiment = (id) => {
+  const idx = getExperimentIndex(id);
+  return experiments[idx === experiments.length - 1 ? 0 : idx + 1];
+};
+
+## Then Update All 5 Experiments
+Update all 5 experiment files (v1-v5 index.jsx) to:
+1. Import navigation helpers from experimentConfig.js
+2. Use data-driven prev/next (auto-adapts when V6+ added)
+3. Add Back button, Prev/Next, keyboard shortcuts
+
+See task file W2-T1 for full template.
 ```
 
 ---
 
-### W2-T2: Preview Thumbnails
+### W2-T2: Preview Thumbnails (Uses Config)
 ```
-Add visual previews to ExperimentNav component.
+Add visual previews to ExperimentNav using the shared config.
+
+## KEY: Use experimentConfig.js (Single Source of Truth)
 
 Update `/src/components/experiments/ExperimentNav.jsx`:
 
-For simplicity, use colored gradient placeholders (not live shaders):
+1. Import from config:
+   import { experiments } from './experimentConfig';
 
-Create simple CSS gradients that hint at each effect:
-- v1 Aurora: linear-gradient(green, purple)
-- v2 Fog: linear-gradient(grey tones)
-- v3 Bloom: radial-gradient (soft circles)
-- v4 Liquid: radial gradient (blob-like)
-- v5 Waves: linear-gradient horizontal
+2. Use colors array for gradient previews:
+   <GradientPreview $gradient={`linear-gradient(135deg, ${experiment.colors.join(', ')})`} />
 
-Add Preview styled component (150x100px) with border-radius.
-Add hover effect (scale, border glow).
+3. Show dynamic count in title:
+   <Title>Experimental Shaders ({experiments.length})</Title>
 
-Keep it simple - CSS only, no additional assets needed.
+## Benefits
+- Adding V6: Just update experimentConfig.js - nav auto-updates!
+- No hardcoded experiment lists
+- Gradient colors match shader themes
 ```
 
 ---
@@ -394,23 +412,31 @@ The experiments work without it.
 
 ---
 
-### W2-T4: Hero Page Link
+### W2-T4: Hero Page Link (Uses Config)
 ```
-Add a subtle link from Hero page to experiments.
+Add a subtle link from Hero page to experiments with DYNAMIC COUNT.
 
 Edit `/src/components/Hero.jsx`:
 
+## KEY: Import experiment count from config
+
+import { experiments } from './experiments/experimentConfig';
+
 Add a small, unobtrusive link in bottom-right corner:
-- Text: "experiments →"
+- Text: "experiments (N) →" where N = experiments.length
 - Very low opacity (0.3), small font (10px)
 - Increases opacity on hover (0.6)
 - Links to /experiments
 
+Example:
+<ExperimentsLink to="/experiments">
+  experiments ({experiments.length}) →
+</ExperimentsLink>
+
 Also add keyboard shortcut: Ctrl/Cmd + E navigates to /experiments
 
-The link should be subtle - like a hidden feature.
-
-import { Link, useNavigate } from 'react-router-dom';
+## Benefits
+When you add V6, the Hero link automatically shows "experiments (6) →"
 ```
 
 ---

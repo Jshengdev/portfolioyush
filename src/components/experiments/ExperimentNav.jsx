@@ -3,7 +3,8 @@
  * Grid-based navigation page for browsing experimental shader pages
  *
  * @module ExperimentNav
- * Displays 5 shader experiments in a responsive grid layout
+ * Displays shader experiments in a responsive grid layout with gradient previews
+ * Imports from centralized experimentConfig.js for extensibility
  */
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
@@ -115,6 +116,58 @@ const Card = styled(Link)`
 `;
 
 /**
+ * Experiment count badge in title
+ */
+const CountBadge = styled.span`
+  font-size: 1rem;
+  font-weight: 400;
+  color: ${props => props.theme.colors.accent.blue};
+  margin-left: 0.5rem;
+`;
+
+/**
+ * Gradient preview thumbnail
+ * Shows a visual preview of the shader's color palette
+ */
+const GradientPreview = styled.div`
+  width: 100%;
+  height: 80px;
+  border-radius: 8px;
+  background: ${props => props.$gradient};
+  margin-bottom: 1rem;
+  opacity: 0.85;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  /* Subtle shimmer effect on hover */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.15),
+      transparent
+    );
+    transition: left 0.6s ease;
+  }
+
+  /* Hover effect triggered by parent Card */
+  ${Card}:hover & {
+    opacity: 1;
+
+    &::after {
+      left: 100%;
+    }
+  }
+`;
+
+/**
  * Version badge (V1, V2, etc.)
  */
 const VersionBadge = styled.span`
@@ -179,13 +232,17 @@ const BackLink = styled(Link)`
 /**
  * ExperimentNav Component
  * Displays a grid of experiment cards for shader exploration
+ * Auto-generates cards from centralized experimentConfig.js
  */
 const ExperimentNav = () => {
   const { theme } = useContext(ThemeContext);
 
   return (
     <Container theme={theme}>
-      <Title theme={theme}>Shader Experiments</Title>
+      <Title theme={theme}>
+        Shader Experiments
+        <CountBadge theme={theme}>({experiments.length})</CountBadge>
+      </Title>
       <Subtitle theme={theme}>Explore visual effects and WebGL experiments</Subtitle>
 
       <Grid theme={theme}>
@@ -196,6 +253,10 @@ const ExperimentNav = () => {
             theme={theme}
             $delay={0.15 + index * 0.08}
           >
+            <GradientPreview
+              $gradient={getGradient(experiment)}
+              theme={theme}
+            />
             <VersionBadge theme={theme}>
               {experiment.id.toUpperCase()}
             </VersionBadge>

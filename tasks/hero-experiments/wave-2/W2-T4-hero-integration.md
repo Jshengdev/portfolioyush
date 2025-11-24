@@ -1,4 +1,4 @@
-# W2-T4: Add Link to Experiments from Hero Page
+# W2-T4: Add Link to Experiments from Hero Page (UPDATED for Extensibility)
 
 **Wave**: 2 (Integration & Polish)
 **Task**: 4 of 5
@@ -6,33 +6,40 @@
 **Time Estimate**: 10 minutes
 **Status**: ⏳ Not Started
 **Can Run In Parallel**: ✅ Yes (after Wave 1)
-**Dependencies**: Wave 1 complete
+**Dependencies**: Wave 1 complete, W2-T1 (for experimentConfig.js)
 
 ---
 
 ## Prompt (Copy & Paste)
 
 ```
-I need you to add a subtle link from the Hero page to the experiments section.
+I need you to add a subtle link from the Hero page to the experiments section with dynamic experiment count.
+
+## IMPORTANT: Extensibility Requirement
+The link should show the current experiment count from experimentConfig.js so it auto-updates when new experiments are added.
 
 ## Task
-Add a small, unobtrusive link on the Hero page that allows navigation to the experimental shaders section. This should be subtle - like a hidden easter egg or development tool link.
+Add a small, unobtrusive link on the Hero page that:
+1. Links to /experiments
+2. Shows dynamic count: "experiments (5) →"
+3. Auto-updates when experimentConfig.js changes
 
 ## File to Update
 `/src/components/Hero.jsx`
 
 ## Requirements
 1. Add small text link in corner (e.g., bottom-right or top-right)
-2. Text: "experiments →" or similar
+2. Text: "experiments (N) →" where N is dynamic from config
 3. Styled to be subtle (low opacity, small font)
 4. Links to /experiments
-5. Optional: Only visible on hover or with specific keyboard shortcut
+5. Optional: Keyboard shortcut (Ctrl/Cmd + E)
 
 ## Implementation
 
 ```jsx
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { experiments } from './experiments/experimentConfig';
 
 const ExperimentsLink = styled(Link)`
   position: fixed;
@@ -52,11 +59,14 @@ const ExperimentsLink = styled(Link)`
   }
 `;
 
-// In Hero component JSX:
+// In Hero component JSX (dynamic count!):
 <ExperimentsLink to="/experiments">
-  experiments →
+  experiments ({experiments.length}) →
 </ExperimentsLink>
 ```
+
+## Benefits
+When you add V6, V7, etc. to experimentConfig.js, the Hero link automatically shows the updated count!
 
 ## Alternative: Keyboard Shortcut Only
 If you want it even more hidden, only allow access via keyboard:

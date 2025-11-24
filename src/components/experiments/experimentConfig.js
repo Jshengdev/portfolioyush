@@ -1,18 +1,88 @@
 /**
- * Experiment Configuration
- * Central config for all shader experiments
+ * Centralized configuration for all shader experiments
  *
- * Add new experiments here - count auto-updates everywhere!
+ * This is the single source of truth for experiment metadata.
+ * When adding new experiments (v6, v7, etc.), simply add an entry here
+ * and the navigation will automatically update across all pages.
  *
  * @module experimentConfig
  */
 
+/**
+ * Array of all experiment configurations
+ * Order determines navigation sequence (prev/next)
+ */
 export const experiments = [
-  { id: 'v1', name: 'Aurora', description: 'Flowing color bands like northern lights' },
-  { id: 'v2', name: 'Fog', description: 'Layered translucent clouds that drift' },
-  { id: 'v3', name: 'Bloom', description: 'Soft drifting light glows' },
-  { id: 'v4', name: 'Liquid', description: 'Organic blob shapes that merge' },
-  { id: 'v5', name: 'Waves', description: 'Subtle horizontal gradient waves' },
+  {
+    id: 'v1',
+    name: 'Aurora',
+    description: 'Flowing color bands like northern lights',
+    colors: ['#1AE664', '#33B3E6', '#9933E6']
+  },
+  {
+    id: 'v2',
+    name: 'Fog',
+    description: 'Layered translucent clouds that drift',
+    colors: ['#E6E8F0', '#8C919A', '#5A5F66']
+  },
+  {
+    id: 'v3',
+    name: 'Bloom',
+    description: 'Soft drifting light glows',
+    colors: ['#FFD4A3', '#E6A3FF', '#A3FFE6']
+  },
+  {
+    id: 'v4',
+    name: 'Liquid',
+    description: 'Organic blob shapes that merge',
+    colors: ['#FF6B9D', '#C44BFF', '#4B9DFF']
+  },
+  {
+    id: 'v5',
+    name: 'Waves',
+    description: 'Subtle horizontal gradient waves',
+    colors: ['#6B8CFF', '#B86BFF', '#6BFFD4']
+  },
 ];
 
-export default experiments;
+/**
+ * Get experiment by ID
+ * @param {string} id - Experiment ID (e.g., 'v1', 'v2')
+ * @returns {Object|undefined} Experiment config object
+ */
+export const getExperimentById = (id) => experiments.find(e => e.id === id);
+
+/**
+ * Get index of experiment in array
+ * @param {string} id - Experiment ID
+ * @returns {number} Index in experiments array, or -1 if not found
+ */
+export const getExperimentIndex = (id) => experiments.findIndex(e => e.id === id);
+
+/**
+ * Get previous experiment (wraps around to end)
+ * @param {string} id - Current experiment ID
+ * @returns {Object} Previous experiment config
+ */
+export const getPrevExperiment = (id) => {
+  const idx = getExperimentIndex(id);
+  const prevIdx = idx <= 0 ? experiments.length - 1 : idx - 1;
+  return experiments[prevIdx];
+};
+
+/**
+ * Get next experiment (wraps around to beginning)
+ * @param {string} id - Current experiment ID
+ * @returns {Object} Next experiment config
+ */
+export const getNextExperiment = (id) => {
+  const idx = getExperimentIndex(id);
+  const nextIdx = idx >= experiments.length - 1 ? 0 : idx + 1;
+  return experiments[nextIdx];
+};
+
+/**
+ * Get total number of experiments
+ * @returns {number} Total count
+ */
+export const getExperimentCount = () => experiments.length;

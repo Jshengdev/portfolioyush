@@ -1,4 +1,4 @@
-# W2-T2: Add Live Preview Thumbnails to ExperimentNav
+# W2-T2: Add Preview Thumbnails to ExperimentNav (UPDATED for Extensibility)
 
 **Wave**: 2 (Integration & Polish)
 **Task**: 2 of 5
@@ -6,45 +6,111 @@
 **Time Estimate**: 25 minutes
 **Status**: ⏳ Not Started
 **Can Run In Parallel**: ✅ Yes (after Wave 1)
-**Dependencies**: Wave 1 complete
+**Dependencies**: Wave 1 complete, W2-T1 (for experimentConfig.js)
 
 ---
 
 ## Prompt (Copy & Paste)
 
 ```
-I need you to add live shader preview thumbnails to the ExperimentNav component.
+I need you to add visual preview thumbnails to the ExperimentNav component using the centralized experiment config.
+
+## IMPORTANT: Extensibility Requirement
+The ExperimentNav should import experiment data from the shared config file (experimentConfig.js) so adding new experiments only requires updating ONE file.
 
 ## Task
-Enhance the ExperimentNav component to show small live shader previews for each experiment card, using small canvases with the actual shaders running.
+Enhance the ExperimentNav component to:
+1. Import experiments array from experimentConfig.js (single source of truth)
+2. Show gradient previews based on each experiment's `colors` array
+3. Auto-generate the grid from the config (no hardcoded cards)
 
-## File to Update
-`/src/components/experiments/ExperimentNav.jsx`
+## Files to Update
+- `/src/components/experiments/ExperimentNav.jsx` - Use shared config
+- `/src/components/experiments/experimentConfig.js` - Should already exist from W2-T1
+
+## Key Change: Import from Config
+
+```jsx
+// OLD (hardcoded):
+const experiments = [
+  { id: 'v1', name: 'Aurora', description: '...' },
+  // ...
+];
+
+// NEW (extensible):
+import { experiments } from './experimentConfig';
+// Now ExperimentNav auto-updates when config changes!
+```
+
+## CSS Gradient Previews (No assets needed)
+
+Use the `colors` array from config to generate gradient previews:
+
+```jsx
+const GradientPreview = styled.div`
+  width: 100%;
+  height: 100px;
+  border-radius: 4px;
+  background: ${props => props.$gradient};
+`;
+
+// Usage in card:
+<GradientPreview
+  $gradient={`linear-gradient(135deg, ${experiment.colors.join(', ')})`}
+/>
+```
+
+## Dynamic Experiment Count
+
+Show total count in header:
+
+```jsx
+<Title>Experimental Shaders ({experiments.length})</Title>
+```
 
 ## Requirements
-1. Each experiment card shows a small live preview
-2. Previews are small (150x100px) to conserve resources
-3. Previews run at reduced framerate (~15fps) for performance
+1. Import experiments from experimentConfig.js
+2. Generate gradient preview from colors array
+3. Show dynamic experiment count
 4. Hover scales up the card slightly
 5. Cards link to full experiment page
 
 ## Implementation Approach
 
-### Option A: Static Preview Images (Simpler)
-Create static screenshot images of each shader and display those:
+### Option A: CSS Gradient Previews (Recommended - Simple & Extensible)
+Uses the `colors` array from experimentConfig.js:
+
 ```jsx
-const experiments = [
-  { id: 'v1', name: 'Aurora', description: '...', preview: '/assets/experiments/aurora-preview.png' },
-  // ...
-];
+import React from 'react';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+import { experiments } from './experimentConfig';
+
+const GradientPreview = styled.div`
+  width: 100%;
+  height: 100px;
+  border-radius: 4px;
+  background: ${props => props.$gradient};
+  margin-bottom: 12px;
+`;
+
+const Card = styled(Link)`
+  // ... card styles
+`;
+
+// In render:
+{experiments.map((experiment) => (
+  <Card key={experiment.id} to={`/experiments/${experiment.id}`}>
+    <GradientPreview
+      $gradient={`linear-gradient(135deg, ${experiment.colors.join(', ')})`}
+    />
+    <Name>{experiment.name}</Name>
+    <Description>{experiment.description}</Description>
+  </Card>
+))}
 ```
 
-### Option B: Live Mini Shaders (More Complex)
-Create a MiniShaderPreview component that renders a small Three.js canvas:
-
-```jsx
-import React, { useRef, useEffect } from 'react';
-import * as THREE from 'three';
+### Option B: Live Mini Shaders (More Complex - Future Enhancement)
 
 const MiniShaderPreview = ({ fragmentShader, width = 150, height = 100 }) => {
   const mountRef = useRef(null);
