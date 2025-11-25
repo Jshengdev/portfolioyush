@@ -79,6 +79,12 @@ export const experiments = [
     description: 'Raymarched dithering effect',
     colors: ['#111111', '#999999', '#FFFFFF']
   },
+  {
+    id: 'v18',
+    name: 'Hand Topology',
+    description: 'Contour lines, dissolution & particle wind',
+    colors: ['#000000', '#88A9D7', '#FFFFFF']
+  },
 ];
 
 /**
