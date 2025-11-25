@@ -19,8 +19,8 @@ A React-based portfolio website for Johnny Sheng (designer/developer/filmmaker) 
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **Components** | 16 active | All functional, no dead code |
-| **Routes** | 11 working | 1 broken route needs removal |
+| **Components** | 27 active | Including 11 experiment components |
+| **Routes** | 17 working | 6 main + 11 experiments |
 | **Lines of Code** | 4,676 | Down 11.3% from 5,272 |
 | **Bundle Size** | 797KB (227KB gzip) | Main bundle, 15 chunks |
 | **Code Splitting** | 15 chunks | Lazy-loaded pages & projects |
@@ -52,27 +52,18 @@ A React-based portfolio website for Johnny Sheng (designer/developer/filmmaker) 
 
 ## Quick Start
 
-### Get Running (3 commands)
-
-```bash
-yarn install   # Install dependencies
-yarn dev       # Start dev server (http://localhost:3000)
-yarn build     # Production build to /dist
-```
-
-### Deploy to GitHub Pages
-
-```bash
-yarn deploy    # Builds and pushes to gh-pages branch
-```
-
 ### Project Structure
 
 ```
 portfolioyush/
 ├── src/
-│   ├── components/          # All React components (16 total)
+│   ├── components/          # All React components
 │   │   ├── Projectfiles/   # Project detail pages (6 projects)
+│   │   ├── experiments/    # Shader experiments (11 experiments)
+│   │   │   ├── v1-v11/     # Individual experiment components
+│   │   │   ├── BaseExperimentShader.jsx  # Reusable shader template
+│   │   │   ├── ExperimentNav.jsx         # Gallery navigation
+│   │   │   └── experimentConfig.js       # Central config (add new here!)
 │   │   ├── Navbar.jsx      # Left sidebar navigation
 │   │   ├── Line.jsx        # Route-reactive animations
 │   │   ├── ShaderVisual.jsx # WebGL background
@@ -80,7 +71,9 @@ portfolioyush/
 │   ├── data/
 │   │   ├── projectname.jsx # Project metadata (6 projects)
 │   │   └── archive.js      # Archive gallery data (17 items)
-│   ├── shaders/            # GLSL shader files
+│   ├── shaders/
+│   │   ├── experiments/    # Experiment shaders (11 .frag.glsl files)
+│   │   └── truchet.*       # Main site shader
 │   ├── theme.js            # Design tokens (colors, fonts, spacing)
 │   ├── App.jsx             # Main app + routing
 │   ├── Cursor.jsx          # Custom cursor component
@@ -224,6 +217,36 @@ backdrop-filter: blur(10px)   // Glass effect
 
 ---
 
+### Shader Experiments Gallery
+
+The portfolio includes an **experimental shader gallery** with 11 different visual effects accessible at `/experiments`.
+
+**Current Experiments**:
+
+| ID | Name | Effect Type | Visual Character |
+|----|------|-------------|------------------|
+| V1 | Aurora | Atmospheric | Flowing color bands like northern lights |
+| V2 | Fog | Atmospheric | Layered translucent clouds |
+| V3 | Bloom | Light | Soft drifting glows |
+| V4 | Liquid | Organic | Metaball blob shapes |
+| V5 | Waves | Calm | Horizontal gradient waves |
+| V6 | Void | Glitch | Digital noise and static |
+| V7 | Scan | Technical | Depth parallax grid |
+| V8 | Web | Wireframe | Blurry wireframe with DOF |
+| V9 | Lines | Topographic | Bold contour lines |
+| V10 | Builder | Procedural | Texture generator |
+| V11 | Halftone | Print | Raymarched dithering |
+
+**Architecture**:
+- `experimentConfig.js` - Single source of truth (add new experiments here!)
+- `BaseExperimentShader.jsx` - Reusable Three.js shader template
+- `ExperimentNav.jsx` - Gallery grid with gradient previews
+- Navigation auto-updates when experiments are added
+
+📚 **Adding New Experiments**: [docs/experiments/ADDING_EXPERIMENTS.md](docs/experiments/ADDING_EXPERIMENTS.md)
+
+---
+
 ### Commit Changes (Git Workflow)
 
 ```bash
@@ -262,13 +285,12 @@ App.jsx
 │               ├── /projects → Projects.jsx (+ NextProject.jsx)
 │               ├── /archive → Archive.jsx
 │               ├── /contact → Contact.jsx
-│               └── /projects/* → Project Detail Pages (6 total)
-│                   ├── Grove.jsx
-│                   ├── CapsuleMachine.jsx
-│                   ├── Collection.jsx
-│                   ├── Ark.jsx
-│                   ├── AP.jsx
-│                   └── Lens.jsx
+│               ├── /projects/* → Project Detail Pages (6 total)
+│               │   ├── Grove.jsx, CapsuleMachine.jsx, Collection.jsx
+│               │   └── Ark.jsx, AP.jsx, Lens.jsx
+│               └── /experiments/* → Shader Experiments (11 total)
+│                   ├── ExperimentNav.jsx (gallery grid)
+│                   └── v1-v11/index.jsx (each uses BaseExperimentShader)
 ```
 
 ### Key Patterns

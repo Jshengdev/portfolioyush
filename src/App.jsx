@@ -30,6 +30,12 @@ const ExperimentV8 = lazy(() => import('./components/experiments/v8'));
 const ExperimentV9 = lazy(() => import('./components/experiments/v9'));
 const ExperimentV10 = lazy(() => import('./components/experiments/v10'));
 const ExperimentV11 = lazy(() => import('./components/experiments/v11'));
+const ExperimentV12 = lazy(() => import('./components/experiments/v12'));
+const ExperimentV13 = lazy(() => import('./components/experiments/v13'));
+const ExperimentV14 = lazy(() => import('./components/experiments/v14'));
+const ExperimentV15 = lazy(() => import('./components/experiments/v15'));
+const ExperimentV16 = lazy(() => import('./components/experiments/v16'));
+const ExperimentV17 = lazy(() => import('./components/experiments/v17'));
 
 // Always loaded components (needed for initial render)
 import Navbar from './components/Navbar';
@@ -249,6 +255,36 @@ function AnimatedRoutes() {
           <Route path="/experiments/v11" element={
             <PageWrapper>
               <ExperimentV11 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v12" element={
+            <PageWrapper>
+              <ExperimentV12 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v13" element={
+            <PageWrapper>
+              <ExperimentV13 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v14" element={
+            <PageWrapper>
+              <ExperimentV14 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v15" element={
+            <PageWrapper>
+              <ExperimentV15 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v16" element={
+            <PageWrapper>
+              <ExperimentV16 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v17" element={
+            <PageWrapper>
+              <ExperimentV17 />
             </PageWrapper>
           } />
         </Routes>

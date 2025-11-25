@@ -66,9 +66,28 @@ void main() {
  *
  * Base Uniforms (always available in fragment shader):
  * - u_time: float (incrementing time in seconds)
- * - u_resolution: vec2 (window width, height in pixels)
+ * - u_resolution: vec2 (ACTUAL drawing buffer size in pixels - see note below)
  * - u_mouse: vec2 (normalized mouse position, 0-1)
  * - u_backgroundColor: vec3 (theme-based: black or white)
+ *
+ * IMPORTANT - Pixel Ratio & Resolution:
+ * =====================================
+ * On high-DPI displays (Retina, etc.), devicePixelRatio > 1 (typically 2).
+ *
+ * When setPixelRatio() is called, the canvas drawing buffer becomes:
+ *   actualWidth = window.innerWidth * pixelRatio
+ *   actualHeight = window.innerHeight * pixelRatio
+ *
+ * CSS then scales the canvas back to window dimensions for display.
+ *
+ * CRITICAL: gl_FragCoord in GLSL returns coordinates in the ACTUAL drawing
+ * buffer space (e.g., 0 to 2880 on a 1440px wide Retina display).
+ *
+ * Therefore, u_resolution MUST be set to the actual drawing buffer size,
+ * NOT the CSS/window size. Otherwise, UV calculations like:
+ *   vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+ * will be offset and scaled incorrectly, causing the shader content to
+ * appear in the wrong position (typically bottom-left quadrant).
  *
  * @param {Object} props
  * @param {string} props.fragmentShader - GLSL fragment shader code
@@ -109,19 +128,34 @@ const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {} }) =>
       antialias: !isLowPerf, // Disable antialiasing on low-perf devices
       powerPreference: isLowPerf ? "low-power" : "high-performance",
     });
-    renderer.setSize(window.innerWidth, window.innerHeight);
     // Reduce pixel ratio on low-performance devices for better performance
     const maxPixelRatio = isLowPerf ? 1.5 : 2;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+    const pixelRatio = Math.min(window.devicePixelRatio, maxPixelRatio);
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(pixelRatio);
+
+    // Style canvas to fill container and position at origin (matching V8 behavior)
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+
     mountRef.current.appendChild(renderer.domElement);
 
     // Create geometry (full-screen quad)
     const geometry = new THREE.PlaneGeometry(2, 2);
 
+    // FIX: u_resolution must match the actual drawing buffer size, not CSS size
+    // gl_FragCoord uses actual pixel coordinates (affected by devicePixelRatio)
+    const actualWidth = window.innerWidth * pixelRatio;
+    const actualHeight = window.innerHeight * pixelRatio;
+
     // Build uniforms object: base uniforms + custom uniforms
     const baseUniforms = {
       u_time: { value: 0.0 },
-      u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      u_resolution: { value: new THREE.Vector2(actualWidth, actualHeight) },
       u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
       u_backgroundColor: { value: bgColor },
     };
@@ -186,11 +220,14 @@ const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {} }) =>
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("touchstart", onTouchMove, { passive: true });
 
-    // Resize handler
+    // Resize handler - must also account for pixel ratio
     const onResize = () => {
       const { innerWidth, innerHeight } = window;
       renderer.setSize(innerWidth, innerHeight);
-      material.uniforms.u_resolution.value.set(innerWidth, innerHeight);
+      // FIX: u_resolution must match actual drawing buffer size
+      const resizedWidth = innerWidth * pixelRatio;
+      const resizedHeight = innerHeight * pixelRatio;
+      material.uniforms.u_resolution.value.set(resizedWidth, resizedHeight);
     };
     window.addEventListener("resize", onResize);
 
@@ -219,30 +256,13 @@ const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {} }) =>
     };
   }, [isDarkMode, fragmentShader, customUniforms, webGLSupported, isLowPerf]);
 
+  // Match V8's simple pattern: just a mount div, no wrapper
+  // The parent Container component handles positioning
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        zIndex: 0, // Ensure it sits above the background but below UI
-        overflow: "hidden",
-      }}
-    >
+    <>
       {/* WebGL Canvas Mount Point or Fallback */}
       {webGLSupported ? (
-        <div
-          ref={mountRef}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-          }}
-        />
+        <div ref={mountRef} />
       ) : (
         <FallbackGradient $isDarkMode={isDarkMode} />
       )}
@@ -272,7 +292,7 @@ const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {} }) =>
           )}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

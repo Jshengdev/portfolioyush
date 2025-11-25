@@ -1,23 +1,38 @@
-# Hero Page Experiments - Parallel Task System
+# Hero Page Experiments - Parallel Task System (ARCHIVED)
 
 **Feature**: Experimental Landing Page Effects
 **Created**: 2025-11-24
-**Status**: 🟡 Ready to Execute
-**Total Waves**: 4
-**Total Tasks**: 21
-**Estimated Total Time**: 3-4 hours (with parallel execution)
+**Archived**: 2025-11-24
+**Status**: ✅ COMPLETE
+**Final Count**: 11 experiments (V1-V11)
 
 ---
 
-## Quick Start
+## 📚 Adding New Experiments
 
-**👉 See [EXECUTE.md](./EXECUTE.md) for copy-paste prompts organized by wave.**
+**Full Guide**: [`/docs/experiments/ADDING_EXPERIMENTS.md`](/docs/experiments/ADDING_EXPERIMENTS.md)
+
+### Quick Reference (4 Files)
+
+| Step | File | Action |
+|------|------|--------|
+| 1 | `src/shaders/experiments/[name].frag.glsl` | CREATE shader |
+| 2 | `src/components/experiments/v[N]/index.jsx` | CREATE component |
+| 3 | `src/App.jsx` | ADD lazy import + route |
+| 4 | `src/components/experiments/experimentConfig.js` | ADD to array |
+
+Step 4 **automatically updates**:
+- ExperimentNav gallery grid
+- Navigation prev/next
+- Hero page count
 
 ---
 
-## Overview
+## Archived Task System
 
-This task system is designed for **maximum parallel execution**. Each wave contains 5-6 independent tasks that can run simultaneously.
+**👉 See [EXECUTE.md](./EXECUTE.md) for the original copy-paste prompts.**
+
+This task system was designed for **maximum parallel execution**. Each wave contains 5-6 independent tasks that can run simultaneously.
 
 ---
 

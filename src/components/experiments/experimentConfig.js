@@ -79,6 +79,42 @@ export const experiments = [
     description: 'Raymarched dithering effect',
     colors: ['#111111', '#999999', '#FFFFFF']
   },
+  {
+    id: 'v12',
+    name: 'Constellation',
+    description: 'Red threads connect cursor to floating particles',
+    colors: ['#FF1744', '#FF4444', '#220000']
+  },
+  {
+    id: 'v13',
+    name: 'Ripples',
+    description: 'Expanding fate ripples radiate from cursor',
+    colors: ['#FF1744', '#FF6B6B', '#1A0000']
+  },
+  {
+    id: 'v14',
+    name: 'Magnetism',
+    description: 'Tension threads reveal invisible connections',
+    colors: ['#FF1744', '#FF3366', '#330011']
+  },
+  {
+    id: 'v15',
+    name: 'Fate',
+    description: 'Halftone hand dissolving into particle dust',
+    colors: ['#1A1A1A', '#E8DFD0', '#FF1744']
+  },
+  {
+    id: 'v16',
+    name: 'Scanline',
+    description: 'Topographic contour hand with horizontal scanlines',
+    colors: ['#000000', '#FFFFFF', '#88A9D7']
+  },
+  {
+    id: 'v17',
+    name: 'Atmosphere',
+    description: 'Cinematic grainy fog with warm light diffusion',
+    colors: ['#1A1A1A', '#E8E0D5', '#2A2A35']
+  },
 ];
 
 /**
