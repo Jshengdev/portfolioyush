@@ -24,6 +24,12 @@ const ExperimentV2 = lazy(() => import('./components/experiments/v2'));
 const ExperimentV3 = lazy(() => import('./components/experiments/v3'));
 const ExperimentV4 = lazy(() => import('./components/experiments/v4'));
 const ExperimentV5 = lazy(() => import('./components/experiments/v5'));
+const ExperimentV6 = lazy(() => import('./components/experiments/v6'));
+const ExperimentV7 = lazy(() => import('./components/experiments/v7'));
+const ExperimentV8 = lazy(() => import('./components/experiments/v8'));
+const ExperimentV9 = lazy(() => import('./components/experiments/v9'));
+const ExperimentV10 = lazy(() => import('./components/experiments/v10'));
+const ExperimentV11 = lazy(() => import('./components/experiments/v11'));
 
 // Always loaded components (needed for initial render)
 import Navbar from './components/Navbar';
@@ -105,117 +111,147 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Suspense fallback={<LoadingContainer>Loading...</LoadingContainer>}>
         <Routes location={location} key={location.pathname}>
-        <Route
-          path="/"
-          element={
+          <Route
+            path="/"
+            element={
+              <PageWrapper>
+                <Hero />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <PageWrapper>
+                <About />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/archive"
+            element={
+              <PageWrapper>
+                <Archive />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <PageWrapper>
+                <Contact />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <PageWrapper>
+                <Projects />
+              </PageWrapper>
+            }
+          />
+          <Route path="/projects/Grove"
+            element={
+              <PageWrapper>
+                <Grove />
+              </PageWrapper>} />
+          <Route path="/projects/CapsuleMachine"
+            element={
+              <PageWrapper>
+                <CapsuleMachine />
+              </PageWrapper>} />
+          <Route path="/projects/Lens"
+            element={
+              <PageWrapper>
+                <Lens />
+              </PageWrapper>} />
+          <Route path="/projects/TheCollection"
+            element={
+              <PageWrapper>
+                <Collection />
+              </PageWrapper>} />
+          <Route path="/projects/NextProject"
+            element={
+              <PageWrapper>
+                <NextProject />
+              </PageWrapper>} />
+          <Route path="/projects/Ark"
+            element={
+              <PageWrapper>
+                <Ark />
+              </PageWrapper>
+            }
+          />
+          <Route path="/projects/AlainaPamela"
+            element={
+              <PageWrapper>
+                <AP />
+              </PageWrapper>
+            }
+          />
+          {/* Experimental shader pages */}
+          <Route path="/experiments" element={
             <PageWrapper>
-              <Hero />
+              <ExperimentNav />
             </PageWrapper>
-          }
-        />
-        <Route
-          path="/about"
-          element={
+          } />
+          <Route path="/experiments/v1" element={
             <PageWrapper>
-              <About />
+              <ExperimentV1 />
             </PageWrapper>
-          }
-        />
-        <Route
-          path="/archive"
-          element={
+          } />
+          <Route path="/experiments/v2" element={
             <PageWrapper>
-              <Archive />
+              <ExperimentV2 />
             </PageWrapper>
-          }
-        />
-        <Route
-          path="/contact"
-          element={
+          } />
+          <Route path="/experiments/v3" element={
             <PageWrapper>
-              <Contact />
+              <ExperimentV3 />
             </PageWrapper>
-          }
-        />
-        <Route
-          path="/projects"
-          element={
+          } />
+          <Route path="/experiments/v4" element={
             <PageWrapper>
-              <Projects />
+              <ExperimentV4 />
             </PageWrapper>
-          }
-        />
-        <Route path="/projects/Grove" 
-        element={
-        <PageWrapper>
-          <Grove />
-        </PageWrapper>} />
-        <Route path="/projects/CapsuleMachine" 
-        element={
-        <PageWrapper>
-          <CapsuleMachine />
-        </PageWrapper>} />
-        <Route path="/projects/Lens" 
-        element={
-        <PageWrapper>
-          <Lens />
-        </PageWrapper>} />
-        <Route path="/projects/TheCollection" 
-        element={
-        <PageWrapper>
-          <Collection />
-        </PageWrapper>} />
-        <Route path="/projects/NextProject" 
-        element={
-        <PageWrapper>
-          <NextProject />
-        </PageWrapper>} />
-        <Route path="/projects/Ark"
-          element={
+          } />
+          <Route path="/experiments/v5" element={
             <PageWrapper>
-              <Ark />
+              <ExperimentV5 />
             </PageWrapper>
-          }
-        />
-        <Route path="/projects/AlainaPamela"
-          element={
+          } />
+          <Route path="/experiments/v6" element={
             <PageWrapper>
-              <AP />
+              <ExperimentV6 />
             </PageWrapper>
-          }
-        />
-        {/* Experimental shader pages */}
-        <Route path="/experiments" element={
-          <PageWrapper>
-            <ExperimentNav />
-          </PageWrapper>
-        } />
-        <Route path="/experiments/v1" element={
-          <PageWrapper>
-            <ExperimentV1 />
-          </PageWrapper>
-        } />
-        <Route path="/experiments/v2" element={
-          <PageWrapper>
-            <ExperimentV2 />
-          </PageWrapper>
-        } />
-        <Route path="/experiments/v3" element={
-          <PageWrapper>
-            <ExperimentV3 />
-          </PageWrapper>
-        } />
-        <Route path="/experiments/v4" element={
-          <PageWrapper>
-            <ExperimentV4 />
-          </PageWrapper>
-        } />
-        <Route path="/experiments/v5" element={
-          <PageWrapper>
-            <ExperimentV5 />
-          </PageWrapper>
-        } />
-      </Routes>
+          } />
+          <Route path="/experiments/v7" element={
+            <PageWrapper>
+              <ExperimentV7 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v8" element={
+            <PageWrapper>
+              <ExperimentV8 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v9" element={
+            <PageWrapper>
+              <ExperimentV9 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v10" element={
+            <PageWrapper>
+              <ExperimentV10 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v11" element={
+            <PageWrapper>
+              <ExperimentV11 />
+            </PageWrapper>
+          } />
+        </Routes>
       </Suspense>
     </AnimatePresence>
   );
@@ -240,9 +276,9 @@ function AppContent() {
         <Frame>
           <ShaderVisual />
           <Left>
-            <Navbar/>
+            <Navbar />
           </Left>
-          <Line/>
+          <Line />
           <AnimatedRoutes />
         </Frame>
         <ThemeToggle />

@@ -230,6 +230,18 @@ const BackLink = styled(Link)`
 `;
 
 /**
+ * Helper to generate gradient string from experiment colors
+ * @param {Object} experiment - Experiment config object
+ * @returns {string} CSS linear-gradient string
+ */
+const getGradient = (experiment) => {
+  if (!experiment || !experiment.colors || experiment.colors.length === 0) {
+    return 'linear-gradient(135deg, #ccc, #333)'; // Fallback
+  }
+  return `linear-gradient(135deg, ${experiment.colors.join(', ')})`;
+};
+
+/**
  * ExperimentNav Component
  * Displays a grid of experiment cards for shader exploration
  * Auto-generates cards from centralized experimentConfig.js

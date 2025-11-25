@@ -227,7 +227,7 @@ const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {} }) =>
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: -1,
+        zIndex: 0, // Ensure it sits above the background but below UI
         overflow: "hidden",
       }}
     >

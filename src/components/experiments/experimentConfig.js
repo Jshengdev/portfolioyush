@@ -43,6 +43,42 @@ export const experiments = [
     description: 'Subtle horizontal gradient waves',
     colors: ['#6B8CFF', '#B86BFF', '#6BFFD4']
   },
+  {
+    id: 'v6',
+    name: 'Void',
+    description: 'Interactive digital noise and static',
+    colors: ['#111111', '#444444', '#CCCCCC']
+  },
+  {
+    id: 'v7',
+    name: 'Scan',
+    description: 'Depth map parallax and scanning grid',
+    colors: ['#000000', '#00FF00', '#FFFFFF']
+  },
+  {
+    id: 'v8',
+    name: 'Web',
+    description: 'Blurry wireframe with depth of field',
+    colors: ['#000000', '#FFFFFF', '#888888']
+  },
+  {
+    id: 'v9',
+    name: 'Lines',
+    description: 'Topographic bold lines',
+    colors: ['#000000', '#FFFFFF', '#444444']
+  },
+  {
+    id: 'v10',
+    name: 'Builder',
+    description: 'Procedural texture generator',
+    colors: ['#111111', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v11',
+    name: 'Halftone',
+    description: 'Raymarched dithering effect',
+    colors: ['#111111', '#999999', '#FFFFFF']
+  },
 ];
 
 /**
