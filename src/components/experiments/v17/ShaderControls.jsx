@@ -563,6 +563,170 @@ const SHADER_PARAMS = [
     category: 'BLOOM',
     description: 'Size of bloom spread'
   },
+
+  // PARTICLE DISTRIBUTION (randomness controls)
+  {
+    name: 'u_grainRandomness',
+    label: 'Grain Randomness',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    default: 0.5,
+    category: 'PARTICLE DISTRIBUTION',
+    description: '0=uniform grid pattern, 1=fully scattered random positions'
+  },
+  {
+    name: 'u_grainJitter',
+    label: 'Grain Jitter',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    default: 0.3,
+    category: 'PARTICLE DISTRIBUTION',
+    description: 'Position jitter within grid cells (organic displacement)'
+  },
+  {
+    name: 'u_particleScatter',
+    label: 'Particle Scatter',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    default: 0.2,
+    category: 'PARTICLE DISTRIBUTION',
+    description: 'Overall scatter/dispersion of all particles'
+  },
+  {
+    name: 'u_halftoneRandomness',
+    label: 'Halftone Randomness',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    default: 0.0,
+    category: 'PARTICLE DISTRIBUTION',
+    description: '0=perfect grid dots, 1=scattered organic dots'
+  },
+  {
+    name: 'u_halftoneJitter',
+    label: 'Halftone Size Jitter',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    default: 0.0,
+    category: 'PARTICLE DISTRIBUTION',
+    description: 'Variation in dot sizes (print imperfection look)'
+  },
+
+  // PATTERN OVERLAY (texture effects)
+  {
+    name: 'u_patternMode',
+    label: 'Pattern Mode',
+    min: 0,
+    max: 4,
+    step: 1,
+    default: 0,
+    category: 'PATTERN OVERLAY',
+    description: '0=Off, 1=Glitch Blocks, 2=Crosses, 3=Shape Halftone, 4=Contours'
+  },
+  {
+    name: 'u_patternIntensity',
+    label: 'Pattern Intensity',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    default: 0,
+    category: 'PATTERN OVERLAY',
+    description: 'Overall visibility of the pattern effect'
+  },
+  {
+    name: 'u_patternScale',
+    label: 'Pattern Scale',
+    min: 1,
+    max: 100,
+    step: 1,
+    default: 30,
+    category: 'PATTERN OVERLAY',
+    description: 'Size/density of the pattern'
+  },
+  {
+    name: 'u_patternThreshold',
+    label: 'Luminance Threshold',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    default: 0.5,
+    category: 'PATTERN OVERLAY',
+    description: 'Patterns appear above this brightness level'
+  },
+  {
+    name: 'u_glitchBlockSize',
+    label: 'Glitch Block Size',
+    min: 2,
+    max: 50,
+    step: 1,
+    default: 20,
+    category: 'PATTERN OVERLAY',
+    description: 'Size of pixelated glitch blocks (Mode 1)'
+  },
+  {
+    name: 'u_glitchChance',
+    label: 'Glitch Probability',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    default: 0.3,
+    category: 'PATTERN OVERLAY',
+    description: 'Chance of glitch appearing in each block (Mode 1)'
+  },
+  {
+    name: 'u_crossSize',
+    label: 'Cross Size',
+    min: 0.5,
+    max: 5,
+    step: 0.1,
+    default: 1.5,
+    category: 'PATTERN OVERLAY',
+    description: 'Size of X marks (Mode 2)'
+  },
+  {
+    name: 'u_crossDensity',
+    label: 'Cross Density',
+    min: 10,
+    max: 200,
+    step: 5,
+    default: 50,
+    category: 'PATTERN OVERLAY',
+    description: 'Number of crosses across screen (Mode 2)'
+  },
+  {
+    name: 'u_contourCount',
+    label: 'Contour Lines',
+    min: 5,
+    max: 100,
+    step: 1,
+    default: 30,
+    category: 'PATTERN OVERLAY',
+    description: 'Number of topographic contour lines (Mode 4)'
+  },
+  {
+    name: 'u_contourWidth',
+    label: 'Contour Thickness',
+    min: 0.01,
+    max: 0.3,
+    step: 0.01,
+    default: 0.08,
+    category: 'PATTERN OVERLAY',
+    description: 'Line thickness for contours (Mode 4)'
+  },
+  {
+    name: 'u_shapeType',
+    label: 'Halftone Shape',
+    min: 0,
+    max: 3,
+    step: 0.1,
+    default: 0,
+    category: 'PATTERN OVERLAY',
+    description: '0=Circle, 1=Square, 2=Diamond, 3=Cross (Mode 3)'
+  },
 ];
 
 // Helper to get all default values

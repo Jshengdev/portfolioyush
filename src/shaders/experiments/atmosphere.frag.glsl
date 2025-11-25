@@ -110,6 +110,26 @@ uniform float u_lightWarmth;          // 0-1, default 0.3 - warm tint in light a
 uniform float u_shadowCoolness;       // 0-1, default 0.2 - cool tint in shadow areas
 uniform float u_lightContrast;        // 0.5-2.0, default 1.2 - light/shadow contrast
 
+// 13. PARTICLE DISTRIBUTION (randomness vs uniformity)
+uniform float u_grainRandomness;      // 0-1, default 0.5 - 0=uniform grid, 1=fully random scatter
+uniform float u_grainJitter;          // 0-1, default 0.3 - position jitter within cells
+uniform float u_halftoneRandomness;   // 0-1, default 0.0 - randomize halftone dot positions
+uniform float u_halftoneJitter;       // 0-1, default 0.0 - jitter halftone dot sizes
+uniform float u_particleScatter;      // 0-1, default 0.2 - overall scatter/dispersion amount
+
+// 14. TEXTURE OVERLAY PATTERNS
+uniform float u_patternMode;          // 0=none, 1=glitch blocks, 2=crosses, 3=multi-shape halftone, 4=contours
+uniform float u_patternIntensity;     // 0-1, overall pattern visibility
+uniform float u_patternScale;         // 1-100, pattern size/density
+uniform float u_patternThreshold;     // 0-1, when patterns appear based on luminance
+uniform float u_glitchBlockSize;      // 2-50, size of glitch blocks
+uniform float u_glitchChance;         // 0-1, probability of glitch appearing
+uniform float u_crossSize;            // 0.5-5, size of cross marks
+uniform float u_crossDensity;         // 10-500, number of crosses
+uniform float u_contourCount;         // 5-100, number of contour lines
+uniform float u_contourWidth;         // 0.01-0.3, thickness of contour lines
+uniform float u_shapeType;            // 0=circle, 1=square, 2=diamond, 3=cross for halftone
+
 //-----------------------------------------------------------------------------
 // Noise Functions
 //-----------------------------------------------------------------------------
@@ -117,6 +137,14 @@ uniform float u_lightContrast;        // 0.5-2.0, default 1.2 - light/shadow con
 // Hash function for randomness
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+}
+
+// Hash function that returns vec2 (for 2D random offsets)
+vec2 hash2(vec2 p) {
+  return vec2(
+    fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123),
+    fract(sin(dot(p, vec2(269.5, 183.3))) * 43758.5453123)
+  );
 }
 
 // 2D noise (must be defined before grainCluster which uses it)
@@ -184,20 +212,47 @@ float fbm(vec2 p, int octaves) {
 
 //-----------------------------------------------------------------------------
 // Film Grain - More organic, visible across ALL brightness levels
+// Now with randomness/distribution controls
 //-----------------------------------------------------------------------------
 
 float filmGrain(vec2 uv, float time, float brightness) {
   // Multiple grain layers with varying sizes (film-like)
   vec2 grainUV = uv * u_resolution.xy;
 
-  // Primary grain layer - larger particles
-  float grain1 = hashClustered(grainUV / 2.0, time);
+  // Apply jitter to grain positions based on u_grainJitter
+  // This shifts each pixel's grain sampling point randomly
+  vec2 jitterOffset = vec2(
+    hash(grainUV * 0.1 + time * 0.5),
+    hash(grainUV * 0.1 + time * 0.5 + 100.0)
+  ) * u_grainJitter * 3.0;
 
-  // Secondary grain - medium particles
-  float grain2 = hashClustered(grainUV / 1.5, time + 0.33);
+  // Apply scatter - spreads grain particles apart
+  vec2 scatterOffset = vec2(
+    noise(grainUV * 0.05 + time * 0.1),
+    noise(grainUV * 0.05 + time * 0.1 + 50.0)
+  ) * u_particleScatter * 5.0;
 
-  // Fine grain layer
-  float grain3 = hash(grainUV + fract(time * 60.0));
+  vec2 finalGrainUV = grainUV + jitterOffset + scatterOffset;
+
+  // Randomness blend: 0 = grid-aligned grain, 1 = fully random positions
+  // Grid-based grain (uniform distribution)
+  vec2 gridUV = floor(finalGrainUV / 2.0) * 2.0;
+  float gridGrain = hash(gridUV + fract(time * 60.0));
+
+  // Random grain (no grid alignment)
+  float randomGrain = hash(finalGrainUV + fract(time * 60.0));
+
+  // Primary grain layer - blend between grid and random
+  float grain1 = mix(gridGrain, randomGrain, u_grainRandomness);
+
+  // Secondary grain - medium particles with same randomness treatment
+  vec2 gridUV2 = floor(finalGrainUV / 1.5) * 1.5;
+  float gridGrain2 = hashClustered(gridUV2, time + 0.33);
+  float randomGrain2 = hashClustered(finalGrainUV / 1.5, time + 0.33);
+  float grain2 = mix(gridGrain2, randomGrain2, u_grainRandomness);
+
+  // Fine grain layer - always more random for texture
+  float grain3 = hash(finalGrainUV * (1.0 + u_grainRandomness * 0.5) + fract(time * 60.0));
 
   // Combine with varying weights for organic texture
   float grain = grain1 * 0.5 + grain2 * 0.35 + grain3 * 0.15;
@@ -286,7 +341,7 @@ float fogDensity(vec2 uv, float time, float noiseScale, float depthLayers) {
 // NEW POST-PROCESSING EFFECTS
 //-----------------------------------------------------------------------------
 
-// 1. HALFTONE EFFECT
+// 1. HALFTONE EFFECT - Now with randomness/distribution controls
 vec3 applyHalftone(vec3 color, vec2 uv) {
   if (u_halftoneEnabled < 0.01) return color;
 
@@ -301,15 +356,39 @@ vec3 applyHalftone(vec3 color, vec2 uv) {
   // Scale UV for dot density
   vec2 halftoneUV = rotatedUV * u_halftoneScale * u_resolution.y;
 
-  // Calculate distance to nearest dot center
-  vec2 cellCenter = floor(halftoneUV) + 0.5;
+  // Get cell position for randomness
+  vec2 cellId = floor(halftoneUV);
+
+  // Apply position randomness to dot centers
+  // 0 = perfect grid, 1 = fully scattered dots
+  vec2 randomOffset = vec2(
+    hash(cellId),
+    hash(cellId + 100.0)
+  ) * u_halftoneRandomness * 0.8;
+
+  // Calculate distance to nearest dot center (with random offset)
+  vec2 cellCenter = cellId + 0.5 + randomOffset - (u_halftoneRandomness * 0.4);
   float distToCenter = length(halftoneUV - cellCenter);
 
-  // Dot size based on brightness (brighter = larger dots)
-  float dotRadius = gray * 0.5 * u_halftoneContrast;
+  // Apply jitter to dot size for organic variation
+  // Creates uneven dot sizes like real print imperfections
+  float sizeJitter = hash(cellId + 200.0) * u_halftoneJitter * 0.3;
 
-  // Create dot pattern
-  float dotPattern = smoothstep(dotRadius + 0.05, dotRadius - 0.05, distToCenter);
+  // Dot size based on brightness (brighter = larger dots) + jitter
+  float dotRadius = gray * 0.5 * u_halftoneContrast;
+  dotRadius = dotRadius * (1.0 + sizeJitter - u_halftoneJitter * 0.15);
+
+  // Add slight shape distortion for organic feel when randomness is high
+  float shapeNoise = 0.0;
+  if (u_halftoneRandomness > 0.3) {
+    // Make dots slightly non-circular
+    float angleToCenter = atan(halftoneUV.y - cellCenter.y, halftoneUV.x - cellCenter.x);
+    shapeNoise = hash(cellId + 300.0) * sin(angleToCenter * 3.0) * u_halftoneRandomness * 0.1;
+  }
+
+  // Create dot pattern with organic edges
+  float edgeSoftness = 0.05 + u_halftoneJitter * 0.03;
+  float dotPattern = smoothstep(dotRadius + edgeSoftness + shapeNoise, dotRadius - edgeSoftness + shapeNoise, distToCenter);
 
   // Mix halftone with original color
   vec3 halftoneColor = mix(vec3(0.0), color, dotPattern);
@@ -523,6 +602,151 @@ vec3 applyBloom(vec3 color, vec2 uv) {
 }
 
 //-----------------------------------------------------------------------------
+// TEXTURE OVERLAY PATTERNS
+//-----------------------------------------------------------------------------
+
+// Glitch block pattern - creates pixelated rectangular artifacts
+float glitchBlocks(vec2 uv, float time, float blockSize, float chance) {
+  // Quantize UV to create blocks
+  vec2 blockUV = floor(uv * blockSize) / blockSize;
+
+  // Random block activation
+  float blockId = hash(blockUV + floor(time * 2.0));
+  float glitchActive = step(1.0 - chance, blockId);
+
+  // Block intensity variation
+  float intensity = hash(blockUV + 100.0);
+
+  // Horizontal shift glitch
+  float hShift = (hash(vec2(blockUV.y, floor(time * 5.0))) - 0.5) * 0.1 * glitchActive;
+
+  // Color channel separation simulation
+  float rChannel = hash(blockUV + time);
+  float variation = sin(blockUV.y * 50.0 + time * 10.0) * 0.5 + 0.5;
+
+  return glitchActive * intensity * variation;
+}
+
+// Cross/X mark pattern
+float crossPattern(vec2 uv, float size, float density, float time) {
+  float crosses = 0.0;
+
+  // Grid-based crosses
+  vec2 gridUV = uv * density;
+  vec2 cellId = floor(gridUV);
+  vec2 cellUV = fract(gridUV) - 0.5;
+
+  // Random offset within cell
+  vec2 offset = (hash2(cellId) - 0.5) * 0.6;
+  vec2 crossPos = cellUV - offset;
+
+  // Probability of cross appearing
+  float showCross = step(0.3, hash(cellId + 50.0));
+
+  // Draw X shape
+  float arm1 = abs(crossPos.x - crossPos.y);
+  float arm2 = abs(crossPos.x + crossPos.y);
+  float crossShape = min(arm1, arm2);
+
+  float lineWidth = 0.02 * size;
+  crosses = (1.0 - smoothstep(0.0, lineWidth, crossShape)) * showCross;
+
+  // Size variation
+  float sizeVar = 0.5 + hash(cellId + 100.0) * 0.5;
+  crosses *= step(length(crossPos), 0.15 * size * sizeVar);
+
+  return crosses;
+}
+
+// Multi-shape halftone (circles, squares, diamonds, crosses)
+float multiShapeHalftone(vec2 uv, float luminance, float scale, float shapeType) {
+  vec2 halfUV = uv * scale;
+  vec2 cellId = floor(halfUV);
+  vec2 cellUV = fract(halfUV) - 0.5;
+
+  // Random rotation per cell
+  float rotation = hash(cellId) * 3.14159 * 0.5;
+  float c = cos(rotation);
+  float s = sin(rotation);
+  vec2 rotatedUV = vec2(c * cellUV.x - s * cellUV.y, s * cellUV.x + c * cellUV.y);
+
+  float dotSize = luminance * 0.45;
+  float shape = 0.0;
+
+  // Shape selection with blending
+  float shapeBlend = fract(shapeType);
+  int baseShape = int(floor(shapeType));
+
+  // Circle
+  float circle = length(cellUV);
+
+  // Square
+  float square = max(abs(cellUV.x), abs(cellUV.y));
+
+  // Diamond
+  float diamond = abs(cellUV.x) + abs(cellUV.y);
+
+  // Cross shape
+  float crossArm = min(abs(cellUV.x), abs(cellUV.y));
+
+  // Select shape based on shapeType
+  if (shapeType < 1.0) {
+    shape = mix(circle, square, shapeType);
+  } else if (shapeType < 2.0) {
+    shape = mix(square, diamond, shapeType - 1.0);
+  } else if (shapeType < 3.0) {
+    shape = mix(diamond, crossArm, shapeType - 2.0);
+  } else {
+    shape = crossArm;
+  }
+
+  return 1.0 - smoothstep(dotSize - 0.05, dotSize + 0.05, shape);
+}
+
+// Contour lines (topographic style)
+float contourLines(float luminance, float lineCount, float lineWidth) {
+  float bands = luminance * lineCount;
+  float bandFract = fract(bands);
+  float line = smoothstep(0.0, lineWidth, bandFract) *
+               smoothstep(lineWidth * 2.0, lineWidth, bandFract);
+  return line;
+}
+
+// Master pattern overlay function
+vec3 applyPatternOverlay(vec3 color, vec2 uv, float time) {
+  if (u_patternIntensity < 0.01) return color;
+
+  float luminance = dot(color, vec3(0.299, 0.587, 0.114));
+  float pattern = 0.0;
+
+  // Pattern mode selection
+  if (u_patternMode < 0.5) {
+    // No pattern
+    return color;
+  } else if (u_patternMode < 1.5) {
+    // Glitch blocks
+    pattern = glitchBlocks(uv, time, u_glitchBlockSize, u_glitchChance);
+  } else if (u_patternMode < 2.5) {
+    // Crosses
+    pattern = crossPattern(uv, u_crossSize, u_crossDensity, time);
+  } else if (u_patternMode < 3.5) {
+    // Multi-shape halftone
+    pattern = multiShapeHalftone(uv, luminance, u_patternScale, u_shapeType);
+  } else {
+    // Contour lines
+    pattern = contourLines(luminance, u_contourCount, u_contourWidth);
+  }
+
+  // Apply threshold - patterns only appear in certain luminance ranges
+  float thresholdMask = smoothstep(u_patternThreshold - 0.1, u_patternThreshold + 0.1, luminance);
+  pattern *= thresholdMask;
+
+  // Blend pattern with original color
+  vec3 patternColor = mix(vec3(0.0), vec3(1.0), pattern);
+  return mix(color, patternColor, pattern * u_patternIntensity);
+}
+
+//-----------------------------------------------------------------------------
 // Main
 //-----------------------------------------------------------------------------
 
@@ -641,6 +865,9 @@ void main() {
 
   // 7. Bloom (glow in bright areas)
   fogColor = applyBloom(fogColor, uv);
+
+  // 8. Pattern overlay (glitch, crosses, contours, shapes)
+  fogColor = applyPatternOverlay(fogColor, uv, time);
 
   // Final clamp
   fogColor = clamp(fogColor, 0.0, 1.0);

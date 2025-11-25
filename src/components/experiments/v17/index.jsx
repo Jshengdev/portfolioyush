@@ -176,6 +176,26 @@ const AtmosphereExperiment = () => {
     u_lightWarmth: { value: 0.3 },            // Warm tint in light areas (0-1)
     u_shadowCoolness: { value: 0.2 },         // Cool tint in shadow areas (0-1)
     u_lightContrast: { value: 1.2 },          // Light/shadow contrast (0.5-2.0)
+
+    // Particle Distribution (randomness controls)
+    u_grainRandomness: { value: 0.5 },        // 0=uniform grid, 1=fully random scatter
+    u_grainJitter: { value: 0.3 },            // Position jitter within cells
+    u_halftoneRandomness: { value: 0.0 },     // Randomize halftone dot positions
+    u_halftoneJitter: { value: 0.0 },         // Jitter halftone dot sizes
+    u_particleScatter: { value: 0.2 },        // Overall scatter/dispersion amount
+
+    // Texture Overlay Patterns
+    u_patternMode: { value: 0.0 },          // 0=none, 1=glitch, 2=crosses, 3=multi-halftone, 4=contours
+    u_patternIntensity: { value: 0.0 },     // Overall pattern visibility
+    u_patternScale: { value: 30.0 },        // Pattern size/density
+    u_patternThreshold: { value: 0.5 },     // Luminance threshold for patterns
+    u_glitchBlockSize: { value: 20.0 },     // Size of glitch blocks
+    u_glitchChance: { value: 0.3 },         // Probability of glitch
+    u_crossSize: { value: 1.5 },            // Size of cross marks
+    u_crossDensity: { value: 50.0 },        // Number of crosses
+    u_contourCount: { value: 30.0 },        // Number of contour lines
+    u_contourWidth: { value: 0.08 },        // Thickness of contours
+    u_shapeType: { value: 0.0 },            // 0=circle, 1=square, 2=diamond, 3=cross
   });
 
   // Store uniforms ref for ShaderControls access
