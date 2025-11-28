@@ -272,6 +272,24 @@ const TopographicHandExperiment = () => {
   const [stippleThreshold, setStippleThreshold] = useState(0.6);
   const [stippleAlpha, setStippleAlpha] = useState(0.35);
 
+  // Reaction-Diffusion state
+  const [showReactionDiffusion, setShowReactionDiffusion] = useState(false);
+  const [rdFeedRate, setRdFeedRate] = useState(0.055);      // f: 0.01-0.1 (sweet spot ~0.055)
+  const [rdKillRate, setRdKillRate] = useState(0.062);      // k: 0.045-0.07 (sweet spot ~0.062)
+  const [rdDiffusionA, setRdDiffusionA] = useState(1.0);    // dA: 0.5-1.0
+  const [rdDiffusionB, setRdDiffusionB] = useState(0.5);    // dB: 0.1-0.5
+  const [rdSpeed, setRdSpeed] = useState(1.0);              // Simulation speed multiplier
+  const [rdScale, setRdScale] = useState(2.0);              // Pattern scale
+
+  // Ridgeline state (Joy Division style)
+  const [showRidgeline, setShowRidgeline] = useState(false);
+  const [ridgeCount, setRidgeCount] = useState(60);         // Number of lines
+  const [ridgeAmplitude, setRidgeAmplitude] = useState(1.0); // Displacement amount
+  const [ridgeThickness, setRidgeThickness] = useState(2.0); // Line thickness
+  const [ridgeGlow, setRidgeGlow] = useState(1.0);          // Glow intensity
+  const [ridgeSpeed, setRidgeSpeed] = useState(0.3);        // Animation speed
+  const [ridgeSharpness, setRidgeSharpness] = useState(3.0); // Peak sharpness
+
   // Create a placeholder texture
   const createPlaceholderTexture = () => {
     const data = new Uint8Array([128, 128, 128, 255]);
@@ -281,6 +299,7 @@ const TopographicHandExperiment = () => {
   };
 
   // Initialize custom uniforms - these will be passed to BaseExperimentShader
+  // NOTE: Initial values here should match React state defaults above
   const [customUniforms] = useState(() => {
     const placeholder = createPlaceholderTexture();
 
@@ -288,23 +307,23 @@ const TopographicHandExperiment = () => {
       // Depth map texture
       u_depthMap: { value: placeholder },
 
-      // Layer toggles
+      // Layer toggles (match React state: showContours=true, showScanlines=true, showStipple=false, debugMode=false)
       u_showContours: { value: true },
+      u_showScanlines: { value: true },
       u_showStipple: { value: false },
       u_showDissolution: { value: false },
-      u_debugMode: { value: true },
+      u_debugMode: { value: false },
 
       // Contour layer
-      u_contour_interval: { value: 0.015 },  // Smaller = more lines
+      u_contour_interval: { value: 0.015 },
       u_contour_thickness: { value: 1.0 },
       u_contour_alpha: { value: 0.9 },
 
       // Scanline layer (Joy Division style)
-      u_showScanlines: { value: true },
-      u_scanline_count: { value: 80.0 },        // Number of horizontal lines
-      u_scanline_displacement: { value: 0.3 },  // How much depth pushes lines
-      u_scanline_thickness: { value: 2.0 },     // Line thickness
-      u_scanline_scrollSpeed: { value: 0.03 },  // Very slow upward drift
+      u_scanline_count: { value: 80.0 },
+      u_scanline_displacement: { value: 0.3 },
+      u_scanline_thickness: { value: 2.0 },
+      u_scanline_scrollSpeed: { value: 0.03 },
 
       // Stipple layer
       u_stipple_scale: { value: 1.0 },
@@ -316,6 +335,24 @@ const TopographicHandExperiment = () => {
       u_dissolve_noiseScale: { value: 4.0 },
       u_dissolve_edgeWidth: { value: 0.08 },
       u_dissolve_edgeColor: { value: new THREE.Vector3(0.53, 0.66, 0.84) },
+
+      // Reaction-Diffusion layer
+      u_showReactionDiffusion: { value: false },
+      u_rd_feedRate: { value: 0.055 },
+      u_rd_killRate: { value: 0.062 },
+      u_rd_diffusionA: { value: 1.0 },
+      u_rd_diffusionB: { value: 0.5 },
+      u_rd_speed: { value: 1.0 },
+      u_rd_scale: { value: 2.0 },
+
+      // Ridgeline layer (Joy Division style)
+      u_showRidgeline: { value: false },
+      u_ridge_count: { value: 60.0 },
+      u_ridge_amplitude: { value: 1.0 },
+      u_ridge_thickness: { value: 2.0 },
+      u_ridge_glow: { value: 1.0 },
+      u_ridge_speed: { value: 0.3 },
+      u_ridge_sharpness: { value: 3.0 },
     };
   });
 
@@ -380,6 +417,28 @@ const TopographicHandExperiment = () => {
     customUniforms.u_stipple_alpha.value = stippleAlpha;
   }, [stippleScale, stippleThreshold, stippleAlpha]);
 
+  // Update Reaction-Diffusion uniforms
+  useEffect(() => {
+    customUniforms.u_showReactionDiffusion.value = showReactionDiffusion;
+    customUniforms.u_rd_feedRate.value = rdFeedRate;
+    customUniforms.u_rd_killRate.value = rdKillRate;
+    customUniforms.u_rd_diffusionA.value = rdDiffusionA;
+    customUniforms.u_rd_diffusionB.value = rdDiffusionB;
+    customUniforms.u_rd_speed.value = rdSpeed;
+    customUniforms.u_rd_scale.value = rdScale;
+  }, [showReactionDiffusion, rdFeedRate, rdKillRate, rdDiffusionA, rdDiffusionB, rdSpeed, rdScale]);
+
+  // Update Ridgeline uniforms
+  useEffect(() => {
+    customUniforms.u_showRidgeline.value = showRidgeline;
+    customUniforms.u_ridge_count.value = ridgeCount;
+    customUniforms.u_ridge_amplitude.value = ridgeAmplitude;
+    customUniforms.u_ridge_thickness.value = ridgeThickness;
+    customUniforms.u_ridge_glow.value = ridgeGlow;
+    customUniforms.u_ridge_speed.value = ridgeSpeed;
+    customUniforms.u_ridge_sharpness.value = ridgeSharpness;
+  }, [showRidgeline, ridgeCount, ridgeAmplitude, ridgeThickness, ridgeGlow, ridgeSpeed, ridgeSharpness]);
+
   // Keyboard navigation and layer toggling
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -391,6 +450,8 @@ const TopographicHandExperiment = () => {
       if (e.key === '1') setShowContours(prev => !prev);
       if (e.key === '2') setShowScanlines(prev => !prev);
       if (e.key === '3') setShowStipple(prev => !prev);
+      if (e.key === '4') setShowReactionDiffusion(prev => !prev);
+      if (e.key === '5') setShowRidgeline(prev => !prev);
 
       // Debug toggle with D key
       if (e.key === 'd' || e.key === 'D') {
@@ -609,6 +670,194 @@ const TopographicHandExperiment = () => {
             onChange={(e) => setStippleAlpha(parseFloat(e.target.value))}
           />
         </SliderContainer>
+
+        {/* Reaction-Diffusion Sliders */}
+        <SectionLabel>Reaction-Diffusion</SectionLabel>
+        <ToggleButton
+          $active={showReactionDiffusion}
+          onClick={() => setShowReactionDiffusion(prev => !prev)}
+        >
+          <span>REACTION-DIFF</span>
+          <span className="key">4</span>
+        </ToggleButton>
+        <SliderContainer className={!showReactionDiffusion ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>FEED RATE</span>
+            <span className="value">{rdFeedRate.toFixed(3)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.01"
+            max="0.1"
+            step="0.001"
+            value={rdFeedRate}
+            onChange={(e) => setRdFeedRate(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showReactionDiffusion ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>KILL RATE</span>
+            <span className="value">{rdKillRate.toFixed(3)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.045"
+            max="0.07"
+            step="0.001"
+            value={rdKillRate}
+            onChange={(e) => setRdKillRate(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showReactionDiffusion ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>DIFFUSION A</span>
+            <span className="value">{rdDiffusionA.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.5"
+            max="1.0"
+            step="0.05"
+            value={rdDiffusionA}
+            onChange={(e) => setRdDiffusionA(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showReactionDiffusion ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>DIFFUSION B</span>
+            <span className="value">{rdDiffusionB.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.1"
+            max="0.5"
+            step="0.025"
+            value={rdDiffusionB}
+            onChange={(e) => setRdDiffusionB(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showReactionDiffusion ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>SPEED</span>
+            <span className="value">{rdSpeed.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.1"
+            max="3.0"
+            step="0.1"
+            value={rdSpeed}
+            onChange={(e) => setRdSpeed(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showReactionDiffusion ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>SCALE</span>
+            <span className="value">{rdScale.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.5"
+            max="5.0"
+            step="0.25"
+            value={rdScale}
+            onChange={(e) => setRdScale(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+
+        {/* Ridgeline Sliders (Joy Division) */}
+        <SectionLabel>Ridgeline</SectionLabel>
+        <ToggleButton
+          $active={showRidgeline}
+          onClick={() => setShowRidgeline(prev => !prev)}
+        >
+          <span>RIDGELINE</span>
+          <span className="key">5</span>
+        </ToggleButton>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>LINE COUNT</span>
+            <span className="value">{ridgeCount}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="20"
+            max="150"
+            step="5"
+            value={ridgeCount}
+            onChange={(e) => setRidgeCount(parseInt(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>AMPLITUDE</span>
+            <span className="value">{ridgeAmplitude.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.1"
+            max="2.0"
+            step="0.05"
+            value={ridgeAmplitude}
+            onChange={(e) => setRidgeAmplitude(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>THICKNESS</span>
+            <span className="value">{ridgeThickness.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.5"
+            max="5.0"
+            step="0.25"
+            value={ridgeThickness}
+            onChange={(e) => setRidgeThickness(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>SHARPNESS</span>
+            <span className="value">{ridgeSharpness.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="1"
+            max="10"
+            step="0.5"
+            value={ridgeSharpness}
+            onChange={(e) => setRidgeSharpness(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>GLOW</span>
+            <span className="value">{ridgeGlow.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="3"
+            step="0.1"
+            value={ridgeGlow}
+            onChange={(e) => setRidgeGlow(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>SPEED</span>
+            <span className="value">{ridgeSpeed.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={ridgeSpeed}
+            onChange={(e) => setRidgeSpeed(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
       </ControlPanel>
 
       {/* Info Panel */}
@@ -622,7 +871,9 @@ const TopographicHandExperiment = () => {
           {debugMode ? 'DEBUG MODE' : `Active: ${[
             showContours && 'Contours',
             showScanlines && 'Scanlines',
-            showStipple && 'Stipple'
+            showStipple && 'Stipple',
+            showReactionDiffusion && 'R-D',
+            showRidgeline && 'Ridge'
           ].filter(Boolean).join(', ') || 'None'}`}
           {!textureLoaded && ' (Loading...)'}
         </p>

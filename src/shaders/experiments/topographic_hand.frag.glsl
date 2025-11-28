@@ -60,6 +60,24 @@ uniform float u_dissolve_noiseScale; // 3.0 default
 uniform float u_dissolve_edgeWidth;  // 0.1 default
 uniform vec3 u_dissolve_edgeColor;   // Blue accent
 
+// Reaction-Diffusion layer
+uniform bool u_showReactionDiffusion;
+uniform float u_rd_feedRate;         // f: 0.01-0.1 (controls pattern type)
+uniform float u_rd_killRate;         // k: 0.045-0.07 (controls pattern type)
+uniform float u_rd_diffusionA;       // dA: 0.5-1.0
+uniform float u_rd_diffusionB;       // dB: 0.1-0.5
+uniform float u_rd_speed;            // Animation speed
+uniform float u_rd_scale;            // Pattern scale
+
+// Ridgeline layer (Joy Division / Unknown Pleasures style)
+uniform bool u_showRidgeline;
+uniform float u_ridge_count;         // Number of horizontal lines (20-200)
+uniform float u_ridge_amplitude;     // How much depth displaces lines (0-2)
+uniform float u_ridge_thickness;     // Line thickness (0.5-5)
+uniform float u_ridge_glow;          // Edge glow intensity (0-3)
+uniform float u_ridge_speed;         // Animation speed (0-1)
+uniform float u_ridge_sharpness;     // Peak sharpness (1-10)
+
 // ============================================
 // NOISE FUNCTIONS
 // ============================================
@@ -231,6 +249,188 @@ float multiStipple(vec2 uv, float density) {
 }
 
 // ============================================
+// RIDGELINE (Joy Division / Unknown Pleasures)
+// ============================================
+// Creates clean horizontal lines displaced by depth, with sharp peaks
+// and optional glow. Pure mathematics - no noise, just elegance.
+
+struct RidgeResult {
+    float line;      // The line itself (0-1)
+    float glow;      // Glow around peaks (0-1)
+    float peak;      // Peak intensity for coloring (0-1)
+};
+
+RidgeResult calculateRidgeline(vec2 uv, float time, sampler2D depthTex) {
+    RidgeResult result;
+    result.line = 0.0;
+    result.glow = 0.0;
+    result.peak = 0.0;
+
+    // Flip UV for depth sampling (match main)
+    vec2 depthUV = vec2(1.0 - uv.x, uv.y);
+
+    // Line parameters
+    float lineCount = u_ridge_count;
+    float amplitude = u_ridge_amplitude;
+    float thickness = u_ridge_thickness;
+    float sharpness = u_ridge_sharpness;
+
+    // Subtle time-based vertical drift
+    float drift = time * u_ridge_speed * 0.02;
+
+    // Current line Y position (which horizontal band are we in?)
+    float y = (uv.y + drift) * lineCount;
+    float lineIndex = floor(y);
+    float linePhase = fract(y);
+
+    // For each line, we need to check if THIS pixel should draw
+    // by sampling the depth at this X position for the line's Y
+
+    // Calculate the Y coordinate of the current line in UV space
+    float lineY = (lineIndex + 0.5) / lineCount - drift;
+
+    // Sample depth at this line's Y position but our X position
+    vec2 sampleUV = vec2(depthUV.x, clamp(lineY, 0.0, 1.0));
+    float depth = texture2D(depthTex, sampleUV).r;
+
+    // Background threshold
+    float bgThreshold = 0.08;
+    float isHand = smoothstep(bgThreshold - 0.02, bgThreshold + 0.02, depth);
+
+    // Calculate vertical displacement based on depth
+    // Higher depth = line gets pushed UP (negative Y in screen space)
+    float displacement = depth * amplitude;
+
+    // The line's displaced Y position relative to where we are
+    float displacedLineY = linePhase - displacement * lineCount * 0.5;
+
+    // Create sharp line using smoothstep for anti-aliasing
+    // Sharpness controls the falloff steepness
+    float halfThick = thickness / lineCount * 0.5;
+
+    // Main line - sharper peaks with adjustable sharpness
+    float lineShape = 1.0 - abs(displacedLineY) / halfThick;
+    lineShape = pow(max(lineShape, 0.0), sharpness);
+
+    // Only draw if we're close to the line
+    result.line = lineShape * isHand;
+
+    // Calculate gradient for peak detection (where depth changes rapidly)
+    vec2 texelSize = 1.0 / u_resolution;
+    float depthL = texture2D(depthTex, sampleUV - vec2(texelSize.x * 2.0, 0.0)).r;
+    float depthR = texture2D(depthTex, sampleUV + vec2(texelSize.x * 2.0, 0.0)).r;
+    float gradient = abs(depthR - depthL) * 10.0;
+
+    // Peak intensity - brighter where the line makes sharp turns
+    result.peak = gradient * result.line;
+
+    // Glow - exponential falloff from the line
+    float glowDist = abs(displacedLineY);
+    float glowFalloff = exp(-glowDist * lineCount * 0.5);
+    result.glow = glowFalloff * depth * u_ridge_glow * isHand * 0.5;
+
+    // Add subtle secondary lines for depth
+    float secondaryY = fract(y * 2.0);
+    float secondaryDisp = depth * amplitude * 0.3;
+    float secondaryLine = 1.0 - abs(secondaryY - 0.5 - secondaryDisp) / (halfThick * 0.3);
+    secondaryLine = pow(max(secondaryLine, 0.0), sharpness * 2.0) * 0.15;
+    result.line += secondaryLine * isHand;
+
+    return result;
+}
+
+// ============================================
+// REACTION-DIFFUSION (Pseudo Gray-Scott)
+// ============================================
+// Approximates R-D patterns using layered noise without frame buffer feedback.
+// The feed/kill rates control pattern type (spots, stripes, coral, maze)
+
+float calculateReactionDiffusion(vec2 uv, float depth, float handMask, float time) {
+    // Scale UV by pattern scale
+    vec2 scaledUV = uv * u_rd_scale * 100.0;
+
+    // Time animation
+    float t = time * u_rd_speed * 0.5;
+
+    // Map feed/kill rates to pattern characteristics
+    // f=0.055, k=0.062 = spots (mitosis)
+    // f=0.039, k=0.058 = stripes
+    // f=0.026, k=0.051 = maze/coral
+    float patternMix = (u_rd_feedRate - 0.01) / 0.09; // 0-1 range
+    float complexity = (u_rd_killRate - 0.045) / 0.025; // 0-1 range
+
+    // Create cellular noise base (Voronoi-like)
+    vec2 cellUV = scaledUV * (0.5 + complexity * 0.5);
+    vec2 cell = floor(cellUV);
+    vec2 f = fract(cellUV);
+
+    float minDist = 1.0;
+    float secondDist = 1.0;
+
+    // Find two closest cell centers for edge detection
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            vec2 neighbor = vec2(float(x), float(y));
+            vec2 point = hash2(cell + neighbor);
+
+            // Animate points slowly
+            point = 0.5 + 0.4 * sin(t * 0.3 + 6.2831 * point);
+
+            float d = length(f - neighbor - point);
+
+            if (d < minDist) {
+                secondDist = minDist;
+                minDist = d;
+            } else if (d < secondDist) {
+                secondDist = d;
+            }
+        }
+    }
+
+    // Create different pattern types based on parameters
+    float cellEdge = secondDist - minDist;
+
+    // Pattern A: Spots (high feed rate)
+    float spots = smoothstep(0.1 + patternMix * 0.2, 0.0, minDist);
+
+    // Pattern B: Stripes/Worms (medium feed rate)
+    float wormNoise = fbm(scaledUV * 0.3 + t * 0.1, 4);
+    float stripes = smoothstep(0.4, 0.6, wormNoise);
+    stripes *= smoothstep(0.02, 0.08, cellEdge); // Add cellular breakup
+
+    // Pattern C: Coral/Maze (low feed rate)
+    float coralNoise = fbm(scaledUV * 0.2 + vec2(t * 0.05, -t * 0.03), 5);
+    float coral = smoothstep(0.35 + complexity * 0.15, 0.65 - complexity * 0.15, coralNoise);
+
+    // Blend patterns based on feed rate
+    float pattern;
+    if (patternMix > 0.6) {
+        // High feed = spots
+        pattern = mix(stripes, spots, (patternMix - 0.6) / 0.4);
+    } else if (patternMix > 0.3) {
+        // Medium feed = stripes/worms
+        pattern = mix(coral, stripes, (patternMix - 0.3) / 0.3);
+    } else {
+        // Low feed = coral/maze
+        pattern = coral;
+    }
+
+    // Diffusion rates affect edge sharpness
+    float edgeSharpness = u_rd_diffusionA / u_rd_diffusionB;
+    pattern = smoothstep(0.5 - 0.3 / edgeSharpness, 0.5 + 0.3 / edgeSharpness, pattern);
+
+    // Modulate by depth - more pattern in closer areas
+    float depthMod = smoothstep(0.1, 0.5, depth);
+    pattern *= depthMod;
+
+    // Add subtle pulsing
+    float pulse = 0.9 + 0.1 * sin(t * 2.0 + depth * 10.0);
+    pattern *= pulse;
+
+    return pattern * handMask;
+}
+
+// ============================================
 // SCANLINE CALCULATION (Joy Division style)
 // ============================================
 
@@ -383,7 +583,30 @@ void main() {
     }
 
     // ========================================
-    // LAYER 5: DISSOLUTION
+    // LAYER 5: REACTION-DIFFUSION
+    // ========================================
+
+    float reactionDiffusion = 0.0;
+    if (u_showReactionDiffusion && handMask > 0.0) {
+        reactionDiffusion = calculateReactionDiffusion(uv, depth, handMask, u_time);
+    }
+
+    // ========================================
+    // LAYER 6: RIDGELINE (Joy Division)
+    // ========================================
+
+    float ridgeline = 0.0;
+    float ridgeGlow = 0.0;
+    float ridgePeak = 0.0;
+    if (u_showRidgeline) {
+        RidgeResult ridge = calculateRidgeline(uv, u_time, u_depthMap);
+        ridgeline = ridge.line;
+        ridgeGlow = ridge.glow;
+        ridgePeak = ridge.peak;
+    }
+
+    // ========================================
+    // LAYER 7: DISSOLUTION
     // ========================================
 
     float dissolutionMask = 1.0;
@@ -427,6 +650,15 @@ void main() {
         // Layer 3: Stipple (BLUE channel)
         debugColor.b = stipplePattern;
 
+        // Layer 4: Reaction-Diffusion (CYAN = G+B)
+        debugColor.g += reactionDiffusion * 0.7;
+        debugColor.b += reactionDiffusion * 0.7;
+
+        // Layer 5: Ridgeline (YELLOW = R+G)
+        debugColor.r += ridgeline * 0.8;
+        debugColor.g += ridgeline * 0.8;
+        debugColor += vec3(ridgeGlow * 0.3); // White glow
+
         // Show handMask boundary as white outline
         float maskEdge = abs(dFdx(handMask)) + abs(dFdy(handMask));
         maskEdge = smoothstep(0.0, 0.1, maskEdge * 10.0);
@@ -441,14 +673,38 @@ void main() {
         return;
     }
 
-    // Combine all patterns
-    float combinedPattern = max(max(contour, stipplePattern), scanlines);
+    // Combine all patterns (excluding ridgeline - it has special rendering)
+    float combinedPattern = max(max(max(contour, stipplePattern), scanlines), reactionDiffusion);
 
     // Apply hand mask and dissolution
     float finalMask = handMask * dissolutionMask;
 
     // Base color
     vec3 color = mix(bgColor, lineColor, combinedPattern * finalMask);
+
+    // Add special coloring for Reaction-Diffusion (organic teal/coral tones)
+    if (u_showReactionDiffusion && reactionDiffusion > 0.0) {
+        // Create organic color based on pattern intensity and depth
+        vec3 rdColorA = vec3(0.2, 0.8, 0.7);  // Teal for spots
+        vec3 rdColorB = vec3(0.9, 0.5, 0.4);  // Coral for stripes
+        float colorMix = (u_rd_feedRate - 0.01) / 0.09;
+        vec3 rdColor = mix(rdColorA, rdColorB, colorMix);
+
+        // Blend R-D color with base
+        color = mix(color, rdColor, reactionDiffusion * finalMask * 0.6);
+    }
+
+    // Add Ridgeline effect (Joy Division style)
+    if (u_showRidgeline) {
+        // Pure white lines
+        color += lineColor * ridgeline;
+
+        // Subtle glow beneath lines
+        color += vec3(0.3, 0.4, 0.5) * ridgeGlow;
+
+        // Brighter peaks where lines curve sharply
+        color += vec3(1.0) * ridgePeak * 0.5;
+    }
 
     // Add edge glow for dissolution
     if (u_showDissolution && edgeGlow > 0.0) {
