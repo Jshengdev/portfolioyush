@@ -103,7 +103,7 @@ Phase 1 ──► Phase 2 ──► Phase 3 ──► Phase 4 ──┐
 ## Asset Checklist
 
 - [ ] Hand photo (for depth estimation)
-- [ ] Hand depth map PNG (`/public/assets/hand_depth.png`)
+- [ ] Hand depth map PNG (`/public/assets/hand_depth.png`) //or related name with depth.png
 - [ ] Perlin noise functions (GLSL)
 - [ ] Stipple pattern texture (optional, can be procedural)
 

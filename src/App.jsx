@@ -37,6 +37,7 @@ const ExperimentV15 = lazy(() => import('./components/experiments/v15'));
 const ExperimentV16 = lazy(() => import('./components/experiments/v16'));
 const ExperimentV17 = lazy(() => import('./components/experiments/v17'));
 const ExperimentV19 = lazy(() => import('./components/experiments/v19'));
+const ExperimentV18 = lazy(() => import('./components/experiments/v18'));
 
 // Always loaded components (needed for initial render)
 import Navbar from './components/Navbar';
@@ -291,6 +292,10 @@ function AnimatedRoutes() {
           <Route path="/experiments/v19" element={
             <PageWrapper>
               <ExperimentV19 />
+            </PageWrapper>
+          <Route path="/experiments/v18" element={
+            <PageWrapper>
+              <ExperimentV18 />
             </PageWrapper>
           } />
         </Routes>
