@@ -405,6 +405,19 @@ float smin(float a, float b, float k) {
 | V9 | Lines | Topographic | Bold contour lines |
 | V10 | Builder | Procedural | Texture generation |
 | V11 | Halftone | Print | Raymarched dithering |
+| V12 | Constellation | Interactive | Grid-based particles + cursor |
+| V13 | Ripples | Interactive | Expanding wave rings |
+| V14 | Magnetism | Interactive | Tension field visualization |
+| V15 | Fate | Artistic | Halftone hand dissolve |
+| V16 | Scanline | Technical | Topographic contours |
+| V17 | Atmosphere | Cinematic | Grainy fog + light diffusion |
+| V19 | Galaxy | Simulation | Spiral arms, differential rotation, blackbody colors |
+
+### Deep Dive Documentation
+
+For complex experiments with reusable techniques, see detailed documentation:
+
+- **[GALAXY_SHADER.md](./GALAXY_SHADER.md)** - V19 Galaxy: Comprehensive breakdown of spiral generation, star rendering, temperature colors, and more. Great reference for borrowing techniques.
 
 ---
 

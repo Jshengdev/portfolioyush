@@ -289,14 +289,14 @@ function AnimatedRoutes() {
               <ExperimentV17 />
             </PageWrapper>
           } />
-          <Route path="/experiments/v19" element={
-            <PageWrapper>
-              <ExperimentV19 />
-            </PageWrapper>
-          } />
           <Route path="/experiments/v18" element={
             <PageWrapper>
               <ExperimentV18 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v19" element={
+            <PageWrapper>
+              <ExperimentV19 />
             </PageWrapper>
           } />
         </Routes>
