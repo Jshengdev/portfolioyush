@@ -197,34 +197,6 @@ const Slider = styled.input`
   }
 `;
 
-const ModeButton = styled.button`
-  background: ${props => props.$active ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.6)'};
-  border: 1px solid ${props => props.$active ? 'rgba(136, 169, 215, 0.6)' : 'rgba(255, 255, 255, 0.2)'};
-  color: ${props => props.$active ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.6)'};
-  padding: 12px 20px;
-  font-family: 'PP Neue Montreal', sans-serif;
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  cursor: pointer;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  transition: all 0.2s ease;
-  text-align: left;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(136, 169, 215, 0.4);
-  }
-
-  .key {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 2px 6px;
-    border-radius: 3px;
-    margin-right: 8px;
-    font-size: 10px;
-  }
-`;
 
 const InfoPanel = styled.div`
   position: fixed;
@@ -453,37 +425,190 @@ const TopographicHandExperiment = () => {
         </NavGroup>
       </NavOverlay>
 
-      {/* Mode Controls */}
+      {/* Layer Controls */}
       <ControlPanel>
-        <ModeButton
+        {/* Debug Toggle */}
+        <ToggleButton
           $active={debugMode}
           onClick={() => setDebugMode(prev => !prev)}
-          style={{ marginBottom: '16px', borderColor: debugMode ? 'rgba(255, 100, 100, 0.6)' : undefined }}
+          style={{ borderColor: debugMode ? 'rgba(255, 100, 100, 0.6)' : undefined }}
         >
+          <span>{debugMode ? 'DEBUG ON' : 'DEBUG OFF'}</span>
           <span className="key">D</span>
-          {debugMode ? 'DEBUG ON' : 'DEBUG OFF'}
-        </ModeButton>
-        <ModeButton
-          $active={visualMode === 1}
-          onClick={() => setVisualMode(1)}
+        </ToggleButton>
+
+        {/* Layer Toggles */}
+        <SectionLabel>Layers</SectionLabel>
+        <ToggleButton
+          $active={showContours}
+          onClick={() => setShowContours(prev => !prev)}
         >
+          <span>CONTOURS</span>
           <span className="key">1</span>
-          CONTOURS
-        </ModeButton>
-        <ModeButton
-          $active={visualMode === 2}
-          onClick={() => setVisualMode(2)}
+        </ToggleButton>
+        <ToggleButton
+          $active={showScanlines}
+          onClick={() => setShowScanlines(prev => !prev)}
         >
+          <span>SCANLINES</span>
           <span className="key">2</span>
-          + STIPPLE
-        </ModeButton>
-        <ModeButton
-          $active={visualMode === 3}
-          onClick={() => setVisualMode(3)}
+        </ToggleButton>
+        <ToggleButton
+          $active={showStipple}
+          onClick={() => setShowStipple(prev => !prev)}
         >
+          <span>STIPPLE</span>
           <span className="key">3</span>
-          + DISSOLVE
-        </ModeButton>
+        </ToggleButton>
+
+        {/* Contour Sliders */}
+        <SectionLabel>Contours</SectionLabel>
+        <SliderContainer className={!showContours ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>DENSITY</span>
+            <span className="value">{contourInterval.toFixed(3)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.005"
+            max="0.05"
+            step="0.001"
+            value={contourInterval}
+            onChange={(e) => setContourInterval(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showContours ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>THICKNESS</span>
+            <span className="value">{contourThickness.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.5"
+            max="3"
+            step="0.1"
+            value={contourThickness}
+            onChange={(e) => setContourThickness(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showContours ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>OPACITY</span>
+            <span className="value">{contourAlpha.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={contourAlpha}
+            onChange={(e) => setContourAlpha(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+
+        {/* Scanline Sliders */}
+        <SectionLabel>Scanlines</SectionLabel>
+        <SliderContainer className={!showScanlines ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>COUNT</span>
+            <span className="value">{scanlineCount}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="20"
+            max="200"
+            step="5"
+            value={scanlineCount}
+            onChange={(e) => setScanlineCount(parseInt(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showScanlines ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>DISPLACEMENT</span>
+            <span className="value">{scanlineDisplacement.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={scanlineDisplacement}
+            onChange={(e) => setScanlineDisplacement(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showScanlines ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>THICKNESS</span>
+            <span className="value">{scanlineThickness.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.5"
+            max="5"
+            step="0.25"
+            value={scanlineThickness}
+            onChange={(e) => setScanlineThickness(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showScanlines ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>SCROLL SPEED</span>
+            <span className="value">{scanlineSpeed.toFixed(3)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="0.2"
+            step="0.005"
+            value={scanlineSpeed}
+            onChange={(e) => setScanlineSpeed(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+
+        {/* Stipple Sliders */}
+        <SectionLabel>Stipple</SectionLabel>
+        <SliderContainer className={!showStipple ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>SCALE</span>
+            <span className="value">{stippleScale.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.5"
+            max="3"
+            step="0.1"
+            value={stippleScale}
+            onChange={(e) => setStippleScale(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showStipple ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>DENSITY</span>
+            <span className="value">{stippleThreshold.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0.2"
+            max="1"
+            step="0.05"
+            value={stippleThreshold}
+            onChange={(e) => setStippleThreshold(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showStipple ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>OPACITY</span>
+            <span className="value">{stippleAlpha.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={stippleAlpha}
+            onChange={(e) => setStippleAlpha(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
       </ControlPanel>
 
       {/* Info Panel */}
@@ -491,11 +616,15 @@ const TopographicHandExperiment = () => {
         <h3>Topographic Hand</h3>
         <p>
           Depth map visualization with toggleable layers.
-          Contour lines follow the hand's surface topology.
+          Use sliders to fine-tune each effect.
         </p>
         <p className="mode-info">
-          Current: {debugMode ? 'DEBUG MODE' : modeDescriptions[visualMode]}
-          {!textureLoaded && ' (Loading texture...)'}
+          {debugMode ? 'DEBUG MODE' : `Active: ${[
+            showContours && 'Contours',
+            showScanlines && 'Scanlines',
+            showStipple && 'Stipple'
+          ].filter(Boolean).join(', ') || 'None'}`}
+          {!textureLoaded && ' (Loading...)'}
         </p>
       </InfoPanel>
     </>
