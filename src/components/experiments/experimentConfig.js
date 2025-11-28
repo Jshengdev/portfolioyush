@@ -115,6 +115,12 @@ export const experiments = [
     description: 'Cinematic grainy fog with warm light diffusion',
     colors: ['#1A1A1A', '#E8E0D5', '#2A2A35']
   },
+  {
+    id: 'v18',
+    name: 'Topographic',
+    description: 'Depth map hand with toggleable contour layers',
+    colors: ['#000000', '#FFFFFF', '#88A9D7']
+  },
 ];
 
 /**
