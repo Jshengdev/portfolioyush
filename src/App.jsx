@@ -293,6 +293,7 @@ function AnimatedRoutes() {
             <PageWrapper>
               <ExperimentV19 />
             </PageWrapper>
+          } />
           <Route path="/experiments/v18" element={
             <PageWrapper>
               <ExperimentV18 />
