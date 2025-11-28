@@ -116,6 +116,10 @@ export const experiments = [
     colors: ['#1A1A1A', '#E8E0D5', '#2A2A35']
   },
   {
+    id: 'v19',
+    name: 'Galaxy',
+    description: 'Procedural spiral galaxy with differential rotation',
+    colors: ['#0A0A1A', '#FFE4B5', '#6B8CFF']
     id: 'v18',
     name: 'Topographic',
     description: 'Depth map hand with toggleable contour layers',
