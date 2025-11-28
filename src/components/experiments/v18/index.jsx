@@ -79,6 +79,122 @@ const ControlPanel = styled.div`
   gap: 8px;
   z-index: 100;
   font-family: 'PP Neue Montreal', sans-serif;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+  }
+`;
+
+const SectionLabel = styled.div`
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  padding-left: 4px;
+`;
+
+const ToggleButton = styled.button`
+  background: ${props => props.$active ? 'rgba(136, 169, 215, 0.25)' : 'rgba(0, 0, 0, 0.6)'};
+  border: 1px solid ${props => props.$active ? 'rgba(136, 169, 215, 0.6)' : 'rgba(255, 255, 255, 0.15)'};
+  color: ${props => props.$active ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.5)'};
+  padding: 10px 16px;
+  font-family: 'PP Neue Montreal', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(136, 169, 215, 0.4);
+  }
+
+  .key {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 9px;
+  }
+`;
+
+const SliderContainer = styled.div`
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 14px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  &.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+`;
+
+const SliderLabel = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+
+  span {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .value {
+    color: rgba(136, 169, 215, 0.9);
+    font-family: monospace;
+    font-size: 11px;
+  }
+`;
+
+const Slider = styled.input`
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: rgba(136, 169, 215, 0.9);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+
+  &::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  &::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: rgba(136, 169, 215, 0.9);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
 `;
 
 const ModeButton = styled.button`
@@ -161,17 +277,28 @@ const TopographicHandExperiment = () => {
   const next = getNextExperiment(CURRENT_ID);
   const current = getExperimentById(CURRENT_ID);
 
-  // Visual mode state: 1 = Contours, 2 = +Stipple, 3 = Full
-  const [visualMode, setVisualMode] = useState(1);
-  const [debugMode, setDebugMode] = useState(true); // Start in debug mode
+  // Layer toggle states
+  const [showContours, setShowContours] = useState(true);
+  const [showScanlines, setShowScanlines] = useState(true);
+  const [showStipple, setShowStipple] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
   const [textureLoaded, setTextureLoaded] = useState(false);
 
-  // Mode descriptions
-  const modeDescriptions = {
-    1: 'Contours Only',
-    2: 'Contours + Stipple',
-    3: 'Full Effect'
-  };
+  // Slider values - Scanlines
+  const [scanlineCount, setScanlineCount] = useState(80);
+  const [scanlineDisplacement, setScanlineDisplacement] = useState(0.3);
+  const [scanlineThickness, setScanlineThickness] = useState(2.0);
+  const [scanlineSpeed, setScanlineSpeed] = useState(0.03);
+
+  // Slider values - Contours
+  const [contourInterval, setContourInterval] = useState(0.015);
+  const [contourThickness, setContourThickness] = useState(1.0);
+  const [contourAlpha, setContourAlpha] = useState(0.9);
+
+  // Slider values - Stipple
+  const [stippleScale, setStippleScale] = useState(1.0);
+  const [stippleThreshold, setStippleThreshold] = useState(0.6);
+  const [stippleAlpha, setStippleAlpha] = useState(0.35);
 
   // Create a placeholder texture
   const createPlaceholderTexture = () => {
@@ -251,40 +378,47 @@ const TopographicHandExperiment = () => {
     };
   }, []);
 
-  // Update uniforms when mode changes
+  // Update layer toggle uniforms
   useEffect(() => {
-    if (visualMode === 1) {
-      customUniforms.u_showContours.value = true;
-      customUniforms.u_showStipple.value = false;
-      customUniforms.u_showDissolution.value = false;
-    } else if (visualMode === 2) {
-      customUniforms.u_showContours.value = true;
-      customUniforms.u_showStipple.value = true;
-      customUniforms.u_showDissolution.value = false;
-    } else {
-      customUniforms.u_showContours.value = true;
-      customUniforms.u_showStipple.value = true;
-      customUniforms.u_showDissolution.value = false;  // Disabled until fixed - causes blob artifacts
-      customUniforms.u_dissolve_progress.value = 0.0;
-    }
-  }, [visualMode]);
-
-  // Update debug mode uniform
-  useEffect(() => {
+    customUniforms.u_showContours.value = showContours;
+    customUniforms.u_showScanlines.value = showScanlines;
+    customUniforms.u_showStipple.value = showStipple;
     customUniforms.u_debugMode.value = debugMode;
-  }, [debugMode]);
+  }, [showContours, showScanlines, showStipple, debugMode]);
 
-  // Keyboard navigation and mode switching
+  // Update scanline uniforms
+  useEffect(() => {
+    customUniforms.u_scanline_count.value = scanlineCount;
+    customUniforms.u_scanline_displacement.value = scanlineDisplacement;
+    customUniforms.u_scanline_thickness.value = scanlineThickness;
+    customUniforms.u_scanline_scrollSpeed.value = scanlineSpeed;
+  }, [scanlineCount, scanlineDisplacement, scanlineThickness, scanlineSpeed]);
+
+  // Update contour uniforms
+  useEffect(() => {
+    customUniforms.u_contour_interval.value = contourInterval;
+    customUniforms.u_contour_thickness.value = contourThickness;
+    customUniforms.u_contour_alpha.value = contourAlpha;
+  }, [contourInterval, contourThickness, contourAlpha]);
+
+  // Update stipple uniforms
+  useEffect(() => {
+    customUniforms.u_stipple_scale.value = stippleScale;
+    customUniforms.u_stipple_threshold.value = stippleThreshold;
+    customUniforms.u_stipple_alpha.value = stippleAlpha;
+  }, [stippleScale, stippleThreshold, stippleAlpha]);
+
+  // Keyboard navigation and layer toggling
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') navigate('/experiments');
       if (e.key === 'ArrowLeft' && prev) navigate(`/experiments/${prev.id}`);
       if (e.key === 'ArrowRight' && next) navigate(`/experiments/${next.id}`);
 
-      // Mode switching with number keys
-      if (e.key === '1') setVisualMode(1);
-      if (e.key === '2') setVisualMode(2);
-      if (e.key === '3') setVisualMode(3);
+      // Layer toggles with number keys
+      if (e.key === '1') setShowContours(prev => !prev);
+      if (e.key === '2') setShowScanlines(prev => !prev);
+      if (e.key === '3') setShowStipple(prev => !prev);
 
       // Debug toggle with D key
       if (e.key === 'd' || e.key === 'D') {
