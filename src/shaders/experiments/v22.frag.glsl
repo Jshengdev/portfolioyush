@@ -2,20 +2,22 @@ precision highp float;
 
 /*
  * ═══════════════════════════════════════════════════════════════════
- * V22: LUMINOUS HAND - Wisps Shader (COMPREHENSIVE FIX)
+ * V22: LUMINOUS HAND - Wisps Shader
  * ═══════════════════════════════════════════════════════════════════
  *
- * FIXES APPLIED:
- * 1. Aspect ratio: * scale (expand) not / scale (compress)
- * 2. Ridged FBM: Sharp ridge with n*n and prev connection
- * 3. Edge bleed: Wisps EMANATE from edges, not just AT edges
- * 4. Depth brightness: Brighter near hand surface
+ * Features:
+ * - Ridged FBM for sharp tendrils (not cloud-like)
+ * - Edge bleed: wisps emanate FROM edges, not just AT edges
+ * - Depth brightness: brighter near hand surface
  *
  * Debug modes:
  *   0 = Normal output
  *   1 = Edge detection only
  *   2 = FBM noise only
  *   3 = Depth map only
+ *
+ * NOTE: u_resolution must be set to actual drawing buffer size
+ * (window size * pixelRatio) for correct gl_FragCoord mapping.
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -25,7 +27,6 @@ uniform vec2 u_mouse;
 uniform vec3 u_backgroundColor;
 
 uniform sampler2D u_depthMap;
-uniform float u_imageAspect;  // depth map width/height
 
 uniform float u_wispIntensity;
 uniform float u_wispScale;
@@ -89,27 +90,6 @@ float ridgedFbm(vec2 p) {
     return value;
 }
 
-// === ASPECT RATIO CORRECTION (FIXED: * scale not / scale) ===
-vec2 getAspectCorrectedUV(vec2 uv) {
-    float screenAspect = u_resolution.x / u_resolution.y;
-    float imageAspect = u_imageAspect;
-
-    vec2 correctedUV = uv;
-
-    if (screenAspect > imageAspect) {
-        // Screen wider than image - fit height, center horizontally
-        // EXPAND UVs horizontally so image content fills less of screen
-        float scale = screenAspect / imageAspect;
-        correctedUV.x = (uv.x - 0.5) * scale + 0.5;
-    } else {
-        // Screen taller than image - fit width, center vertically
-        // EXPAND UVs vertically so image content fills less of screen
-        float scale = imageAspect / screenAspect;
-        correctedUV.y = (uv.y - 0.5) * scale + 0.5;
-    }
-
-    return correctedUV;
-}
 
 // === WISP GENERATION (with edge bleed and depth brightness) ===
 float getWisps(vec2 uv, float edge, float depth) {
@@ -144,17 +124,8 @@ float getWisps(vec2 uv, float edge, float depth) {
 void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution.xy;
 
-    // === STEP 1: Correct aspect ratio for depth map ===
-    vec2 depthUV = getAspectCorrectedUV(uv);
-
-    // Flip X for hand orientation
-    depthUV.x = 1.0 - depthUV.x;
-
-    // Early discard if outside bounds (pure black)
-    if (depthUV.x < 0.0 || depthUV.x > 1.0 || depthUV.y < 0.0 || depthUV.y > 1.0) {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-        return;
-    }
+    // Flip X for hand orientation (like v18 does)
+    vec2 depthUV = vec2(1.0 - uv.x, uv.y);
 
     // Sample depth
     float depth = texture2D(u_depthMap, depthUV).r;
