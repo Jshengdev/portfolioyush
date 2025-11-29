@@ -241,8 +241,8 @@ const particleVertexShader = `
   void main() {
     vBrightness = brightness;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    // Larger base size for visibility
-    gl_PointSize = size * (500.0 / -mvPosition.z);
+    // Much smaller particles - was 500, now 50
+    gl_PointSize = size * (50.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -259,15 +259,13 @@ const particleFragmentShader = `
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
 
-    // Soft glow falloff - more visible even at low brightness
+    // Soft glow falloff
     float glow = 1.0 - smoothstep(0.0, 0.5, dist);
-    glow = pow(glow, 0.8); // Slightly sharper falloff
 
-    // Brightness affects both color and alpha for visibility
-    float alpha = glow * (0.3 + vBrightness * 0.7); // Min 30% alpha when visible
-    float colorMult = 0.5 + vBrightness * 0.5; // Min 50% white
+    // Subtle brightness - much lower base
+    float alpha = glow * vBrightness * 0.6;
 
-    gl_FragColor = vec4(vec3(colorMult), alpha);
+    gl_FragColor = vec4(vec3(1.0), alpha);
   }
 `;
 
@@ -306,10 +304,10 @@ const LuminousExperiment = () => {
   const [wispWarp, setWispWarp] = useState(0.4);
   const [wispEdgeConcentration, setWispEdgeConcentration] = useState(1.5);
 
-  // Particle parameters - more visible defaults
-  const [particleCount, setParticleCount] = useState(40000);
-  const [particleSize, setParticleSize] = useState(1.2);
-  const [particleBrightness, setParticleBrightness] = useState(1.0);
+  // Particle parameters - subtle defaults
+  const [particleCount, setParticleCount] = useState(50000);
+  const [particleSize, setParticleSize] = useState(1.0);
+  const [particleBrightness, setParticleBrightness] = useState(0.8);
   const [particleDepthInfluence, setParticleDepthInfluence] = useState(1.0);
 
   // Create placeholder texture
