@@ -396,26 +396,27 @@ const LuminousExperiment = () => {
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
-    camera.position.z = 1;
+    // Camera - use OrthographicCamera like BaseExperimentShader
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+    camera.position.z = 5;
     cameraRef.current = camera;
 
     // Renderer
+    const pixelRatio = Math.min(window.devicePixelRatio, 2);
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 1);
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
+
+    // CRITICAL: u_resolution must match actual drawing buffer size (with pixel ratio)
+    // This is why gl_FragCoord was misaligned - it uses actual pixels, not CSS pixels
+    const actualWidth = window.innerWidth * pixelRatio;
+    const actualHeight = window.innerHeight * pixelRatio;
 
     // Fullscreen quad for wisps
     const wispGeometry = new THREE.PlaneGeometry(2, 2);
@@ -430,11 +431,10 @@ const LuminousExperiment = () => {
       fragmentShader: fragmentShader,
       uniforms: {
         u_time: { value: 0 },
-        u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        u_resolution: { value: new THREE.Vector2(actualWidth, actualHeight) },
         u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
         u_backgroundColor: { value: new THREE.Vector3(0, 0, 0) },
         u_depthMap: { value: createPlaceholderTexture() },
-        u_imageAspect: { value: 1.0 }, // Will be updated when texture loads
         u_wispIntensity: { value: wispIntensity },
         u_wispScale: { value: wispScale },
         u_wispWarp: { value: wispWarp },
@@ -513,11 +513,7 @@ const LuminousExperiment = () => {
       if (texturesRef.current[0]) {
         const tex = texturesRef.current[0];
         wispMaterial.uniforms.u_depthMap.value = tex;
-
-        // Set image aspect ratio for correct UV mapping
-        const imageAspect = tex.image.width / tex.image.height;
-        wispMaterial.uniforms.u_imageAspect.value = imageAspect;
-        console.log(`V22: Image aspect ratio: ${imageAspect.toFixed(3)} (${tex.image.width}x${tex.image.height})`);
+        console.log(`V22: Loaded depth map (${tex.image.width}x${tex.image.height})`);
 
         setTextureLoaded(true);
 
@@ -549,18 +545,20 @@ const LuminousExperiment = () => {
     };
     animate();
 
-    // Resize handler
+    // Resize handler - must also account for pixel ratio
     const handleResize = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
 
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-
+      // OrthographicCamera doesn't have aspect property - no update needed
       renderer.setSize(width, height);
 
+      // CRITICAL: u_resolution must match actual drawing buffer size
+      const resizedWidth = width * pixelRatio;
+      const resizedHeight = height * pixelRatio;
+
       if (wispMaterial) {
-        wispMaterial.uniforms.u_resolution.value.set(width, height);
+        wispMaterial.uniforms.u_resolution.value.set(resizedWidth, resizedHeight);
       }
     };
     window.addEventListener('resize', handleResize);
@@ -620,10 +618,7 @@ const LuminousExperiment = () => {
       const texture = texturesRef.current[activeImage];
       wispMaterialRef.current.uniforms.u_depthMap.value = texture;
 
-      // Update image aspect ratio
-      const imageAspect = texture.image.width / texture.image.height;
-      wispMaterialRef.current.uniforms.u_imageAspect.value = imageAspect;
-      console.log(`V22: Switched to image ${activeImage}, aspect: ${imageAspect.toFixed(3)}`);
+      console.log(`V22: Switched to image ${activeImage}`);
 
       // Re-extract depth data for particle generation
       const canvas = document.createElement('canvas');
