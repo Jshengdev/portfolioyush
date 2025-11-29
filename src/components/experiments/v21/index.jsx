@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import * as THREE from 'three';
 import BaseExperimentShader from '../BaseExperimentShader';
-import fragmentShader from '../../../shaders/experiments/v21.frag.glsl?raw';
+import fragmentShader from '../../../shaders/experiments/contour_luminance.frag.glsl?raw';
 import { getPrevExperiment, getNextExperiment, getExperimentById } from '../experimentConfig';
 import { ThemeContext } from '../../../context/ThemeContext';
 
