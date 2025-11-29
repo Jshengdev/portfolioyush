@@ -141,9 +141,9 @@ export const experiments = [
   },
   {
     id: 'v22',
-    name: 'TBD',
-    description: 'Placeholder - define effect here',
-    colors: ['#000000', '#888888', '#FFFFFF']
+    name: 'Luminous',
+    description: 'Hand emerging from disturbed particle medium with flowing wisps',
+    colors: ['#000000', '#FFFFFF', '#888888']
   },
   {
     id: 'v23',
