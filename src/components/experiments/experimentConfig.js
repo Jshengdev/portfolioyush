@@ -133,6 +133,66 @@ export const experiments = [
     description: 'Interactive polynomial domain coloring visualization',
     colors: ['#0A0A1A', '#4A9EFF', '#FFFFFF']
   },
+  {
+    id: 'v21',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v22',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v23',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v24',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v25',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v26',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v27',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v28',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v29',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
+  {
+    id: 'v30',
+    name: 'TBD',
+    description: 'Placeholder - define effect here',
+    colors: ['#000000', '#888888', '#FFFFFF']
+  },
 ];
 
 /**
