@@ -301,11 +301,11 @@ const LuminousExperiment = () => {
   // Debug mode: 0=normal, 1=edge, 2=fbm, 3=depth
   const [debugMode, setDebugMode] = useState(0);
 
-  // Wisp parameters
-  const [wispIntensity, setWispIntensity] = useState(1.0);
-  const [wispScale, setWispScale] = useState(5.0);
-  const [wispWarp, setWispWarp] = useState(0.3);
-  const [wispEdgeConcentration, setWispEdgeConcentration] = useState(25.0); // 10-50 range
+  // Wisp parameters (tuned for thin tendrils, not blobs)
+  const [wispIntensity, setWispIntensity] = useState(1.5);    // Was 1.0 - boost visibility
+  const [wispScale, setWispScale] = useState(8.0);            // Was 5.0 - finer tendril detail
+  const [wispWarp, setWispWarp] = useState(0.15);             // Was 0.3 - more coherent shapes
+  const [wispEdgeConcentration, setWispEdgeConcentration] = useState(30.0); // Was 25.0 - stronger edge
 
   // Particle parameters - disabled by default for debugging wisps first
   const [particleCount, setParticleCount] = useState(0); // Start at 0 to isolate wisps
