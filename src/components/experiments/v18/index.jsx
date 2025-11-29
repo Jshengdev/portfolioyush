@@ -197,6 +197,53 @@ const Slider = styled.input`
   }
 `;
 
+const ZIndexContainer = styled.div`
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 14px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  &.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+`;
+
+const ZIndexLabel = styled.span`
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.6);
+  flex: 1;
+`;
+
+const ZIndexInput = styled.input`
+  width: 50px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(136, 169, 215, 0.4);
+  border-radius: 4px;
+  color: rgba(136, 169, 215, 0.9);
+  font-family: monospace;
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+
+  &:focus {
+    border-color: rgba(136, 169, 215, 0.8);
+    box-shadow: 0 0 8px rgba(136, 169, 215, 0.3);
+  }
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    opacity: 1;
+  }
+`;
+
 
 const InfoPanel = styled.div`
   position: fixed;
@@ -289,6 +336,16 @@ const TopographicHandExperiment = () => {
   const [ridgeGlow, setRidgeGlow] = useState(1.0);          // Glow intensity
   const [ridgeSpeed, setRidgeSpeed] = useState(0.3);        // Animation speed
   const [ridgeSharpness, setRidgeSharpness] = useState(3.0); // Peak sharpness
+  const [ridgeFillStyle, setRidgeFillStyle] = useState(0.0); // Fill: 0=black, 0.5=gradient, 1=depth
+  const [ridgeWaveFreq, setRidgeWaveFreq] = useState(5.0);   // Wave frequency along X
+
+  // Z-Index layer ordering (Photoshop-like stacking)
+  // Lower values = behind, Higher values = in front
+  const [zindexContours, setZindexContours] = useState(1);
+  const [zindexScanlines, setZindexScanlines] = useState(2);
+  const [zindexStipple, setZindexStipple] = useState(3);
+  const [zindexRD, setZindexRD] = useState(4);
+  const [zindexRidgeline, setZindexRidgeline] = useState(0);
 
   // Create a placeholder texture
   const createPlaceholderTexture = () => {
@@ -353,6 +410,15 @@ const TopographicHandExperiment = () => {
       u_ridge_glow: { value: 1.0 },
       u_ridge_speed: { value: 0.3 },
       u_ridge_sharpness: { value: 3.0 },
+      u_ridge_fillStyle: { value: 0.0 },
+      u_ridge_waveFreq: { value: 5.0 },
+
+      // Z-Index layer ordering
+      u_zindex_contours: { value: 1.0 },
+      u_zindex_scanlines: { value: 2.0 },
+      u_zindex_stipple: { value: 3.0 },
+      u_zindex_rd: { value: 4.0 },
+      u_zindex_ridgeline: { value: 0.0 },
     };
   });
 
@@ -437,7 +503,18 @@ const TopographicHandExperiment = () => {
     customUniforms.u_ridge_glow.value = ridgeGlow;
     customUniforms.u_ridge_speed.value = ridgeSpeed;
     customUniforms.u_ridge_sharpness.value = ridgeSharpness;
-  }, [showRidgeline, ridgeCount, ridgeAmplitude, ridgeThickness, ridgeGlow, ridgeSpeed, ridgeSharpness]);
+    customUniforms.u_ridge_fillStyle.value = ridgeFillStyle;
+    customUniforms.u_ridge_waveFreq.value = ridgeWaveFreq;
+  }, [showRidgeline, ridgeCount, ridgeAmplitude, ridgeThickness, ridgeGlow, ridgeSpeed, ridgeSharpness, ridgeFillStyle, ridgeWaveFreq]);
+
+  // Update Z-Index uniforms
+  useEffect(() => {
+    customUniforms.u_zindex_contours.value = zindexContours;
+    customUniforms.u_zindex_scanlines.value = zindexScanlines;
+    customUniforms.u_zindex_stipple.value = zindexStipple;
+    customUniforms.u_zindex_rd.value = zindexRD;
+    customUniforms.u_zindex_ridgeline.value = zindexRidgeline;
+  }, [zindexContours, zindexScanlines, zindexStipple, zindexRD, zindexRidgeline]);
 
   // Keyboard navigation and layer toggling
   useEffect(() => {
@@ -856,6 +933,34 @@ const TopographicHandExperiment = () => {
             step="0.05"
             value={ridgeSpeed}
             onChange={(e) => setRidgeSpeed(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>FILL STYLE</span>
+            <span className="value">{ridgeFillStyle.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={ridgeFillStyle}
+            onChange={(e) => setRidgeFillStyle(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>WAVE FREQ</span>
+            <span className="value">{ridgeWaveFreq.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="1"
+            max="15"
+            step="0.5"
+            value={ridgeWaveFreq}
+            onChange={(e) => setRidgeWaveFreq(parseFloat(e.target.value))}
           />
         </SliderContainer>
       </ControlPanel>

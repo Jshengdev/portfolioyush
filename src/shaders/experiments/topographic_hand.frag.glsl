@@ -77,6 +77,16 @@ uniform float u_ridge_thickness;     // Line thickness (0.5-5)
 uniform float u_ridge_glow;          // Edge glow intensity (0-3)
 uniform float u_ridge_speed;         // Animation speed (0-1)
 uniform float u_ridge_sharpness;     // Peak sharpness (1-10)
+uniform float u_ridge_fillStyle;     // Fill style: 0=black, 0.5=gradient, 1=depth-tinted
+uniform float u_ridge_waveFreq;      // Wave frequency along X axis
+
+// Layer Z-Index system (Photoshop-like stacking)
+// Lower values = behind, Higher values = in front
+uniform float u_zindex_contours;     // Default: 1
+uniform float u_zindex_scanlines;    // Default: 2
+uniform float u_zindex_stipple;      // Default: 3
+uniform float u_zindex_rd;           // Default: 4 (Reaction-Diffusion)
+uniform float u_zindex_ridgeline;    // Default: 0 (base layer)
 
 // ============================================
 // NOISE FUNCTIONS
@@ -251,90 +261,93 @@ float multiStipple(vec2 uv, float density) {
 // ============================================
 // RIDGELINE (Joy Division / Unknown Pleasures)
 // ============================================
-// Creates clean horizontal lines displaced by depth, with sharp peaks
-// and optional glow. Pure mathematics - no noise, just elegance.
+// Horizontal lines span FULL SCREEN WIDTH.
+// Lines are FLAT where there's no depth data.
+// Lines BEND UPWARD where they intersect the hand's depth.
+// Fill zones go DOWN from each line, creating proper occlusion.
+// Subtle wave animation travels along lines where hand exists.
 
 struct RidgeResult {
-    float line;      // The line itself (0-1)
-    float glow;      // Glow around peaks (0-1)
-    float peak;      // Peak intensity for coloring (0-1)
+    float line;
+    float fill;
+    float glow;
 };
 
 RidgeResult calculateRidgeline(vec2 uv, float time, sampler2D depthTex) {
     RidgeResult result;
     result.line = 0.0;
+    result.fill = 0.0;
     result.glow = 0.0;
-    result.peak = 0.0;
 
-    // Flip UV for depth sampling (match main)
-    vec2 depthUV = vec2(1.0 - uv.x, uv.y);
-
-    // Line parameters
     float lineCount = u_ridge_count;
-    float amplitude = u_ridge_amplitude;
-    float thickness = u_ridge_thickness;
-    float sharpness = u_ridge_sharpness;
+    float lineSpacing = 1.0 / lineCount;
+    float lineWidth = u_ridge_thickness * 0.002;
 
-    // Subtle time-based vertical drift
-    float drift = time * u_ridge_speed * 0.02;
+    float closestDist = 1.0;
+    float inFill = 0.0;
 
-    // Current line Y position (which horizontal band are we in?)
-    float y = (uv.y + drift) * lineCount;
-    float lineIndex = floor(y);
-    float linePhase = fract(y);
+    // Optimized: only check nearby lines (±5 from current band)
+    float baseIndex = floor(uv.y * lineCount);
 
-    // For each line, we need to check if THIS pixel should draw
-    // by sampling the depth at this X position for the line's Y
+    for (float offset = -5.0; offset <= 10.0; offset += 1.0) {
+        float i = baseIndex + offset;
+        if (i < 0.0 || i >= lineCount) continue;
 
-    // Calculate the Y coordinate of the current line in UV space
-    float lineY = (lineIndex + 0.5) / lineCount - drift;
+        float baseY = i / lineCount;
 
-    // Sample depth at this line's Y position but our X position
-    vec2 sampleUV = vec2(depthUV.x, clamp(lineY, 0.0, 1.0));
-    float depth = texture2D(depthTex, sampleUV).r;
+        // Sample depth at this line's fixed Y position, current X
+        vec2 sampleUV = vec2(1.0 - uv.x, baseY);
+        float depth = texture2D(depthTex, sampleUV).r;
 
-    // Background threshold
-    float bgThreshold = 0.08;
-    float isHand = smoothstep(bgThreshold - 0.02, bgThreshold + 0.02, depth);
+        // === DISPLACEMENT ===
+        float displacement = depth * u_ridge_amplitude * 0.15;
 
-    // Calculate vertical displacement based on depth
-    // Higher depth = line gets pushed UP (negative Y in screen space)
-    float displacement = depth * amplitude;
+        // === RICH ORGANIC ANIMATION ===
+        // Only animate where hand exists
+        float handPresence = smoothstep(0.05, 0.15, depth);
 
-    // The line's displaced Y position relative to where we are
-    float displacedLineY = linePhase - displacement * lineCount * 0.5;
+        // 1. MULTI-FREQUENCY WAVES (water-like ripples)
+        float wave1 = sin(time * u_ridge_speed * 1.5 + uv.x * u_ridge_waveFreq) * 0.004;
+        float wave2 = sin(time * u_ridge_speed * 2.3 + uv.x * u_ridge_waveFreq * 1.7 + 1.5) * 0.003;
+        float wave3 = sin(time * u_ridge_speed * 0.8 + uv.x * u_ridge_waveFreq * 0.5 + 3.0) * 0.005;
+        float waves = (wave1 + wave2 + wave3) * handPresence;
 
-    // Create sharp line using smoothstep for anti-aliasing
-    // Sharpness controls the falloff steepness
-    float halfThick = thickness / lineCount * 0.5;
+        // 2. NOISE DRIFT (organic randomness using existing noise function)
+        vec2 noiseCoord = vec2(uv.x * 3.0 + time * u_ridge_speed * 0.3, baseY * 5.0 + time * u_ridge_speed * 0.1);
+        float noiseDrift = (noise(noiseCoord) - 0.5) * 0.008 * handPresence;
 
-    // Main line - sharper peaks with adjustable sharpness
-    float lineShape = 1.0 - abs(displacedLineY) / halfThick;
-    lineShape = pow(max(lineShape, 0.0), sharpness);
+        // 3. PULSE BREATHING (gentle expansion/contraction)
+        float pulse = sin(time * u_ridge_speed * 0.5) * 0.003 * depth;
 
-    // Only draw if we're close to the line
-    result.line = lineShape * isHand;
+        // Combine all animation components
+        float totalAnimation = waves + noiseDrift + pulse;
 
-    // Calculate gradient for peak detection (where depth changes rapidly)
-    vec2 texelSize = 1.0 / u_resolution;
-    float depthL = texture2D(depthTex, sampleUV - vec2(texelSize.x * 2.0, 0.0)).r;
-    float depthR = texture2D(depthTex, sampleUV + vec2(texelSize.x * 2.0, 0.0)).r;
-    float gradient = abs(depthR - depthL) * 10.0;
+        float lineY = baseY + displacement + totalAnimation;
 
-    // Peak intensity - brighter where the line makes sharp turns
-    result.peak = gradient * result.line;
+        // === FILL ZONE CHECK ===
+        // If pixel is BELOW this line's displaced position, it's in fill zone
+        // This creates the mountain silhouette effect
+        if (uv.y < lineY && uv.y >= baseY) {
+            inFill = 1.0;
+        }
 
-    // Glow - exponential falloff from the line
-    float glowDist = abs(displacedLineY);
-    float glowFalloff = exp(-glowDist * lineCount * 0.5);
-    result.glow = glowFalloff * depth * u_ridge_glow * isHand * 0.5;
+        // Track closest line for stroke
+        float dist = abs(uv.y - lineY);
+        if (dist < closestDist) {
+            closestDist = dist;
+        }
+    }
 
-    // Add subtle secondary lines for depth
-    float secondaryY = fract(y * 2.0);
-    float secondaryDisp = depth * amplitude * 0.3;
-    float secondaryLine = 1.0 - abs(secondaryY - 0.5 - secondaryDisp) / (halfThick * 0.3);
-    secondaryLine = pow(max(secondaryLine, 0.0), sharpness * 2.0) * 0.15;
-    result.line += secondaryLine * isHand;
+    // === LINE STROKE ===
+    float lineMask = smoothstep(lineWidth, lineWidth * 0.2, closestDist);
+    result.line = pow(lineMask, u_ridge_sharpness);
+
+    // Fill zone
+    result.fill = inFill;
+
+    // === GLOW ===
+    float glowWidth = lineWidth * 6.0;
+    result.glow = exp(-closestDist * closestDist / (glowWidth * glowWidth)) * u_ridge_glow;
 
     return result;
 }
@@ -596,13 +609,13 @@ void main() {
     // ========================================
 
     float ridgeline = 0.0;
+    float ridgeFill = 0.0;
     float ridgeGlow = 0.0;
-    float ridgePeak = 0.0;
     if (u_showRidgeline) {
         RidgeResult ridge = calculateRidgeline(uv, u_time, u_depthMap);
         ridgeline = ridge.line;
+        ridgeFill = ridge.fill;
         ridgeGlow = ridge.glow;
-        ridgePeak = ridge.peak;
     }
 
     // ========================================
@@ -654,9 +667,11 @@ void main() {
         debugColor.g += reactionDiffusion * 0.7;
         debugColor.b += reactionDiffusion * 0.7;
 
-        // Layer 5: Ridgeline (YELLOW = R+G)
+        // Layer 5: Ridgeline (YELLOW = R+G for lines, MAGENTA for fill)
         debugColor.r += ridgeline * 0.8;
         debugColor.g += ridgeline * 0.8;
+        debugColor.r += ridgeFill * 0.4;  // Fill shows as magenta
+        debugColor.b += ridgeFill * 0.4;
         debugColor += vec3(ridgeGlow * 0.3); // White glow
 
         // Show handMask boundary as white outline
@@ -673,37 +688,79 @@ void main() {
         return;
     }
 
-    // Combine all patterns (excluding ridgeline - it has special rendering)
-    float combinedPattern = max(max(max(contour, stipplePattern), scanlines), reactionDiffusion);
+    // ========================================
+    // Z-INDEX LAYER COMPOSITION SYSTEM
+    // ========================================
+    // Layers are composited from lowest z-index to highest (back to front)
+    // This creates a Photoshop-like layer stacking system
 
     // Apply hand mask and dissolution
     float finalMask = handMask * dissolutionMask;
 
-    // Base color
-    vec3 color = mix(bgColor, lineColor, combinedPattern * finalMask);
+    // Start with black background
+    vec3 color = bgColor;
 
-    // Add special coloring for Reaction-Diffusion (organic teal/coral tones)
-    if (u_showReactionDiffusion && reactionDiffusion > 0.0) {
-        // Create organic color based on pattern intensity and depth
-        vec3 rdColorA = vec3(0.2, 0.8, 0.7);  // Teal for spots
-        vec3 rdColorB = vec3(0.9, 0.5, 0.4);  // Coral for stripes
-        float colorMix = (u_rd_feedRate - 0.01) / 0.09;
-        vec3 rdColor = mix(rdColorA, rdColorB, colorMix);
+    // Prepare layer colors and intensities
+    vec3 contourColor = lineColor;
+    vec3 scanlineColor = lineColor;
+    vec3 stippleColor = lineColor;
 
-        // Blend R-D color with base
-        color = mix(color, rdColor, reactionDiffusion * finalMask * 0.6);
+    // Reaction-Diffusion color (organic teal/coral tones)
+    vec3 rdColorA = vec3(0.2, 0.8, 0.7);  // Teal
+    vec3 rdColorB = vec3(0.9, 0.5, 0.4);  // Coral
+    float rdColorMix = (u_rd_feedRate - 0.01) / 0.09;
+    vec3 rdColor = mix(rdColorA, rdColorB, rdColorMix);
+
+    // Ridgeline base (with fill)
+    vec3 ridgelineColor = vec3(0.0);
+    if (u_showRidgeline) {
+        vec3 fillColor = vec3(0.0);
+        if (u_ridge_fillStyle > 0.0) {
+            float localDepth = texture2D(u_depthMap, vec2(1.0 - uv.x, uv.y)).r;
+            vec3 gradientFill = vec3(0.05, 0.05, 0.08);
+            vec3 depthTint = mix(vec3(0.02, 0.02, 0.05), vec3(0.08, 0.06, 0.04), localDepth);
+            if (u_ridge_fillStyle < 0.5) {
+                fillColor = mix(vec3(0.0), gradientFill, u_ridge_fillStyle * 2.0);
+            } else {
+                fillColor = mix(gradientFill, depthTint, (u_ridge_fillStyle - 0.5) * 2.0);
+            }
+        }
+        ridgelineColor = mix(vec3(0.0), fillColor, ridgeFill);
+        ridgelineColor = mix(ridgelineColor, lineColor, ridgeline);
+        ridgelineColor += vec3(0.3, 0.35, 0.4) * ridgeGlow;
     }
 
-    // Add Ridgeline effect (Joy Division style)
-    if (u_showRidgeline) {
-        // Pure white lines
-        color += lineColor * ridgeline;
+    // Helper function approach: composite layers by z-index
+    // We check z-index 0 through 5 and apply matching layers
+    for (float z = 0.0; z <= 5.0; z += 1.0) {
+        // Check each layer's z-index and composite if it matches
 
-        // Subtle glow beneath lines
-        color += vec3(0.3, 0.4, 0.5) * ridgeGlow;
+        // Ridgeline layer
+        if (u_showRidgeline && abs(u_zindex_ridgeline - z) < 0.5) {
+            // Ridgeline replaces background where active
+            float ridgeIntensity = max(ridgeline, ridgeFill);
+            color = mix(color, ridgelineColor, ridgeIntensity);
+        }
 
-        // Brighter peaks where lines curve sharply
-        color += vec3(1.0) * ridgePeak * 0.5;
+        // Contours layer
+        if (u_showContours && abs(u_zindex_contours - z) < 0.5) {
+            color = mix(color, contourColor, contour * finalMask * u_contour_alpha);
+        }
+
+        // Scanlines layer
+        if (u_showScanlines && abs(u_zindex_scanlines - z) < 0.5) {
+            color = mix(color, scanlineColor, scanlines * finalMask);
+        }
+
+        // Stipple layer
+        if (u_showStipple && abs(u_zindex_stipple - z) < 0.5) {
+            color = mix(color, stippleColor, stipplePattern * finalMask);
+        }
+
+        // Reaction-Diffusion layer
+        if (u_showReactionDiffusion && abs(u_zindex_rd - z) < 0.5) {
+            color = mix(color, rdColor, reactionDiffusion * finalMask * 0.7);
+        }
     }
 
     // Add edge glow for dissolution
