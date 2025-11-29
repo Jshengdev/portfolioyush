@@ -80,6 +80,11 @@ uniform float u_ridge_sharpness;     // Peak sharpness (1-10)
 uniform float u_ridge_fillStyle;     // Fill style: 0=black, 0.5=gradient, 1=depth-tinted
 uniform float u_ridge_waveFreq;      // Wave frequency along X axis
 
+// Background lines (sparse, scrolling) vs Hand lines (dense, waving)
+uniform float u_ridge_bgOpacity;     // Background line opacity (0-1)
+uniform float u_ridge_bgSpacing;     // Background spacing multiplier (1=same as hand, 5=very sparse)
+uniform float u_ridge_bgScroll;      // Background scroll speed
+
 // Layer Z-Index system (Photoshop-like stacking)
 // Lower values = behind, Higher values = in front
 uniform float u_zindex_contours;     // Default: 1
@@ -261,16 +266,18 @@ float multiStipple(vec2 uv, float density) {
 // ============================================
 // RIDGELINE (Joy Division / Unknown Pleasures)
 // ============================================
-// Horizontal lines span FULL SCREEN WIDTH.
-// Lines are FLAT where there's no depth data.
-// Lines BEND UPWARD where they intersect the hand's depth.
-// Fill zones go DOWN from each line, creating proper occlusion.
-// Subtle wave animation travels along lines where hand exists.
+// TWO TYPES OF LINES:
+// 1. BACKGROUND LINES: Sparse, scroll up/down, adjustable opacity
+// 2. HAND LINES: Dense at edges, wave animation, full opacity
+//
+// Background lines are visible everywhere.
+// Hand lines only appear where depth exists.
 
 struct RidgeResult {
     float line;
     float fill;
     float glow;
+    float opacity;  // For blending background vs hand lines
 };
 
 RidgeResult calculateRidgeline(vec2 uv, float time, sampler2D depthTex) {
@@ -278,19 +285,52 @@ RidgeResult calculateRidgeline(vec2 uv, float time, sampler2D depthTex) {
     result.line = 0.0;
     result.fill = 0.0;
     result.glow = 0.0;
+    result.opacity = 1.0;
 
     float lineCount = u_ridge_count;
-    float lineSpacing = 1.0 / lineCount;
     float lineWidth = u_ridge_thickness * 0.002;
 
-    float closestDist = 1.0;
-    float inFill = 0.0;
+    // ========================================
+    // BACKGROUND LINES (sparse, scrolling)
+    // ========================================
+    float bgClosestDist = 1.0;
+    float bgLineCount = lineCount / max(u_ridge_bgSpacing, 1.0);
 
-    // Optimized: only check nearby lines (±5 from current band)
-    float baseIndex = floor(uv.y * lineCount);
+    // Vertical scroll for background
+    float scrollOffset = time * u_ridge_bgScroll * 0.1;
+
+    float bgBaseIndex = floor((uv.y + scrollOffset) * bgLineCount);
+
+    for (float offset = -2.0; offset <= 3.0; offset += 1.0) {
+        float i = mod(bgBaseIndex + offset, bgLineCount);
+        if (i < 0.0) i += bgLineCount;
+
+        float baseY = i / bgLineCount;
+        // Apply scroll offset to line position
+        float scrolledY = baseY - fract(scrollOffset);
+        if (scrolledY < 0.0) scrolledY += 1.0;
+        if (scrolledY > 1.0) scrolledY -= 1.0;
+
+        float dist = abs(uv.y - scrolledY);
+        if (dist < bgClosestDist) {
+            bgClosestDist = dist;
+        }
+    }
+
+    float bgLineMask = smoothstep(lineWidth * 1.5, lineWidth * 0.3, bgClosestDist);
+    float bgLine = pow(bgLineMask, u_ridge_sharpness * 0.5);
+
+    // ========================================
+    // HAND LINES (dense at edges, wave animation)
+    // ========================================
+    float handClosestDist = 1.0;
+    float inFill = 0.0;
+    float maxDepthOnLine = 0.0;
+
+    float handBaseIndex = floor(uv.y * lineCount);
 
     for (float offset = -5.0; offset <= 10.0; offset += 1.0) {
-        float i = baseIndex + offset;
+        float i = handBaseIndex + offset;
         if (i < 0.0 || i >= lineCount) continue;
 
         float baseY = i / lineCount;
@@ -299,55 +339,71 @@ RidgeResult calculateRidgeline(vec2 uv, float time, sampler2D depthTex) {
         vec2 sampleUV = vec2(1.0 - uv.x, baseY);
         float depth = texture2D(depthTex, sampleUV).r;
 
+        // Track max depth for this area
+        if (depth > maxDepthOnLine) maxDepthOnLine = depth;
+
+        // Skip lines with no depth (these are covered by background lines)
+        if (depth < 0.05) continue;
+
         // === DISPLACEMENT ===
         float displacement = depth * u_ridge_amplitude * 0.15;
 
-        // === RICH ORGANIC ANIMATION ===
-        // Only animate where hand exists
+        // === WAVE ANIMATION (only for hand lines) ===
         float handPresence = smoothstep(0.05, 0.15, depth);
 
-        // 1. MULTI-FREQUENCY WAVES (water-like ripples)
+        // Multi-frequency waves
         float wave1 = sin(time * u_ridge_speed * 1.5 + uv.x * u_ridge_waveFreq) * 0.004;
         float wave2 = sin(time * u_ridge_speed * 2.3 + uv.x * u_ridge_waveFreq * 1.7 + 1.5) * 0.003;
         float wave3 = sin(time * u_ridge_speed * 0.8 + uv.x * u_ridge_waveFreq * 0.5 + 3.0) * 0.005;
         float waves = (wave1 + wave2 + wave3) * handPresence;
 
-        // 2. NOISE DRIFT (organic randomness using existing noise function)
+        // Noise drift
         vec2 noiseCoord = vec2(uv.x * 3.0 + time * u_ridge_speed * 0.3, baseY * 5.0 + time * u_ridge_speed * 0.1);
         float noiseDrift = (noise(noiseCoord) - 0.5) * 0.008 * handPresence;
 
-        // 3. PULSE BREATHING (gentle expansion/contraction)
+        // Pulse breathing
         float pulse = sin(time * u_ridge_speed * 0.5) * 0.003 * depth;
 
-        // Combine all animation components
         float totalAnimation = waves + noiseDrift + pulse;
-
         float lineY = baseY + displacement + totalAnimation;
 
         // === FILL ZONE CHECK ===
-        // If pixel is BELOW this line's displaced position, it's in fill zone
-        // This creates the mountain silhouette effect
         if (uv.y < lineY && uv.y >= baseY) {
             inFill = 1.0;
         }
 
-        // Track closest line for stroke
+        // Track closest hand line
         float dist = abs(uv.y - lineY);
-        if (dist < closestDist) {
-            closestDist = dist;
+        if (dist < handClosestDist) {
+            handClosestDist = dist;
         }
     }
 
-    // === LINE STROKE ===
-    float lineMask = smoothstep(lineWidth, lineWidth * 0.2, closestDist);
-    result.line = pow(lineMask, u_ridge_sharpness);
+    float handLineMask = smoothstep(lineWidth, lineWidth * 0.2, handClosestDist);
+    float handLine = pow(handLineMask, u_ridge_sharpness);
 
-    // Fill zone
-    result.fill = inFill;
+    // ========================================
+    // COMBINE BACKGROUND AND HAND LINES
+    // ========================================
+    // Check local depth to determine blend
+    float localDepth = texture2D(depthTex, vec2(1.0 - uv.x, uv.y)).r;
+    float isHandArea = smoothstep(0.03, 0.12, localDepth);
+
+    // In hand area: show hand lines (dense, waving)
+    // In background: show background lines (sparse, scrolling)
+    float finalLine = mix(bgLine * u_ridge_bgOpacity, handLine, isHandArea);
+
+    // Fill only applies in hand area
+    float finalFill = inFill * isHandArea;
+
+    result.line = finalLine;
+    result.fill = finalFill;
+    result.opacity = mix(u_ridge_bgOpacity, 1.0, isHandArea);
 
     // === GLOW ===
+    float glowDist = mix(bgClosestDist, handClosestDist, isHandArea);
     float glowWidth = lineWidth * 6.0;
-    result.glow = exp(-closestDist * closestDist / (glowWidth * glowWidth)) * u_ridge_glow;
+    result.glow = exp(-glowDist * glowDist / (glowWidth * glowWidth)) * u_ridge_glow * result.opacity;
 
     return result;
 }

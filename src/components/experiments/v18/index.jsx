@@ -339,6 +339,11 @@ const TopographicHandExperiment = () => {
   const [ridgeFillStyle, setRidgeFillStyle] = useState(0.0); // Fill: 0=black, 0.5=gradient, 1=depth
   const [ridgeWaveFreq, setRidgeWaveFreq] = useState(5.0);   // Wave frequency along X
 
+  // Background lines (sparse, scrolling)
+  const [ridgeBgOpacity, setRidgeBgOpacity] = useState(0.4);  // Background line opacity
+  const [ridgeBgSpacing, setRidgeBgSpacing] = useState(3.0);  // Spacing multiplier (1=same, 5=sparse)
+  const [ridgeBgScroll, setRidgeBgScroll] = useState(0.5);    // Scroll speed
+
   // Z-Index layer ordering (Photoshop-like stacking)
   // Lower values = behind, Higher values = in front
   const [zindexContours, setZindexContours] = useState(1);
@@ -412,6 +417,11 @@ const TopographicHandExperiment = () => {
       u_ridge_sharpness: { value: 3.0 },
       u_ridge_fillStyle: { value: 0.0 },
       u_ridge_waveFreq: { value: 5.0 },
+
+      // Background lines
+      u_ridge_bgOpacity: { value: 0.4 },
+      u_ridge_bgSpacing: { value: 3.0 },
+      u_ridge_bgScroll: { value: 0.5 },
 
       // Z-Index layer ordering
       u_zindex_contours: { value: 1.0 },
@@ -505,7 +515,11 @@ const TopographicHandExperiment = () => {
     customUniforms.u_ridge_sharpness.value = ridgeSharpness;
     customUniforms.u_ridge_fillStyle.value = ridgeFillStyle;
     customUniforms.u_ridge_waveFreq.value = ridgeWaveFreq;
-  }, [showRidgeline, ridgeCount, ridgeAmplitude, ridgeThickness, ridgeGlow, ridgeSpeed, ridgeSharpness, ridgeFillStyle, ridgeWaveFreq]);
+    // Background lines
+    customUniforms.u_ridge_bgOpacity.value = ridgeBgOpacity;
+    customUniforms.u_ridge_bgSpacing.value = ridgeBgSpacing;
+    customUniforms.u_ridge_bgScroll.value = ridgeBgScroll;
+  }, [showRidgeline, ridgeCount, ridgeAmplitude, ridgeThickness, ridgeGlow, ridgeSpeed, ridgeSharpness, ridgeFillStyle, ridgeWaveFreq, ridgeBgOpacity, ridgeBgSpacing, ridgeBgScroll]);
 
   // Update Z-Index uniforms
   useEffect(() => {
@@ -961,6 +975,51 @@ const TopographicHandExperiment = () => {
             step="0.5"
             value={ridgeWaveFreq}
             onChange={(e) => setRidgeWaveFreq(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+
+        {/* Background Lines */}
+        <SectionLabel>Background Lines</SectionLabel>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>BG OPACITY</span>
+            <span className="value">{ridgeBgOpacity.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={ridgeBgOpacity}
+            onChange={(e) => setRidgeBgOpacity(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>BG SPACING</span>
+            <span className="value">{ridgeBgSpacing.toFixed(1)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="1"
+            max="8"
+            step="0.5"
+            value={ridgeBgSpacing}
+            onChange={(e) => setRidgeBgSpacing(parseFloat(e.target.value))}
+          />
+        </SliderContainer>
+        <SliderContainer className={!showRidgeline ? 'disabled' : ''}>
+          <SliderLabel>
+            <span>BG SCROLL</span>
+            <span className="value">{ridgeBgScroll.toFixed(2)}</span>
+          </SliderLabel>
+          <Slider
+            type="range"
+            min="0"
+            max="2"
+            step="0.05"
+            value={ridgeBgScroll}
+            onChange={(e) => setRidgeBgScroll(parseFloat(e.target.value))}
           />
         </SliderContainer>
       </ControlPanel>
