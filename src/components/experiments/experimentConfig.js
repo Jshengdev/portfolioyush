@@ -133,6 +133,12 @@ export const experiments = [
     description: 'Interactive polynomial domain coloring visualization',
     colors: ['#0A0A1A', '#4A9EFF', '#FFFFFF']
   },
+  {
+    id: 'v21',
+    name: 'Contour',
+    description: 'Luminance-driven horizontal contour lines',
+    colors: ['#000000', '#FFFFFF', '#888888']
+  },
 ];
 
 /**
