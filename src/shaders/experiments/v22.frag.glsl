@@ -2,16 +2,13 @@ precision highp float;
 
 /*
  * ═══════════════════════════════════════════════════════════════════
- * V22: LUMINOUS HAND - Wisps Shader
+ * V22: LUMINOUS HAND - Wisps Shader (FIXED)
  * ═══════════════════════════════════════════════════════════════════
  *
- * Creates organic, flowing luminous wisps that trace the hand's contours.
- * Uses domain-warped FBM to generate ethereal, smoke-like strands.
+ * Creates organic, flowing luminous wisps that trace the hand's CONTOURS.
+ * Wisps should appear AT EDGES, not fill the hand solid.
  *
- * The hand emerges through:
- *   1. Wisps concentrated along depth edges (contours)
- *   2. Intensity modulated by depth value
- *   3. Domain warping for organic, non-uniform flow
+ * Key principle: Hand interior = dark, edges = glowing wisps
  *
  * Reference: docs/experiments/references/particles.png
  * ═══════════════════════════════════════════════════════════════════
@@ -27,20 +24,14 @@ uniform vec3 u_backgroundColor;
 uniform sampler2D u_depthMap;
 
 // === WISP PARAMETERS ===
-uniform float u_wispIntensity;        // Overall brightness (default: 1.0)
-uniform float u_wispScale;            // FBM scale (default: 5.0)
-uniform float u_wispWarp;             // Domain warp amount (default: 0.5)
+uniform float u_wispIntensity;         // Overall brightness (default: 1.0)
+uniform float u_wispScale;             // FBM scale (default: 5.0)
+uniform float u_wispWarp;              // Domain warp amount (default: 0.5)
 uniform float u_wispEdgeConcentration; // Edge focus multiplier (default: 2.0)
 
 // === HASH FUNCTIONS ===
 float hash(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-vec2 hash22(vec2 p) {
-    p = vec2(dot(p, vec2(127.1, 311.7)),
-             dot(p, vec2(269.5, 183.3)));
-    return fract(sin(p) * 43758.5453);
 }
 
 // === VALUE NOISE ===
@@ -53,9 +44,7 @@ float noise(vec2 st) {
     float c = hash(i + vec2(0.0, 1.0));
     float d = hash(i + vec2(1.0, 1.0));
 
-    // Cubic Hermite interpolation
     vec2 u = f * f * (3.0 - 2.0 * f);
-
     return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
 
@@ -78,57 +67,48 @@ float fbm(vec2 st, int octaves) {
 }
 
 // === DOMAIN-WARPED FBM ===
-// Creates organic, swirling patterns by warping coordinates with noise
 float warpedFbm(vec2 st, int octaves, float warpAmount) {
-    // First FBM pass for distortion field
     vec2 warp = vec2(
         fbm(st + vec2(0.0, 0.0), octaves),
         fbm(st + vec2(5.2, 1.3), octaves)
     );
-
-    // Second FBM with warped coordinates
     return fbm(st + warp * warpAmount, octaves);
 }
 
-// === MULTI-LAYER WISPS ===
-// Creates multiple layers of ethereal strands
-float calculateWisps(vec2 uv, vec2 depthUV, float depth, float edge) {
-    float wisps = 0.0;
+// === EDGE-ONLY WISPS ===
+// Wisps appear ONLY at contours, not filling the hand
+float calculateWisps(vec2 uv, float depth, float edge, float edgeWidth) {
+    // Base FBM pattern (organic texture)
+    vec2 st = uv * u_wispScale;
+    st += vec2(u_time * 0.015, u_time * 0.01);
 
-    // Layer 1: Large-scale flowing forms
-    vec2 st1 = uv * u_wispScale * 0.5;
-    st1 += vec2(u_time * 0.02, u_time * 0.01); // Slow drift
-    float layer1 = warpedFbm(st1, 5, u_wispWarp * 1.2);
+    float pattern = warpedFbm(st, 4, u_wispWarp);
 
-    // Layer 2: Medium detail
-    vec2 st2 = uv * u_wispScale;
-    st2 += vec2(u_time * -0.015, u_time * 0.025);
-    float layer2 = warpedFbm(st2 + vec2(3.3, 7.7), 4, u_wispWarp);
+    // Second layer for more detail
+    vec2 st2 = uv * u_wispScale * 1.5 + vec2(3.7, 2.1);
+    st2 += vec2(u_time * -0.01, u_time * 0.02);
+    float pattern2 = warpedFbm(st2, 3, u_wispWarp * 0.8);
 
-    // Layer 3: Fine detail wisps
-    vec2 st3 = uv * u_wispScale * 2.0;
-    st3 += vec2(u_time * 0.03, u_time * -0.02);
-    float layer3 = warpedFbm(st3 + vec2(11.1, 2.9), 3, u_wispWarp * 0.8);
+    // Combine patterns
+    float wisps = pattern * 0.6 + pattern2 * 0.4;
 
-    // Combine layers with different weights
-    wisps = layer1 * 0.5 + layer2 * 0.35 + layer3 * 0.15;
+    // Create tendril shapes
+    wisps = pow(wisps, 2.0);
 
-    // Create tendril-like shapes by sharpening
-    wisps = pow(wisps, 1.5);
+    // KEY FIX: Wisps ONLY appear at edges, scaled by edge strength
+    // edgeWidth controls how far from edge wisps extend
+    float edgeMask = smoothstep(0.0, edgeWidth, edge);
 
-    // Modulate by depth - brighter near hand surface
-    float depthInfluence = smoothstep(0.05, 0.4, depth);
-    wisps *= depthInfluence;
+    // Also allow wisps to "leak" slightly into void near edges
+    float nearEdge = smoothstep(0.02, 0.15, depth) * smoothstep(0.5, 0.1, depth);
 
-    // Concentrate along edges (contours)
-    float edgeBoost = 1.0 + edge * u_wispEdgeConcentration;
-    wisps *= edgeBoost;
+    // Combine: strong at edges, fading into void
+    float wispMask = edgeMask * u_wispEdgeConcentration + nearEdge * 0.3;
+    wispMask = min(wispMask, 1.0);
 
-    // Fade wisps at silhouette edges to avoid hard cutoff
-    float silhouetteFade = smoothstep(0.0, 0.15, depth);
-    wisps *= silhouetteFade;
+    wisps *= wispMask;
 
-    return wisps * u_wispIntensity;
+    return wisps * u_wispIntensity * 0.15; // Much lower base intensity
 }
 
 // === MAIN ===
@@ -141,36 +121,33 @@ void main() {
     // Sample depth map
     float depth = texture2D(u_depthMap, depthUV).r;
 
-    // Background threshold
-    float bgThreshold = 0.05;
-    float handMask = smoothstep(bgThreshold - 0.02, bgThreshold + 0.05, depth);
-
     // Edge detection using fwidth (screen-space derivatives)
-    float edge = fwidth(depth) * 25.0;
-    edge = smoothstep(0.0, 0.5, edge);
+    float rawEdge = fwidth(depth);
 
-    // Skip extremely high derivatives (silhouette artifacts)
-    if (fwidth(depth) > 0.3) {
-        edge *= 0.3;
+    // Normalize edge detection
+    float edge = rawEdge * 30.0;
+    edge = smoothstep(0.1, 0.8, edge);
+
+    // Reduce artifacts at silhouette
+    if (rawEdge > 0.25) {
+        edge *= 0.2;
     }
 
-    // Calculate wisps
-    float wisps = calculateWisps(uv, depthUV, depth, edge);
+    // Edge width for wisp spread (how far from contour wisps extend)
+    float edgeWidth = 0.3 + u_wispEdgeConcentration * 0.2;
 
-    // Add subtle ambient glow in the void
-    float ambientNoise = fbm(uv * 3.0 + u_time * 0.01, 3);
-    float ambient = ambientNoise * 0.03 * (1.0 - handMask * 0.5);
+    // Calculate wisps (edge-focused)
+    float wisps = calculateWisps(uv, depth, edge, edgeWidth);
 
-    // Final color (additive on black)
+    // Subtle ambient particles in void (very faint)
+    float voidNoise = fbm(uv * 8.0 + u_time * 0.005, 3);
+    float ambient = voidNoise * 0.02 * (1.0 - smoothstep(0.0, 0.2, depth));
+
+    // Final luminosity
     float luminosity = wisps + ambient;
 
-    // Subtle color tint (very slight warm/cool variation)
+    // Output
     vec3 color = vec3(luminosity);
-
-    // Add very subtle blue tint to edges
-    color += vec3(-0.02, 0.0, 0.03) * edge * wisps;
-
-    // Ensure no negative values
     color = max(color, vec3(0.0));
 
     gl_FragColor = vec4(color, 1.0);

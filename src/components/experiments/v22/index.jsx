@@ -241,7 +241,8 @@ const particleVertexShader = `
   void main() {
     vBrightness = brightness;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = size * (300.0 / -mvPosition.z);
+    // Larger base size for visibility
+    gl_PointSize = size * (500.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -258,11 +259,15 @@ const particleFragmentShader = `
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
 
-    // Soft glow falloff
-    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
-    alpha *= vBrightness;
+    // Soft glow falloff - more visible even at low brightness
+    float glow = 1.0 - smoothstep(0.0, 0.5, dist);
+    glow = pow(glow, 0.8); // Slightly sharper falloff
 
-    gl_FragColor = vec4(vec3(1.0), alpha);
+    // Brightness affects both color and alpha for visibility
+    float alpha = glow * (0.3 + vBrightness * 0.7); // Min 30% alpha when visible
+    float colorMult = 0.5 + vBrightness * 0.5; // Min 50% white
+
+    gl_FragColor = vec4(vec3(colorMult), alpha);
   }
 `;
 
@@ -295,16 +300,16 @@ const LuminousExperiment = () => {
     { name: 'Hand 2', path: '/assets/hand/hand2_depth.png' },
   ];
 
-  // Wisp parameters
-  const [wispIntensity, setWispIntensity] = useState(1.0);
-  const [wispScale, setWispScale] = useState(5.0);
-  const [wispWarp, setWispWarp] = useState(0.5);
-  const [wispEdgeConcentration, setWispEdgeConcentration] = useState(2.0);
+  // Wisp parameters - lower defaults for subtle effect
+  const [wispIntensity, setWispIntensity] = useState(0.8);
+  const [wispScale, setWispScale] = useState(4.0);
+  const [wispWarp, setWispWarp] = useState(0.4);
+  const [wispEdgeConcentration, setWispEdgeConcentration] = useState(1.5);
 
-  // Particle parameters
-  const [particleCount, setParticleCount] = useState(50000);
-  const [particleSize, setParticleSize] = useState(1.0);
-  const [particleBrightness, setParticleBrightness] = useState(1.5);
+  // Particle parameters - more visible defaults
+  const [particleCount, setParticleCount] = useState(40000);
+  const [particleSize, setParticleSize] = useState(1.2);
+  const [particleBrightness, setParticleBrightness] = useState(1.0);
   const [particleDepthInfluence, setParticleDepthInfluence] = useState(1.0);
 
   // Create placeholder texture
@@ -321,39 +326,61 @@ const LuminousExperiment = () => {
     const sizes = [];
     const brightnesses = [];
 
-    // Sample random positions, weighted by depth
-    for (let i = 0; i < count; i++) {
-      // Random position
-      let x = Math.random();
-      let y = Math.random();
-
-      // Sample depth at this position
+    // Helper to sample depth with edge detection
+    const sampleDepthAndEdge = (x, y) => {
       const px = Math.floor(x * width);
-      const py = Math.floor((1 - y) * height); // Flip Y
+      const py = Math.floor((1 - y) * height);
       const idx = (py * width + px) * 4;
       const depth = depthData[idx] / 255;
 
-      // Rejection sampling: higher depth = more likely to keep
-      // Also allow some particles in void for atmosphere
-      const keepProbability = depth * 0.8 + 0.1;
-      if (Math.random() > keepProbability && depth > 0.1) {
+      // Simple edge detection by sampling neighbors
+      let edge = 0;
+      if (px > 0 && px < width - 1 && py > 0 && py < height - 1) {
+        const left = depthData[idx - 4] / 255;
+        const right = depthData[idx + 4] / 255;
+        const up = depthData[idx - width * 4] / 255;
+        const down = depthData[idx + width * 4] / 255;
+        edge = Math.abs(depth - left) + Math.abs(depth - right) +
+               Math.abs(depth - up) + Math.abs(depth - down);
+      }
+
+      return { depth, edge };
+    };
+
+    // Sample positions with preference for edges
+    for (let i = 0; i < count; i++) {
+      let x = Math.random();
+      let y = Math.random();
+
+      const { depth, edge } = sampleDepthAndEdge(x, y);
+
+      // Keep probability: higher for edges AND some depth presence
+      // More particles at edges, fewer in flat areas
+      const edgeBoost = Math.min(edge * 5, 1.0);
+      const depthPresence = depth > 0.05 ? 0.3 : 0.1;
+      const keepProbability = depthPresence + edgeBoost * 0.5 + depth * 0.2;
+
+      if (Math.random() > keepProbability) {
         i--;
         continue;
       }
 
-      // Convert to centered coordinates
-      const posX = (x - 0.5) * 2;
+      // Convert to centered coordinates (flip X to match shader)
+      const posX = (0.5 - x) * 2;
       const posY = (y - 0.5) * 2;
-      const posZ = depth * 0.5 - 0.25; // Slight depth variation
+      const posZ = depth * 0.3 - 0.15;
 
       positions.push(posX, posY, posZ);
 
-      // Size based on depth (closer = larger)
-      const size = (0.5 + depth * 1.5) * particleSize;
+      // Size: larger at edges, varied by depth
+      const edgeSizeBoost = 1 + edge * 2;
+      const baseSize = 0.3 + depth * 0.7;
+      const size = baseSize * edgeSizeBoost * particleSize;
       sizes.push(size);
 
-      // Brightness based on depth
-      const bright = (0.2 + depth * 0.8) * particleBrightness;
+      // Brightness: stronger at edges
+      const baseBright = 0.4 + depth * 0.4 + edge * 0.2;
+      const bright = baseBright * particleBrightness;
       brightnesses.push(bright);
     }
 
