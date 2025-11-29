@@ -135,8 +135,8 @@ export const experiments = [
   },
   {
     id: 'v21',
-    name: 'Contour',
-    description: 'Luminance-driven horizontal contour lines',
+    name: 'Oscilloscope',
+    description: 'CRT waveform with noise displacement and bloom glow',
     colors: ['#000000', '#FFFFFF', '#888888']
   },
   {
