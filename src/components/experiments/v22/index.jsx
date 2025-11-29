@@ -434,6 +434,7 @@ const LuminousExperiment = () => {
         u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
         u_backgroundColor: { value: new THREE.Vector3(0, 0, 0) },
         u_depthMap: { value: createPlaceholderTexture() },
+        u_imageAspect: { value: 1.0 }, // Will be updated when texture loads
         u_wispIntensity: { value: wispIntensity },
         u_wispScale: { value: wispScale },
         u_wispWarp: { value: wispWarp },
@@ -510,7 +511,14 @@ const LuminousExperiment = () => {
 
     Promise.all(loadPromises).then(() => {
       if (texturesRef.current[0]) {
-        wispMaterial.uniforms.u_depthMap.value = texturesRef.current[0];
+        const tex = texturesRef.current[0];
+        wispMaterial.uniforms.u_depthMap.value = tex;
+
+        // Set image aspect ratio for correct UV mapping
+        const imageAspect = tex.image.width / tex.image.height;
+        wispMaterial.uniforms.u_imageAspect.value = imageAspect;
+        console.log(`V22: Image aspect ratio: ${imageAspect.toFixed(3)} (${tex.image.width}x${tex.image.height})`);
+
         setTextureLoaded(true);
 
         // Generate initial particles
@@ -609,10 +617,15 @@ const LuminousExperiment = () => {
   // Switch texture when activeImage changes
   useEffect(() => {
     if (texturesRef.current[activeImage] && wispMaterialRef.current) {
-      wispMaterialRef.current.uniforms.u_depthMap.value = texturesRef.current[activeImage];
+      const texture = texturesRef.current[activeImage];
+      wispMaterialRef.current.uniforms.u_depthMap.value = texture;
+
+      // Update image aspect ratio
+      const imageAspect = texture.image.width / texture.image.height;
+      wispMaterialRef.current.uniforms.u_imageAspect.value = imageAspect;
+      console.log(`V22: Switched to image ${activeImage}, aspect: ${imageAspect.toFixed(3)}`);
 
       // Re-extract depth data for particle generation
-      const texture = texturesRef.current[activeImage];
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = texture.image;
