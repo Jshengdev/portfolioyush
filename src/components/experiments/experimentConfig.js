@@ -127,6 +127,12 @@ export const experiments = [
     description: 'Procedural spiral galaxy with differential rotation',
     colors: ['#0A0A1A', '#FFE4B5', '#6B8CFF']
   },
+  {
+    id: 'v20',
+    name: 'Galois',
+    description: 'Interactive polynomial domain coloring visualization',
+    colors: ['#0A0A1A', '#4A9EFF', '#FFFFFF']
+  },
 ];
 
 /**
