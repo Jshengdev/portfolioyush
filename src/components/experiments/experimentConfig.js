@@ -138,9 +138,6 @@ export const experiments = [
     name: 'Contour',
     description: 'Luminance-driven horizontal contour lines',
     colors: ['#000000', '#FFFFFF', '#888888']
-    name: 'TBD',
-    description: 'Placeholder - define effect here',
-    colors: ['#000000', '#888888', '#FFFFFF']
   },
   {
     id: 'v22',
