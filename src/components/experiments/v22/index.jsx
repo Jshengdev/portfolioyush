@@ -298,14 +298,17 @@ const LuminousExperiment = () => {
     { name: 'Hand 2', path: '/assets/hand/hand2_depth.png' },
   ];
 
-  // Wisp parameters - lower defaults for subtle effect
-  const [wispIntensity, setWispIntensity] = useState(0.8);
-  const [wispScale, setWispScale] = useState(4.0);
-  const [wispWarp, setWispWarp] = useState(0.4);
-  const [wispEdgeConcentration, setWispEdgeConcentration] = useState(1.5);
+  // Debug mode: 0=normal, 1=edge, 2=fbm, 3=depth
+  const [debugMode, setDebugMode] = useState(0);
 
-  // Particle parameters - subtle defaults
-  const [particleCount, setParticleCount] = useState(50000);
+  // Wisp parameters
+  const [wispIntensity, setWispIntensity] = useState(1.0);
+  const [wispScale, setWispScale] = useState(5.0);
+  const [wispWarp, setWispWarp] = useState(0.3);
+  const [wispEdgeConcentration, setWispEdgeConcentration] = useState(25.0); // 10-50 range
+
+  // Particle parameters - disabled by default for debugging wisps first
+  const [particleCount, setParticleCount] = useState(0); // Start at 0 to isolate wisps
   const [particleSize, setParticleSize] = useState(1.0);
   const [particleBrightness, setParticleBrightness] = useState(0.8);
   const [particleDepthInfluence, setParticleDepthInfluence] = useState(1.0);
@@ -435,6 +438,7 @@ const LuminousExperiment = () => {
         u_wispScale: { value: wispScale },
         u_wispWarp: { value: wispWarp },
         u_wispEdgeConcentration: { value: wispEdgeConcentration },
+        u_debugMode: { value: debugMode },
       },
       transparent: true,
       depthTest: false,
@@ -581,8 +585,9 @@ const LuminousExperiment = () => {
       wispMaterialRef.current.uniforms.u_wispScale.value = wispScale;
       wispMaterialRef.current.uniforms.u_wispWarp.value = wispWarp;
       wispMaterialRef.current.uniforms.u_wispEdgeConcentration.value = wispEdgeConcentration;
+      wispMaterialRef.current.uniforms.u_debugMode.value = debugMode;
     }
-  }, [wispIntensity, wispScale, wispWarp, wispEdgeConcentration]);
+  }, [wispIntensity, wispScale, wispWarp, wispEdgeConcentration, debugMode]);
 
   // Regenerate particles when parameters change
   useEffect(() => {
@@ -669,6 +674,15 @@ const LuminousExperiment = () => {
 
       {/* Controls */}
       <ControlPanel>
+        {/* Debug Mode */}
+        <SectionLabel>Debug View</SectionLabel>
+        <ImageSwitcher>
+          <ImageButton $active={debugMode === 0} onClick={() => setDebugMode(0)}>Normal</ImageButton>
+          <ImageButton $active={debugMode === 1} onClick={() => setDebugMode(1)}>Edge</ImageButton>
+          <ImageButton $active={debugMode === 2} onClick={() => setDebugMode(2)}>FBM</ImageButton>
+          <ImageButton $active={debugMode === 3} onClick={() => setDebugMode(3)}>Depth</ImageButton>
+        </ImageSwitcher>
+
         {/* Depth Image Switcher */}
         <SectionLabel>Depth Image</SectionLabel>
         <ImageSwitcher>
@@ -731,13 +745,13 @@ const LuminousExperiment = () => {
         <SliderContainer>
           <SliderLabel>
             <span>EDGE FOCUS</span>
-            <span className="value">{wispEdgeConcentration.toFixed(1)}</span>
+            <span className="value">{wispEdgeConcentration.toFixed(0)}</span>
           </SliderLabel>
           <Slider
             type="range"
-            min="0"
-            max="5"
-            step="0.25"
+            min="5"
+            max="60"
+            step="5"
             value={wispEdgeConcentration}
             onChange={(e) => setWispEdgeConcentration(parseFloat(e.target.value))}
           />
