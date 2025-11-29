@@ -68,6 +68,14 @@ uniform float u_useDepth;           // 0=off, 1=on
 uniform float u_useLuminance;       // 0=off, 1=on
 uniform float u_useBloom;           // 0=off, 1=on - Disable to remove ghost image
 
+// Phase 3: Tendril system
+uniform float u_hoverTime;
+uniform float u_tendrilCount;
+uniform float u_tendrilData[160];   // 20 tendrils * 8 floats each
+uniform float u_tendrilTaper;
+uniform float u_tendrilWobble;
+uniform float u_tendrilGlow;
+
 // ============================================
 // NOISE FUNCTIONS
 // ============================================
@@ -442,6 +450,194 @@ float calculateBloom(vec2 texUV) {
 }
 
 // ============================================
+// PHASE 3: TENDRIL RENDERING
+// ============================================
+
+// Quadratic Bezier curve evaluation
+vec2 quadBezier(vec2 p0, vec2 p1, vec2 p2, float t) {
+    float omt = 1.0 - t;
+    return omt * omt * p0 + 2.0 * omt * t * p1 + t * t * p2;
+}
+
+// Signed distance to a quadratic Bezier curve (approximate)
+float tendrilSDF(vec2 p, vec2 p0, vec2 p1, vec2 p2, float extension) {
+    // Sample points along the Bezier and find minimum distance
+    float minDist = 1000.0;
+    const int SAMPLES = 16;
+
+    for (int i = 0; i < SAMPLES; i++) {
+        float t = float(i) / float(SAMPLES - 1);
+        // Only render up to the current extension
+        if (t > extension) break;
+
+        vec2 bezierPoint = quadBezier(p0, p1, p2, t);
+        float dist = distance(p, bezierPoint);
+        minDist = min(minDist, dist);
+    }
+
+    return minDist;
+}
+
+// Render all active tendrils
+float renderTendrils(vec2 uv) {
+    float result = 0.0;
+    int count = int(u_tendrilCount);
+
+    // WebGL 1.0 requires constant loop bounds
+    for (int i = 0; i < 20; i++) {
+        if (i >= count) break;
+
+        int offset = i * 8;
+
+        // Unpack tendril data (WebGL 1.0 needs constant index expressions)
+        // We'll use a helper approach with if statements
+        vec2 p0, p1, p2;
+        float ext, thickness;
+
+        // Manual unpacking for WebGL 1.0 compatibility
+        if (i == 0) {
+            p0 = vec2(u_tendrilData[0], u_tendrilData[1]);
+            p1 = vec2(u_tendrilData[2], u_tendrilData[3]);
+            p2 = vec2(u_tendrilData[4], u_tendrilData[5]);
+            ext = u_tendrilData[6];
+            thickness = u_tendrilData[7];
+        } else if (i == 1) {
+            p0 = vec2(u_tendrilData[8], u_tendrilData[9]);
+            p1 = vec2(u_tendrilData[10], u_tendrilData[11]);
+            p2 = vec2(u_tendrilData[12], u_tendrilData[13]);
+            ext = u_tendrilData[14];
+            thickness = u_tendrilData[15];
+        } else if (i == 2) {
+            p0 = vec2(u_tendrilData[16], u_tendrilData[17]);
+            p1 = vec2(u_tendrilData[18], u_tendrilData[19]);
+            p2 = vec2(u_tendrilData[20], u_tendrilData[21]);
+            ext = u_tendrilData[22];
+            thickness = u_tendrilData[23];
+        } else if (i == 3) {
+            p0 = vec2(u_tendrilData[24], u_tendrilData[25]);
+            p1 = vec2(u_tendrilData[26], u_tendrilData[27]);
+            p2 = vec2(u_tendrilData[28], u_tendrilData[29]);
+            ext = u_tendrilData[30];
+            thickness = u_tendrilData[31];
+        } else if (i == 4) {
+            p0 = vec2(u_tendrilData[32], u_tendrilData[33]);
+            p1 = vec2(u_tendrilData[34], u_tendrilData[35]);
+            p2 = vec2(u_tendrilData[36], u_tendrilData[37]);
+            ext = u_tendrilData[38];
+            thickness = u_tendrilData[39];
+        } else if (i == 5) {
+            p0 = vec2(u_tendrilData[40], u_tendrilData[41]);
+            p1 = vec2(u_tendrilData[42], u_tendrilData[43]);
+            p2 = vec2(u_tendrilData[44], u_tendrilData[45]);
+            ext = u_tendrilData[46];
+            thickness = u_tendrilData[47];
+        } else if (i == 6) {
+            p0 = vec2(u_tendrilData[48], u_tendrilData[49]);
+            p1 = vec2(u_tendrilData[50], u_tendrilData[51]);
+            p2 = vec2(u_tendrilData[52], u_tendrilData[53]);
+            ext = u_tendrilData[54];
+            thickness = u_tendrilData[55];
+        } else if (i == 7) {
+            p0 = vec2(u_tendrilData[56], u_tendrilData[57]);
+            p1 = vec2(u_tendrilData[58], u_tendrilData[59]);
+            p2 = vec2(u_tendrilData[60], u_tendrilData[61]);
+            ext = u_tendrilData[62];
+            thickness = u_tendrilData[63];
+        } else if (i == 8) {
+            p0 = vec2(u_tendrilData[64], u_tendrilData[65]);
+            p1 = vec2(u_tendrilData[66], u_tendrilData[67]);
+            p2 = vec2(u_tendrilData[68], u_tendrilData[69]);
+            ext = u_tendrilData[70];
+            thickness = u_tendrilData[71];
+        } else if (i == 9) {
+            p0 = vec2(u_tendrilData[72], u_tendrilData[73]);
+            p1 = vec2(u_tendrilData[74], u_tendrilData[75]);
+            p2 = vec2(u_tendrilData[76], u_tendrilData[77]);
+            ext = u_tendrilData[78];
+            thickness = u_tendrilData[79];
+        } else if (i == 10) {
+            p0 = vec2(u_tendrilData[80], u_tendrilData[81]);
+            p1 = vec2(u_tendrilData[82], u_tendrilData[83]);
+            p2 = vec2(u_tendrilData[84], u_tendrilData[85]);
+            ext = u_tendrilData[86];
+            thickness = u_tendrilData[87];
+        } else if (i == 11) {
+            p0 = vec2(u_tendrilData[88], u_tendrilData[89]);
+            p1 = vec2(u_tendrilData[90], u_tendrilData[91]);
+            p2 = vec2(u_tendrilData[92], u_tendrilData[93]);
+            ext = u_tendrilData[94];
+            thickness = u_tendrilData[95];
+        } else if (i == 12) {
+            p0 = vec2(u_tendrilData[96], u_tendrilData[97]);
+            p1 = vec2(u_tendrilData[98], u_tendrilData[99]);
+            p2 = vec2(u_tendrilData[100], u_tendrilData[101]);
+            ext = u_tendrilData[102];
+            thickness = u_tendrilData[103];
+        } else if (i == 13) {
+            p0 = vec2(u_tendrilData[104], u_tendrilData[105]);
+            p1 = vec2(u_tendrilData[106], u_tendrilData[107]);
+            p2 = vec2(u_tendrilData[108], u_tendrilData[109]);
+            ext = u_tendrilData[110];
+            thickness = u_tendrilData[111];
+        } else if (i == 14) {
+            p0 = vec2(u_tendrilData[112], u_tendrilData[113]);
+            p1 = vec2(u_tendrilData[114], u_tendrilData[115]);
+            p2 = vec2(u_tendrilData[116], u_tendrilData[117]);
+            ext = u_tendrilData[118];
+            thickness = u_tendrilData[119];
+        } else if (i == 15) {
+            p0 = vec2(u_tendrilData[120], u_tendrilData[121]);
+            p1 = vec2(u_tendrilData[122], u_tendrilData[123]);
+            p2 = vec2(u_tendrilData[124], u_tendrilData[125]);
+            ext = u_tendrilData[126];
+            thickness = u_tendrilData[127];
+        } else if (i == 16) {
+            p0 = vec2(u_tendrilData[128], u_tendrilData[129]);
+            p1 = vec2(u_tendrilData[130], u_tendrilData[131]);
+            p2 = vec2(u_tendrilData[132], u_tendrilData[133]);
+            ext = u_tendrilData[134];
+            thickness = u_tendrilData[135];
+        } else if (i == 17) {
+            p0 = vec2(u_tendrilData[136], u_tendrilData[137]);
+            p1 = vec2(u_tendrilData[138], u_tendrilData[139]);
+            p2 = vec2(u_tendrilData[140], u_tendrilData[141]);
+            ext = u_tendrilData[142];
+            thickness = u_tendrilData[143];
+        } else if (i == 18) {
+            p0 = vec2(u_tendrilData[144], u_tendrilData[145]);
+            p1 = vec2(u_tendrilData[146], u_tendrilData[147]);
+            p2 = vec2(u_tendrilData[148], u_tendrilData[149]);
+            ext = u_tendrilData[150];
+            thickness = u_tendrilData[151];
+        } else {
+            p0 = vec2(u_tendrilData[152], u_tendrilData[153]);
+            p1 = vec2(u_tendrilData[154], u_tendrilData[155]);
+            p2 = vec2(u_tendrilData[156], u_tendrilData[157]);
+            ext = u_tendrilData[158];
+            thickness = u_tendrilData[159];
+        }
+
+        // Skip if not extended
+        if (ext < 0.01) continue;
+
+        // Calculate distance to this tendril
+        float dist = tendrilSDF(uv, p0, p1, p2, ext);
+
+        // Tendril width with taper (thinner at tip)
+        float baseWidth = 0.003 * thickness;
+        float width = baseWidth * (1.0 - u_tendrilTaper * 0.5);
+
+        // Soft falloff for glow
+        float core = smoothstep(width, width * 0.3, dist);
+        float glow = smoothstep(width * 3.0, width * 0.5, dist) * u_tendrilGlow;
+
+        result += core + glow * 0.3;
+    }
+
+    return clamp(result, 0.0, 1.0);
+}
+
+// ============================================
 // MAIN
 // ============================================
 
@@ -491,8 +687,11 @@ void main() {
         bloom = calculateBloom(texUV);
     }
 
-    // Blend
-    float finalIntensity = scanlines + bloom * (1.0 - scanlines * 0.5);
+    // Phase 3: Render tendrils
+    float tendrils = renderTendrils(texUV);
+
+    // Blend: scanlines + bloom + tendrils
+    float finalIntensity = scanlines + bloom * (1.0 - scanlines * 0.5) + tendrils;
 
     // CRT vignette
     float vignetteX = smoothstep(0.0, 0.08, uv.x) * smoothstep(1.0, 0.92, uv.x);

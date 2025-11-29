@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState, useRef } from 'react';
+import React, { useEffect, useContext, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import * as THREE from 'three';
@@ -19,6 +19,26 @@ import { ThemeContext } from '../../../context/ThemeContext';
  */
 
 const CURRENT_ID = 'v21';
+
+// ═══════════════════════════════════════════════════════════════════
+// TENDRIL SYSTEM CONSTANTS
+// ═══════════════════════════════════════════════════════════════════
+const MAX_TENDRILS = 20;
+
+// Create initial tendril state
+const createTendril = () => ({
+  active: false,
+  p0: { x: 0, y: 0 },        // Origin (on hand)
+  p1: { x: 0, y: 0 },        // Control point (creates arc)
+  p2: { x: 0, y: 0 },        // End point (toward cursor)
+  target: { x: 0, y: 0 },    // Where P2 is trying to reach
+  velocity: { x: 0, y: 0 },  // Spring velocity
+  activationTime: 0,
+  extension: 0,              // 0-1 how far it's grown
+  thickness: 1.0,
+  wobblePhase: Math.random() * Math.PI * 2,
+  growthSpeed: 0.8 + Math.random() * 0.4,
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // STYLED COMPONENTS
@@ -316,6 +336,19 @@ const Experiment = () => {
   const [useLuminance, setUseLuminance] = useState(true);
   const [useBloom, setUseBloom] = useState(false); // Default OFF to hide ghost image
 
+  // ═══════════════════════════════════════════════════════════════════
+  // TENDRIL SYSTEM STATE
+  // ═══════════════════════════════════════════════════════════════════
+  const tendrilsRef = useRef(Array(MAX_TENDRILS).fill(null).map(() => createTendril()));
+  const hoverTimeRef = useRef(0);
+  const [hoverTime, setHoverTime] = useState(0); // For UI display
+  const [activeTendrilCount, setActiveTendrilCount] = useState(0); // For UI display
+
+  // Tendril parameters
+  const [tendrilTaper, setTendrilTaper] = useState(0.5);
+  const [tendrilWobble, setTendrilWobble] = useState(0.1);
+  const [tendrilGlow, setTendrilGlow] = useState(0.3);
+
   const createPlaceholderTexture = () => {
     const data = new Uint8Array([128, 128, 128, 255]);
     const texture = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat);
@@ -363,6 +396,13 @@ const Experiment = () => {
       u_useDepth: { value: 1.0 },
       u_useLuminance: { value: 1.0 },
       u_useBloom: { value: 0.0 }, // Default OFF
+      // Tendril system
+      u_hoverTime: { value: 0.0 },
+      u_tendrilCount: { value: 0.0 },
+      u_tendrilData: { value: Array(160).fill(0.0) },
+      u_tendrilTaper: { value: 0.5 },
+      u_tendrilWobble: { value: 0.1 },
+      u_tendrilGlow: { value: 0.3 },
     };
   });
 
@@ -441,6 +481,198 @@ const Experiment = () => {
     customUniforms.u_useBloom.value = useBloom ? 1.0 : 0.0;
   }, [lineCount, lineThickness, amplitude, noiseScale, noiseSpeed, octaves, lacunarity, persistence, amplitudeGamma, bgAmplitude, thicknessRange, edgeMultiplier, edgeThreshold, verticalScale, dashWidth, dashDensity, bloomStrength, bloomRadius, contrast, parallaxStrength, depthInfluence, cursorRadius, cursorStrength, cursorFalloff, cursorMode, tensionStrength, waveFrequency, waveSpeed, debugMode, useDepth, useLuminance, useBloom]);
 
+  // ═══════════════════════════════════════════════════════════════════
+  // TENDRIL ANIMATION SYSTEM
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Check if cursor is roughly over the hand (simple bounding box)
+  const checkCursorOnHand = (mousePos) => {
+    // Hand is roughly in center-right of image
+    // Approximate bounding box in normalized UV coordinates
+    const handBounds = {
+      minX: 0.25,
+      maxX: 0.75,
+      minY: 0.2,
+      maxY: 0.85
+    };
+    return mousePos.x >= handBounds.minX && mousePos.x <= handBounds.maxX &&
+           mousePos.y >= handBounds.minY && mousePos.y <= handBounds.maxY;
+  };
+
+  // Spawn a new tendril at a random point near cursor
+  const spawnTendril = (mousePos) => {
+    const slot = tendrilsRef.current.findIndex(t => !t.active);
+    if (slot === -1) return;
+
+    const t = tendrilsRef.current[slot];
+    t.active = true;
+    t.activationTime = performance.now();
+
+    // P0: Random point around cursor (origin on hand)
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 0.05 + Math.random() * 0.1;
+    t.p0.x = mousePos.x + Math.cos(angle) * dist;
+    t.p0.y = mousePos.y + Math.sin(angle) * dist;
+
+    // P1: Control point between P0 and cursor with perpendicular offset
+    const perpAngle = angle + Math.PI / 2;
+    const arcOffset = (Math.random() - 0.5) * 0.1;
+    t.p1.x = (t.p0.x + mousePos.x) / 2 + Math.cos(perpAngle) * arcOffset;
+    t.p1.y = (t.p0.y + mousePos.y) / 2 + Math.sin(perpAngle) * arcOffset;
+
+    // P2: Starts at P0, will grow toward cursor
+    t.p2.x = t.p0.x;
+    t.p2.y = t.p0.y;
+    t.target.x = mousePos.x;
+    t.target.y = mousePos.y;
+
+    t.extension = 0;
+    t.velocity = { x: 0, y: 0 };
+    t.thickness = 0.8 + Math.random() * 0.4;
+    t.wobblePhase = Math.random() * Math.PI * 2;
+    t.growthSpeed = 0.8 + Math.random() * 0.4;
+  };
+
+  // Update a single tendril with spring physics
+  const updateTendril = (t, deltaTime, mousePos) => {
+    const SPRING_STRENGTH = 2.5;
+    const FRICTION = 0.85;
+    const GROWTH_SPEED = 0.5;
+
+    // Update target to current cursor position
+    t.target.x = mousePos.x;
+    t.target.y = mousePos.y;
+
+    // Spring physics on P2 (end point chases cursor)
+    const dx = t.target.x - t.p2.x;
+    const dy = t.target.y - t.p2.y;
+
+    t.velocity.x += dx * SPRING_STRENGTH * deltaTime;
+    t.velocity.y += dy * SPRING_STRENGTH * deltaTime;
+
+    t.velocity.x *= Math.pow(FRICTION, deltaTime * 60);
+    t.velocity.y *= Math.pow(FRICTION, deltaTime * 60);
+
+    t.p2.x += t.velocity.x * deltaTime;
+    t.p2.y += t.velocity.y * deltaTime;
+
+    // Extension grows over time (0 → 1 over ~2 seconds)
+    t.extension = Math.min(1.0, t.extension + GROWTH_SPEED * t.growthSpeed * deltaTime);
+
+    // Update control point to create arc with wobble
+    const midX = (t.p0.x + t.p2.x) / 2;
+    const midY = (t.p0.y + t.p2.y) / 2;
+    const perpX = -(t.p2.y - t.p0.y);
+    const perpY = (t.p2.x - t.p0.x);
+    const perpLen = Math.sqrt(perpX * perpX + perpY * perpY);
+
+    if (perpLen > 0.001) {
+      const wobble = Math.sin(performance.now() * 0.003 + t.wobblePhase) * tendrilWobble;
+      t.p1.x = midX + (perpX / perpLen) * (0.05 + wobble);
+      t.p1.y = midY + (perpY / perpLen) * (0.05 + wobble);
+    }
+  };
+
+  // Retract a tendril (when cursor leaves hand)
+  const retractTendril = (t, deltaTime) => {
+    const RETRACT_SPEED = 1.5;
+    t.extension = Math.max(0, t.extension - RETRACT_SPEED * deltaTime);
+    if (t.extension <= 0) {
+      t.active = false;
+    }
+  };
+
+  // Pack tendril data into uniform array for shader
+  const packTendrilUniforms = (uniforms) => {
+    const data = uniforms.u_tendrilData.value;
+    let count = 0;
+
+    tendrilsRef.current.forEach((t) => {
+      if (!t.active) return;
+      const offset = count * 8;
+
+      data[offset + 0] = t.p0.x;
+      data[offset + 1] = t.p0.y;
+      data[offset + 2] = t.p1.x;
+      data[offset + 3] = t.p1.y;
+      data[offset + 4] = t.p2.x;
+      data[offset + 5] = t.p2.y;
+      data[offset + 6] = t.extension;
+      data[offset + 7] = t.thickness;
+
+      count++;
+    });
+
+    uniforms.u_tendrilCount.value = count;
+    setActiveTendrilCount(count);
+  };
+
+  // Main tendril update function called every frame
+  const updateTendrils = (deltaTime, uniforms) => {
+    // Defensive check - ensure uniforms exist
+    if (!uniforms || !uniforms.u_mouse || !uniforms.u_tendrilData) {
+      return;
+    }
+
+    const mousePos = {
+      x: 1.0 - uniforms.u_mouse.value.x, // Flip X to match texture space
+      y: uniforms.u_mouse.value.y
+    };
+
+    const cursorOnHand = checkCursorOnHand(mousePos);
+
+    if (cursorOnHand) {
+      // Accumulate hover time
+      hoverTimeRef.current += deltaTime;
+
+      // Calculate target tendril count based on escalation
+      const escalation = Math.min(hoverTimeRef.current / 5.0, 1.0);
+      const targetCount = Math.floor(3 + escalation * 17); // 3 at start, 20 at max
+
+      // Spawn tendrils up to target count
+      const activeCount = tendrilsRef.current.filter(t => t.active).length;
+      if (activeCount < targetCount) {
+        // Spawn one per frame for gradual buildup
+        spawnTendril(mousePos);
+      }
+
+      // Update active tendrils
+      tendrilsRef.current.forEach((t) => {
+        if (t.active) {
+          updateTendril(t, deltaTime, mousePos);
+        }
+      });
+    } else {
+      // Decay hover time
+      hoverTimeRef.current = Math.max(0, hoverTimeRef.current - deltaTime * 0.5);
+
+      // Retract all tendrils
+      tendrilsRef.current.forEach((t) => {
+        if (t.active) {
+          retractTendril(t, deltaTime);
+        }
+      });
+    }
+
+    // Update uniforms
+    uniforms.u_hoverTime.value = hoverTimeRef.current;
+    uniforms.u_tendrilTaper.value = tendrilTaper;
+    uniforms.u_tendrilWobble.value = tendrilWobble;
+    uniforms.u_tendrilGlow.value = tendrilGlow;
+
+    packTendrilUniforms(uniforms);
+
+    // Update UI state (throttled to ~10fps to avoid too many re-renders)
+    if (Math.floor(hoverTimeRef.current * 10) !== Math.floor(hoverTime * 10)) {
+      setHoverTime(hoverTimeRef.current);
+    }
+  };
+
+  // onFrame callback for BaseExperimentShader
+  const handleFrame = useCallback((deltaTime, uniforms) => {
+    updateTendrils(deltaTime, uniforms);
+  }, [tendrilTaper, tendrilWobble, tendrilGlow]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -458,6 +690,7 @@ const Experiment = () => {
         fragmentShader={fragmentShader}
         title={`${CURRENT_ID.toUpperCase()}: ${current?.name || 'Waveform'}`}
         customUniforms={customUniforms}
+        onFrame={handleFrame}
       />
 
       <NavOverlay>
@@ -624,12 +857,46 @@ const Experiment = () => {
           <SliderLabel><span>Wave Speed</span><span className="value">{waveSpeed.toFixed(2)}</span></SliderLabel>
           <Slider type="range" min="0" max="5" step="0.1" value={waveSpeed} onChange={(e) => setWaveSpeed(parseFloat(e.target.value))} />
         </SliderContainer>
+
+        <SectionLabel>Tendrils (The Reaching)</SectionLabel>
+        <SliderContainer>
+          <SliderLabel>
+            <span>Hover Time</span>
+            <span className="value">{hoverTime.toFixed(1)}s</span>
+          </SliderLabel>
+          <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{
+              width: `${Math.min(hoverTime / 5.0, 1.0) * 100}%`,
+              height: '100%',
+              background: hoverTime >= 5 ? 'rgba(255,100,100,0.8)' : 'rgba(136, 169, 215, 0.6)',
+              transition: 'width 0.1s'
+            }} />
+          </div>
+        </SliderContainer>
+        <SliderContainer>
+          <SliderLabel>
+            <span>Active Tendrils</span>
+            <span className="value">{activeTendrilCount}/20</span>
+          </SliderLabel>
+        </SliderContainer>
+        <SliderContainer>
+          <SliderLabel><span>Taper</span><span className="value">{tendrilTaper.toFixed(2)}</span></SliderLabel>
+          <Slider type="range" min="0" max="1" step="0.05" value={tendrilTaper} onChange={(e) => setTendrilTaper(parseFloat(e.target.value))} />
+        </SliderContainer>
+        <SliderContainer>
+          <SliderLabel><span>Wobble</span><span className="value">{tendrilWobble.toFixed(2)}</span></SliderLabel>
+          <Slider type="range" min="0" max="0.3" step="0.02" value={tendrilWobble} onChange={(e) => setTendrilWobble(parseFloat(e.target.value))} />
+        </SliderContainer>
+        <SliderContainer>
+          <SliderLabel><span>Glow</span><span className="value">{tendrilGlow.toFixed(2)}</span></SliderLabel>
+          <Slider type="range" min="0" max="1" step="0.05" value={tendrilGlow} onChange={(e) => setTendrilGlow(parseFloat(e.target.value))} />
+        </SliderContainer>
       </ControlPanel>
 
       <InfoPanel>
         <h3>Oscilloscope</h3>
         <p>
-          Lines deform like fabric. Flow curves around, Bulge pushes outward, Ripple creates concentric waves. Lines never disappear.
+          Lines deform like fabric. Hover over the hand and tendrils will reach toward your cursor. The longer you stay, the more they reach.
         </p>
         <p className="status">
           {texturesLoaded ? '● Loaded' : '○ Loading...'}

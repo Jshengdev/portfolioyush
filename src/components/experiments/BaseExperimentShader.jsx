@@ -94,12 +94,18 @@ void main() {
  * @param {string} props.title - Title displayed in top-left corner
  * @param {Object} [props.customUniforms={}] - Additional uniforms to pass to shader
  */
-const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {} }) => {
+const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {}, onFrame }) => {
   const mountRef = useRef(null);
   const animationRef = useRef(null);
+  const onFrameRef = useRef(onFrame); // Use ref to avoid re-init on callback change
   const { isDarkMode } = useContext(ThemeContext);
   const [webGLSupported, setWebGLSupported] = useState(true);
   const [isLowPerf, setIsLowPerf] = useState(false);
+
+  // Keep ref updated with latest callback
+  useEffect(() => {
+    onFrameRef.current = onFrame;
+  }, [onFrame]);
 
   // Check WebGL support and device performance on mount
   useEffect(() => {
@@ -188,13 +194,24 @@ const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {} }) =>
 
     // Track start time for consistent animation
     const startTime = performance.now();
+    let lastFrameTime = startTime;
     // Reduce time multiplier on low-performance devices for smoother animation
     const timeMultiplier = isLowPerf ? 0.5 : 1.0;
 
     // Animation loop
     const animate = () => {
-      const elapsedTime = ((performance.now() - startTime) / 1000) * timeMultiplier;
+      const now = performance.now();
+      const deltaTime = (now - lastFrameTime) / 1000; // Delta in seconds
+      lastFrameTime = now;
+
+      const elapsedTime = ((now - startTime) / 1000) * timeMultiplier;
       material.uniforms.u_time.value = elapsedTime;
+
+      // Call custom per-frame logic if provided (use ref to avoid stale closure)
+      if (onFrameRef.current) {
+        onFrameRef.current(deltaTime, material.uniforms);
+      }
+
       renderer.render(scene, camera);
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -254,7 +271,7 @@ const BaseExperimentShader = ({ fragmentShader, title, customUniforms = {} }) =>
       geometry.dispose();
       material.dispose();
     };
-  }, [isDarkMode, fragmentShader, customUniforms, webGLSupported, isLowPerf]);
+  }, [isDarkMode, fragmentShader, customUniforms, webGLSupported, isLowPerf]); // Note: onFrame uses ref to avoid re-init
 
   // Match V8's simple pattern: just a mount div, no wrapper
   // The parent Container component handles positioning
