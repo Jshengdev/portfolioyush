@@ -211,6 +211,42 @@ const ModeButton = styled.button`
   }
 `;
 
+const ToggleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+`;
+
+const ToggleLabel = styled.span`
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+`;
+
+const Toggle = styled.button`
+  width: 32px;
+  height: 16px;
+  border-radius: 8px;
+  border: 1px solid ${props => props.$on ? 'rgba(136, 169, 215, 0.8)' : 'rgba(255, 255, 255, 0.2)'};
+  background: ${props => props.$on ? 'rgba(136, 169, 215, 0.4)' : 'rgba(0, 0, 0, 0.3)'};
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: ${props => props.$on ? '16px' : '2px'};
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: ${props => props.$on ? 'rgba(136, 169, 215, 1)' : 'rgba(255, 255, 255, 0.4)'};
+    transition: all 0.15s ease;
+  }
+`;
+
 // ═══════════════════════════════════════════════════════════════════
 // EXPERIMENT
 // ═══════════════════════════════════════════════════════════════════
@@ -265,11 +301,20 @@ const Experiment = () => {
   const [parallaxStrength, setParallaxStrength] = useState(0.03);
   const [depthInfluence, setDepthInfluence] = useState(0.7);
 
-  // Phase 2: Cursor interaction parameters
-  const [cursorRadius, setCursorRadius] = useState(0.15);
-  const [cursorStrength, setCursorStrength] = useState(0.8);
+  // Phase 2: Cursor deformation parameters (emphasized defaults)
+  const [cursorRadius, setCursorRadius] = useState(0.25);
+  const [cursorStrength, setCursorStrength] = useState(1.5);
   const [cursorFalloff, setCursorFalloff] = useState(1.5);
-  const [cursorMode, setCursorMode] = useState(0); // 0=Push, 1=Pull, 2=Swirl
+  const [cursorMode, setCursorMode] = useState(0); // 0=Tangential, 1=Magnetic, 2=Cymatic
+  const [tensionStrength, setTensionStrength] = useState(0.7);
+  const [waveFrequency, setWaveFrequency] = useState(5.0);
+  const [waveSpeed, setWaveSpeed] = useState(2.5);
+
+  // Debug/Visibility toggles
+  const [debugMode, setDebugMode] = useState(0); // 0=normal, 1=depth, 2=luminance
+  const [useDepth, setUseDepth] = useState(true);
+  const [useLuminance, setUseLuminance] = useState(true);
+  const [useBloom, setUseBloom] = useState(false); // Default OFF to hide ghost image
 
   const createPlaceholderTexture = () => {
     const data = new Uint8Array([128, 128, 128, 255]);
@@ -305,11 +350,19 @@ const Experiment = () => {
       // Phase 2: Parallax
       u_parallaxStrength: { value: 0.03 },
       u_depthInfluence: { value: 0.7 },
-      // Phase 2: Cursor interaction
-      u_cursorRadius: { value: 0.15 },
-      u_cursorStrength: { value: 0.8 },
+      // Phase 2: Cursor deformation (emphasized defaults)
+      u_cursorRadius: { value: 0.25 },
+      u_cursorStrength: { value: 1.5 },
       u_cursorFalloff: { value: 1.5 },
       u_cursorMode: { value: 0.0 },
+      u_tensionStrength: { value: 0.7 },
+      u_waveFrequency: { value: 5.0 },
+      u_waveSpeed: { value: 2.5 },
+      // Debug toggles
+      u_debugMode: { value: 0.0 },
+      u_useDepth: { value: 1.0 },
+      u_useLuminance: { value: 1.0 },
+      u_useBloom: { value: 0.0 }, // Default OFF
     };
   });
 
@@ -379,7 +432,14 @@ const Experiment = () => {
     customUniforms.u_cursorStrength.value = cursorStrength;
     customUniforms.u_cursorFalloff.value = cursorFalloff;
     customUniforms.u_cursorMode.value = cursorMode;
-  }, [lineCount, lineThickness, amplitude, noiseScale, noiseSpeed, octaves, lacunarity, persistence, amplitudeGamma, bgAmplitude, thicknessRange, edgeMultiplier, edgeThreshold, verticalScale, dashWidth, dashDensity, bloomStrength, bloomRadius, contrast, parallaxStrength, depthInfluence, cursorRadius, cursorStrength, cursorFalloff, cursorMode]);
+    customUniforms.u_tensionStrength.value = tensionStrength;
+    customUniforms.u_waveFrequency.value = waveFrequency;
+    customUniforms.u_waveSpeed.value = waveSpeed;
+    customUniforms.u_debugMode.value = debugMode;
+    customUniforms.u_useDepth.value = useDepth ? 1.0 : 0.0;
+    customUniforms.u_useLuminance.value = useLuminance ? 1.0 : 0.0;
+    customUniforms.u_useBloom.value = useBloom ? 1.0 : 0.0;
+  }, [lineCount, lineThickness, amplitude, noiseScale, noiseSpeed, octaves, lacunarity, persistence, amplitudeGamma, bgAmplitude, thicknessRange, edgeMultiplier, edgeThreshold, verticalScale, dashWidth, dashDensity, bloomStrength, bloomRadius, contrast, parallaxStrength, depthInfluence, cursorRadius, cursorStrength, cursorFalloff, cursorMode, tensionStrength, waveFrequency, waveSpeed, debugMode, useDepth, useLuminance, useBloom]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -409,6 +469,28 @@ const Experiment = () => {
       </NavOverlay>
 
       <ControlPanel>
+        <SectionLabel>Debug / Layers</SectionLabel>
+        <SliderContainer>
+          <SliderLabel><span>View</span></SliderLabel>
+          <ModeSelector>
+            <ModeButton $active={debugMode === 0} onClick={() => setDebugMode(0)}>Effect</ModeButton>
+            <ModeButton $active={debugMode === 1} onClick={() => setDebugMode(1)}>Depth</ModeButton>
+            <ModeButton $active={debugMode === 2} onClick={() => setDebugMode(2)}>Photo</ModeButton>
+          </ModeSelector>
+        </SliderContainer>
+        <ToggleRow>
+          <ToggleLabel>Use Depth Map</ToggleLabel>
+          <Toggle $on={useDepth} onClick={() => setUseDepth(!useDepth)} />
+        </ToggleRow>
+        <ToggleRow>
+          <ToggleLabel>Use Luminance</ToggleLabel>
+          <Toggle $on={useLuminance} onClick={() => setUseLuminance(!useLuminance)} />
+        </ToggleRow>
+        <ToggleRow>
+          <ToggleLabel>Show Bloom (ghost)</ToggleLabel>
+          <Toggle $on={useBloom} onClick={() => setUseBloom(!useBloom)} />
+        </ToggleRow>
+
         <SectionLabel>Scanlines</SectionLabel>
         <SliderContainer>
           <SliderLabel><span>Lines</span><span className="value">{lineCount}</span></SliderLabel>
@@ -507,13 +589,13 @@ const Experiment = () => {
           <Slider type="range" min="0" max="1" step="0.05" value={depthInfluence} onChange={(e) => setDepthInfluence(parseFloat(e.target.value))} />
         </SliderContainer>
 
-        <SectionLabel>Cursor</SectionLabel>
+        <SectionLabel>Cursor Deformation</SectionLabel>
         <SliderContainer>
           <SliderLabel><span>Mode</span></SliderLabel>
           <ModeSelector>
-            <ModeButton $active={cursorMode === 0} onClick={() => setCursorMode(0)}>Push</ModeButton>
-            <ModeButton $active={cursorMode === 1} onClick={() => setCursorMode(1)}>Pull</ModeButton>
-            <ModeButton $active={cursorMode === 2} onClick={() => setCursorMode(2)}>Swirl</ModeButton>
+            <ModeButton $active={cursorMode === 0} onClick={() => setCursorMode(0)}>Flow</ModeButton>
+            <ModeButton $active={cursorMode === 1} onClick={() => setCursorMode(1)}>Bulge</ModeButton>
+            <ModeButton $active={cursorMode === 2} onClick={() => setCursorMode(2)}>Ripple</ModeButton>
           </ModeSelector>
         </SliderContainer>
         <SliderContainer>
@@ -528,12 +610,26 @@ const Experiment = () => {
           <SliderLabel><span>Falloff</span><span className="value">{cursorFalloff.toFixed(2)}</span></SliderLabel>
           <Slider type="range" min="0.5" max="3" step="0.1" value={cursorFalloff} onChange={(e) => setCursorFalloff(parseFloat(e.target.value))} />
         </SliderContainer>
+        <SliderContainer>
+          <SliderLabel><span>Tension</span><span className="value">{tensionStrength.toFixed(2)}</span></SliderLabel>
+          <Slider type="range" min="0" max="1" step="0.05" value={tensionStrength} onChange={(e) => setTensionStrength(parseFloat(e.target.value))} />
+        </SliderContainer>
+
+        <SectionLabel>Cymatic (Ripple Mode)</SectionLabel>
+        <SliderContainer>
+          <SliderLabel><span>Wave Freq</span><span className="value">{waveFrequency.toFixed(1)}</span></SliderLabel>
+          <Slider type="range" min="1" max="10" step="0.5" value={waveFrequency} onChange={(e) => setWaveFrequency(parseFloat(e.target.value))} />
+        </SliderContainer>
+        <SliderContainer>
+          <SliderLabel><span>Wave Speed</span><span className="value">{waveSpeed.toFixed(2)}</span></SliderLabel>
+          <Slider type="range" min="0" max="5" step="0.1" value={waveSpeed} onChange={(e) => setWaveSpeed(parseFloat(e.target.value))} />
+        </SliderContainer>
       </ControlPanel>
 
       <InfoPanel>
         <h3>Oscilloscope</h3>
         <p>
-          Joy Division meets CRT. Depth parallax creates 3D viewport feel. Cursor interaction displaces lines with Push/Pull/Swirl modes.
+          Lines deform like fabric. Flow curves around, Bulge pushes outward, Ripple creates concentric waves. Lines never disappear.
         </p>
         <p className="status">
           {texturesLoaded ? '● Loaded' : '○ Loading...'}
