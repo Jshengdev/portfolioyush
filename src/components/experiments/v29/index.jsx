@@ -3,22 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import * as THREE from 'three';
 import BaseExperimentShader from '../BaseExperimentShader';
-import fragmentShader from '../../../shaders/experiments/contour_luminance.frag.glsl?raw';
+import fragmentShader from '../../../shaders/experiments/v29.frag.glsl?raw';
 import { getPrevExperiment, getNextExperiment, getExperimentById } from '../experimentConfig';
 import { ThemeContext } from '../../../context/ThemeContext';
 
 /**
  * ╔══════════════════════════════════════════════════════════════════╗
- * ║  V21: [YOUR EXPERIMENT NAME]                                      ║
+ * ║  V29: [YOUR EXPERIMENT NAME]                                     ║
  * ╚══════════════════════════════════════════════════════════════════╝
  *
  * ┌─────────────────────────────────────────────────────────────────┐
- * │  READ MASTER VISION FIRST                                       │
+ * │  ⚠️  READ MASTER VISION FIRST                                    │
  * └─────────────────────────────────────────────────────────────────┘
  *
  * BEFORE CODING, READ:
- *   1. docs/experiments/MASTER_VISION.md  <- The whole vision
- *   2. This file's research sections      <- The specific inspiration
+ *   1. docs/experiments/MASTER_VISION.md  ← The whole vision
+ *   2. This file's research sections      ← The specific inspiration
  *
  * CRITICAL RULE: Never start from scratch. Always have inspiration.
  *
@@ -76,7 +76,7 @@ import { ThemeContext } from '../../../context/ThemeContext';
  * [ ] Updated experimentConfig.js (name, description, colors)
  */
 
-const CURRENT_ID = 'v21';
+const CURRENT_ID = 'v29';
 
 // ═══════════════════════════════════════════════════════════════════
 // NAVIGATION (standard - modify style if needed)

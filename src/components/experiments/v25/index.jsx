@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import * as THREE from 'three';
 import BaseExperimentShader from '../BaseExperimentShader';
-import fragmentShader from '../../../shaders/experiments/contour_luminance.frag.glsl?raw';
+import fragmentShader from '../../../shaders/experiments/v25.frag.glsl?raw';
 import { getPrevExperiment, getNextExperiment, getExperimentById } from '../experimentConfig';
 import { ThemeContext } from '../../../context/ThemeContext';
 
 /**
  * ╔══════════════════════════════════════════════════════════════════╗
- * ║  V21: [YOUR EXPERIMENT NAME]                                      ║
+ * ║  V25: [YOUR EXPERIMENT NAME]                                     ║
  * ╚══════════════════════════════════════════════════════════════════╝
  *
  * ┌─────────────────────────────────────────────────────────────────┐
@@ -76,7 +76,7 @@ import { ThemeContext } from '../../../context/ThemeContext';
  * [ ] Updated experimentConfig.js (name, description, colors)
  */
 
-const CURRENT_ID = 'v21';
+const CURRENT_ID = 'v25';
 
 // ═══════════════════════════════════════════════════════════════════
 // NAVIGATION (standard - modify style if needed)

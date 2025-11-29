@@ -40,6 +40,15 @@ const ExperimentV19 = lazy(() => import('./components/experiments/v19'));
 const ExperimentV18 = lazy(() => import('./components/experiments/v18'));
 const ExperimentV20 = lazy(() => import('./components/experiments/v20'));
 const ExperimentV21 = lazy(() => import('./components/experiments/v21'));
+const ExperimentV22 = lazy(() => import('./components/experiments/v22'));
+const ExperimentV23 = lazy(() => import('./components/experiments/v23'));
+const ExperimentV24 = lazy(() => import('./components/experiments/v24'));
+const ExperimentV25 = lazy(() => import('./components/experiments/v25'));
+const ExperimentV26 = lazy(() => import('./components/experiments/v26'));
+const ExperimentV27 = lazy(() => import('./components/experiments/v27'));
+const ExperimentV28 = lazy(() => import('./components/experiments/v28'));
+const ExperimentV29 = lazy(() => import('./components/experiments/v29'));
+const ExperimentV30 = lazy(() => import('./components/experiments/v30'));
 
 // Always loaded components (needed for initial render)
 import Navbar from './components/Navbar';
@@ -309,6 +318,51 @@ function AnimatedRoutes() {
           <Route path="/experiments/v21" element={
             <PageWrapper>
               <ExperimentV21 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v22" element={
+            <PageWrapper>
+              <ExperimentV22 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v23" element={
+            <PageWrapper>
+              <ExperimentV23 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v24" element={
+            <PageWrapper>
+              <ExperimentV24 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v25" element={
+            <PageWrapper>
+              <ExperimentV25 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v26" element={
+            <PageWrapper>
+              <ExperimentV26 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v27" element={
+            <PageWrapper>
+              <ExperimentV27 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v28" element={
+            <PageWrapper>
+              <ExperimentV28 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v29" element={
+            <PageWrapper>
+              <ExperimentV29 />
+            </PageWrapper>
+          } />
+          <Route path="/experiments/v30" element={
+            <PageWrapper>
+              <ExperimentV30 />
             </PageWrapper>
           } />
         </Routes>
