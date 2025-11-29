@@ -244,6 +244,39 @@ const ZIndexInput = styled.input`
   }
 `;
 
+const ImageSwitcher = styled.div`
+  display: flex;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+`;
+
+const ImageButton = styled.button`
+  flex: 1;
+  background: ${props => props.$active ? 'rgba(136, 169, 215, 0.3)' : 'rgba(0, 0, 0, 0.4)'};
+  border: 1px solid ${props => props.$active ? 'rgba(136, 169, 215, 0.6)' : 'rgba(255, 255, 255, 0.15)'};
+  color: ${props => props.$active ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.5)'};
+  padding: 8px 12px;
+  font-family: 'PP Neue Montreal', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(136, 169, 215, 0.2);
+    border-color: rgba(136, 169, 215, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`;
+
 
 const InfoPanel = styled.div`
   position: fixed;
@@ -302,6 +335,14 @@ const TopographicHandExperiment = () => {
   const [showStipple, setShowStipple] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
   const [textureLoaded, setTextureLoaded] = useState(false);
+
+  // Image switching
+  const [activeImage, setActiveImage] = useState(0); // 0 = hand_depth, 1 = image2_depth
+  const texturesRef = useRef([]); // Store all loaded textures
+  const imageOptions = [
+    { name: 'Hand 1', path: '/assets/hand/hand_depth.png' },
+    { name: 'Hand 2', path: '/assets/hand/hand2_depth.png' },
+  ];
 
   // Slider values - Scanlines
   const [scanlineCount, setScanlineCount] = useState(80);
@@ -435,33 +476,55 @@ const TopographicHandExperiment = () => {
   // Load depth map texture
   useEffect(() => {
     const textureLoader = new THREE.TextureLoader();
-    textureLoader.load(
-      '/assets/hand/hand_depth.png',
-      (texture) => {
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.wrapS = THREE.ClampToEdgeWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
-        customUniforms.u_depthMap.value = texture;
-        textureRef.current = texture;
+
+    // Load all images
+    const loadPromises = imageOptions.map((img, index) => {
+      return new Promise((resolve) => {
+        textureLoader.load(
+          img.path,
+          (texture) => {
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+            texture.wrapS = THREE.ClampToEdgeWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            texturesRef.current[index] = texture;
+            console.log(`V18: Loaded texture ${index}: ${img.name}`);
+            resolve(texture);
+          },
+          undefined,
+          (error) => {
+            console.warn(`V18: Could not load ${img.path}:`, error);
+            resolve(null); // Resolve with null on error
+          }
+        );
+      });
+    });
+
+    // When first texture is loaded, set it as active
+    Promise.race(loadPromises).then(() => {
+      if (texturesRef.current[0]) {
+        customUniforms.u_depthMap.value = texturesRef.current[0];
+        textureRef.current = texturesRef.current[0];
         setTextureLoaded(true);
-        console.log('V18: Depth map texture loaded successfully');
-      },
-      (progress) => {
-        console.log('V18: Loading texture...', progress);
-      },
-      (error) => {
-        console.error('V18: Error loading depth map texture:', error);
       }
-    );
+    });
 
     // Cleanup
     return () => {
-      if (textureRef.current) {
-        textureRef.current.dispose();
-      }
+      texturesRef.current.forEach(tex => {
+        if (tex) tex.dispose();
+      });
     };
   }, []);
+
+  // Switch texture when activeImage changes
+  useEffect(() => {
+    if (texturesRef.current[activeImage]) {
+      customUniforms.u_depthMap.value = texturesRef.current[activeImage];
+      textureRef.current = texturesRef.current[activeImage];
+      console.log(`V18: Switched to image ${activeImage}: ${imageOptions[activeImage].name}`);
+    }
+  }, [activeImage]);
 
   // Update layer toggle uniforms
   useEffect(() => {
@@ -548,6 +611,11 @@ const TopographicHandExperiment = () => {
       if (e.key === 'd' || e.key === 'D') {
         setDebugMode(prev => !prev);
       }
+
+      // Image switch with I key
+      if (e.key === 'i' || e.key === 'I') {
+        setActiveImage(prev => (prev + 1) % imageOptions.length);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -579,6 +647,21 @@ const TopographicHandExperiment = () => {
 
       {/* Layer Controls */}
       <ControlPanel>
+        {/* Image Switcher */}
+        <SectionLabel>Depth Image</SectionLabel>
+        <ImageSwitcher>
+          {imageOptions.map((img, index) => (
+            <ImageButton
+              key={index}
+              $active={activeImage === index}
+              onClick={() => setActiveImage(index)}
+              disabled={!texturesRef.current[index]}
+            >
+              {img.name}
+            </ImageButton>
+          ))}
+        </ImageSwitcher>
+
         {/* Debug Toggle */}
         <ToggleButton
           $active={debugMode}
