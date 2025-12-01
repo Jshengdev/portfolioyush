@@ -1,10 +1,87 @@
+/* Montserrat - Google Font import (must be first!) */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
 /* Ade Display Font */
 @font-face {
   font-family: 'Ade';
   src: url('./AdeDisplay.woff2') format('woff2'),
-       url('./AdeDisplay.woff') format('woff'),
-       url('./AdeDisplay.otf') format('opentype');
+    url('./AdeDisplay.woff') format('woff'),
+    url('./AdeDisplay.otf') format('opentype');
   font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- CUBAO FONT FAMILY --- */
+
+@font-face {
+  font-family: 'Cubao-Regular';
+  src: url('./CubaoFree2-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cubao-Expanded';
+  src: url('./CubaoFree2-Expanded.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cubao-ExtraExpanded';
+  src: url('./CubaoFree2-ExtraExpanded.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cubao-UltraExpanded';
+  src: url('./CubaoFree2-UltraExpanded.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cubao-SemiExpanded';
+  src: url('./CubaoFree2-SemiExpanded.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cubao-SemiCondensed';
+  src: url('./CubaoFree2-SemiCondensed.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cubao-ExtraCondensed';
+  src: url('./CubaoFree2-ExtraCondensed.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cubao-UltraCondensed';
+  src: url('./CubaoFree2-UltraCondensed.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cubao-Variable';
+  src: url('./CubaoFreeVariable.ttf') format('truetype');
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }

@@ -21,23 +21,47 @@ import { ThemeContext } from '../../../context/ThemeContext';
 const CURRENT_ID = 'v21';
 
 // ═══════════════════════════════════════════════════════════════════
-// TENDRIL SYSTEM CONSTANTS
+// LASERROPE SYSTEM CONSTANTS (per LASERROPE_SPEC.md)
 // ═══════════════════════════════════════════════════════════════════
-const MAX_TENDRILS = 20;
+const MAX_LASERROPES = 7;
 
-// Create initial tendril state
-const createTendril = () => ({
+// Laserrope phases
+const PHASE_IGNITING = 0;   // Glow appearing at origin
+const PHASE_EXTENDING = 1;  // Beam growing toward cursor
+const PHASE_HOLDING = 2;    // Fully extended, following cursor
+const PHASE_RETRACTING = 3; // Pulling back to origin
+const PHASE_SNAPPING = 4;   // Snap animation (flash + whip + settle)
+
+// Create initial laserrope state
+const createLaserrope = () => ({
   active: false,
-  p0: { x: 0, y: 0 },        // Origin (on hand)
+  phase: PHASE_IGNITING,
+  p0: { x: 0, y: 0 },        // Origin (on oscilloscope line)
   p1: { x: 0, y: 0 },        // Control point (creates arc)
   p2: { x: 0, y: 0 },        // End point (toward cursor)
   target: { x: 0, y: 0 },    // Where P2 is trying to reach
   velocity: { x: 0, y: 0 },  // Spring velocity
   activationTime: 0,
-  extension: 0,              // 0-1 how far it's grown
+  phaseTime: 0,              // Time in current phase
+  extension: 0,              // 0-1 how far it's grown (raw time-based)
+  easedExtension: 0,         // 0-1 eased extension for shader
+  ignitionGlow: 0,           // 0-1 ignition glow intensity
   thickness: 1.0,
   wobblePhase: Math.random() * Math.PI * 2,
-  growthSpeed: 0.8 + Math.random() * 0.4,
+  speedMultiplier: 0.8 + Math.random() * 0.4,  // Per-rope speed variation (0.8-1.2)
+  reachFactor: 0.4 + Math.random() * 0.6,      // Per-rope reach variation (0.4-1.0) - some stop short
+  // Snap system state (per LASERROPE_SPEC.md)
+  restLength: 0,             // Original length when spawned (for stretch calculation)
+  stretchRatio: 1.0,         // Current stretch ratio (length / restLength)
+  snapFlash: 0,              // 0-1 snap flash intensity
+  snapPoint: { x: 0, y: 0 }, // Where the rope snapped (for flash effect)
+  snapInertia: { x: 0, y: 0 }, // Velocity at snap moment (for curved retraction)
+  cooldownTime: 0,           // Time remaining before can spawn again
+  // Curl system state (per LASERROPE_SPEC.md)
+  wrapAngle: 0,              // Current wrap angle in degrees (0-180)
+  wrapDirection: 1,          // 1 or -1 (clockwise/counter-clockwise)
+  contactPoint: { x: 0, y: 0 }, // Point where rope touches bounding circle
+  isWrapping: false,         // Whether rope is currently wrapping
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -337,17 +361,21 @@ const Experiment = () => {
   const [useBloom, setUseBloom] = useState(false); // Default OFF to hide ghost image
 
   // ═══════════════════════════════════════════════════════════════════
-  // TENDRIL SYSTEM STATE
+  // LASERROPE SYSTEM STATE (per LASERROPE_SPEC.md)
   // ═══════════════════════════════════════════════════════════════════
-  const tendrilsRef = useRef(Array(MAX_TENDRILS).fill(null).map(() => createTendril()));
+  const laseropesRef = useRef(Array(MAX_LASERROPES).fill(null).map(() => createLaserrope()));
   const hoverTimeRef = useRef(0);
+  const lastMousePosRef = useRef({ x: 0.5, y: 0.5 }); // Track cursor for velocity
+  const cursorVelocityRef = useRef(0); // Actual cursor speed
   const [hoverTime, setHoverTime] = useState(0); // For UI display
-  const [activeTendrilCount, setActiveTendrilCount] = useState(0); // For UI display
+  const [activeLaseropeCount, setActiveLaseropeCount] = useState(0); // For UI display
 
-  // Tendril parameters
-  const [tendrilTaper, setTendrilTaper] = useState(0.5);
-  const [tendrilWobble, setTendrilWobble] = useState(0.1);
-  const [tendrilGlow, setTendrilGlow] = useState(0.3);
+  // LASERROPE structure parameters (per spec)
+  const [ropeDashFrequency, setRopeDashFrequency] = useState(12.0);
+  const [ropeGlowRadius, setRopeGlowRadius] = useState(0.006);
+  const [ropeGlowIntensity, setRopeGlowIntensity] = useState(0.15);
+  const [ropeThickness, setRopeThickness] = useState(0.002);
+  const [ropeTipFadeStart, setRopeTipFadeStart] = useState(0.85);
 
   const createPlaceholderTexture = () => {
     const data = new Uint8Array([128, 128, 128, 255]);
@@ -396,13 +424,16 @@ const Experiment = () => {
       u_useDepth: { value: 1.0 },
       u_useLuminance: { value: 1.0 },
       u_useBloom: { value: 0.0 }, // Default OFF
-      // Tendril system
+      // LASERROPE system (per LASERROPE_SPEC.md)
       u_hoverTime: { value: 0.0 },
-      u_tendrilCount: { value: 0.0 },
-      u_tendrilData: { value: Array(160).fill(0.0) },
-      u_tendrilTaper: { value: 0.5 },
-      u_tendrilWobble: { value: 0.1 },
-      u_tendrilGlow: { value: 0.3 },
+      u_laseropeCount: { value: 0.0 },
+      u_laseropeData: { value: Array(70).fill(0.0) }, // 7 ropes * 10 floats (added wrap data)
+      // Structure parameters
+      u_ropeDashFrequency: { value: 12.0 },
+      u_ropeGlowRadius: { value: 0.006 },
+      u_ropeGlowIntensity: { value: 0.15 },
+      u_ropeThickness: { value: 0.002 },
+      u_ropeTipFadeStart: { value: 0.85 },
     };
   });
 
@@ -482,7 +513,7 @@ const Experiment = () => {
   }, [lineCount, lineThickness, amplitude, noiseScale, noiseSpeed, octaves, lacunarity, persistence, amplitudeGamma, bgAmplitude, thicknessRange, edgeMultiplier, edgeThreshold, verticalScale, dashWidth, dashDensity, bloomStrength, bloomRadius, contrast, parallaxStrength, depthInfluence, cursorRadius, cursorStrength, cursorFalloff, cursorMode, tensionStrength, waveFrequency, waveSpeed, debugMode, useDepth, useLuminance, useBloom]);
 
   // ═══════════════════════════════════════════════════════════════════
-  // TENDRIL ANIMATION SYSTEM
+  // LASERROPE ANIMATION SYSTEM (per LASERROPE_SPEC.md)
   // ═══════════════════════════════════════════════════════════════════
 
   // Check if cursor is roughly over the hand (simple bounding box)
@@ -499,125 +530,424 @@ const Experiment = () => {
            mousePos.y >= handBounds.minY && mousePos.y <= handBounds.maxY;
   };
 
-  // Spawn a new tendril at a random point near cursor
-  const spawnTendril = (mousePos) => {
-    const slot = tendrilsRef.current.findIndex(t => !t.active);
+  // Spawn a new laserrope - origin on oscilloscope line near cursor
+  // Balanced distribution - tries to spawn away from existing lines
+  const spawnLaserrope = (mousePos) => {
+    const slot = laseropesRef.current.findIndex(t => !t.active);
     if (slot === -1) return;
 
-    const t = tendrilsRef.current[slot];
-    t.active = true;
-    t.activationTime = performance.now();
+    const rope = laseropesRef.current[slot];
+    rope.active = true;
+    rope.activationTime = performance.now();
+    rope.phase = PHASE_IGNITING;  // Start with ignition glow
+    rope.phaseTime = 0;
+    rope.ignitionGlow = 0;
 
-    // P0: Random point around cursor (origin on hand)
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 0.05 + Math.random() * 0.1;
-    t.p0.x = mousePos.x + Math.cos(angle) * dist;
-    t.p0.y = mousePos.y + Math.sin(angle) * dist;
+    // Find angles of existing active ropes to avoid clustering
+    const activeAngles = laseropesRef.current
+      .filter((r, i) => r.active && i !== slot)
+      .map(r => Math.atan2(r.p0.y - mousePos.y, r.p0.x - mousePos.x));
 
-    // P1: Control point between P0 and cursor with perpendicular offset
-    const perpAngle = angle + Math.PI / 2;
-    const arcOffset = (Math.random() - 0.5) * 0.1;
-    t.p1.x = (t.p0.x + mousePos.x) / 2 + Math.cos(perpAngle) * arcOffset;
-    t.p1.y = (t.p0.y + mousePos.y) / 2 + Math.sin(perpAngle) * arcOffset;
+    // Find best angle - furthest from existing ropes
+    let bestAngle = Math.random() * Math.PI * 2;
+    if (activeAngles.length > 0) {
+      let maxMinDist = 0;
+      for (let i = 0; i < 12; i++) {
+        const testAngle = (i / 12) * Math.PI * 2 + Math.random() * 0.3;
+        let minDist = Math.PI * 2;
+        for (const existingAngle of activeAngles) {
+          let diff = Math.abs(testAngle - existingAngle);
+          if (diff > Math.PI) diff = Math.PI * 2 - diff;
+          minDist = Math.min(minDist, diff);
+        }
+        if (minDist > maxMinDist) {
+          maxMinDist = minDist;
+          bestAngle = testAngle;
+        }
+      }
+    }
 
-    // P2: Starts at P0, will grow toward cursor
-    t.p2.x = t.p0.x;
-    t.p2.y = t.p0.y;
-    t.target.x = mousePos.x;
-    t.target.y = mousePos.y;
+    // Vary spawn distance more dramatically (0.06-0.18)
+    const dist = 0.06 + Math.random() * 0.12;
+    rope.p0.x = mousePos.x + Math.cos(bestAngle) * dist;
+    rope.p0.y = mousePos.y + Math.sin(bestAngle) * dist * 0.6; // Slightly flattened
 
-    t.extension = 0;
-    t.velocity = { x: 0, y: 0 };
-    t.thickness = 0.8 + Math.random() * 0.4;
-    t.wobblePhase = Math.random() * Math.PI * 2;
-    t.growthSpeed = 0.8 + Math.random() * 0.4;
+    // P1: Control point starts between P0 and cursor
+    const perpAngle = bestAngle + Math.PI / 2;
+    const arcOffset = (Math.random() - 0.5) * 0.08; // More curve variation
+    rope.p1.x = (rope.p0.x + mousePos.x) / 2 + Math.cos(perpAngle) * arcOffset;
+    rope.p1.y = (rope.p0.y + mousePos.y) / 2 + Math.sin(perpAngle) * arcOffset;
+
+    // P2: Starts at P0, will chase cursor via spring physics
+    rope.p2.x = rope.p0.x;
+    rope.p2.y = rope.p0.y;
+    rope.target.x = mousePos.x;
+    rope.target.y = mousePos.y;
+
+    rope.extension = 0;
+    rope.easedExtension = 0;
+    rope.velocity = { x: 0, y: 0 };
+    // More dramatic thickness variation (0.5-2.0) - longer ropes tend to be thicker
+    rope.thickness = 0.5 + Math.random() * 1.5 * (dist / 0.18);
+    rope.wobblePhase = Math.random() * Math.PI * 2;
+    rope.speedMultiplier = 0.6 + Math.random() * 0.6;   // More speed variation (0.6-1.2)
+    rope.reachFactor = 1.0;                             // Always reach full length to touch the ring
+
+    // Snap system init - track rest length for stretch detection
+    rope.restLength = Math.sqrt(
+      Math.pow(mousePos.x - rope.p0.x, 2) +
+      Math.pow(mousePos.y - rope.p0.y, 2)
+    );
+    rope.stretchRatio = 1.0;
+    rope.snapFlash = 0;
+    rope.snapPoint = { x: 0, y: 0 };
+    rope.snapInertia = { x: 0, y: 0 };
+
+    // Curl system init
+    rope.wrapAngle = 0;
+    rope.wrapDirection = Math.random() > 0.5 ? 1 : -1; // Random wrap direction
+    rope.contactPoint = { x: 0, y: 0 };
+    rope.isWrapping = false;
   };
 
-  // Update a single tendril with spring physics
-  const updateTendril = (t, deltaTime, mousePos) => {
-    const SPRING_STRENGTH = 2.5;
-    const FRICTION = 0.85;
-    const GROWTH_SPEED = 0.5;
+  // Ignition timing (per LASERROPE_SPEC.md)
+  const IGNITION_FADE_IN = 0.08;   // 80ms
+  const IGNITION_PEAK = 0.12;      // 120ms
+  const IGNITION_CONTRACT = 0.08; // 80ms
+  const IGNITION_TOTAL = IGNITION_FADE_IN + IGNITION_PEAK + IGNITION_CONTRACT; // 280ms
+
+  // Extension timing (per LASERROPE_SPEC.md)
+  const EXTENSION_DURATION = 0.45; // 450ms
+
+  // Snap timing (per LASERROPE_SPEC.md)
+  const SNAP_STRETCH_LIMIT = 1.5;     // 150% triggers snap
+  const SNAP_FLASH_DURATION = 0.06;   // 60ms flash
+  const SNAP_WHIP_DURATION = 0.2;     // 200ms whip retraction
+  const SNAP_OVERSHOOT = 0.15;        // 15% past origin
+  const SNAP_SETTLE_DURATION = 0.08;  // 80ms settle
+  const SNAP_FADE_DURATION = 0.1;     // 100ms fade
+  const SNAP_COOLDOWN = 1.0;          // 1s cooldown
+
+  // Curl system (per LASERROPE_SPEC.md)
+  const CURL_BOUNDING_RADIUS = 0.03;  // Cursor bounding circle
+  const CURL_WRAP_SPEED = 45.0;       // Degrees per second
+  const CURL_MAX_WRAP = 180.0;        // Maximum wrap degrees
+  const CURL_CONTACT_GLOW = 1.5;      // Contact point glow intensity
+
+  // Ease-out-expo: fast start, slow settle (cubic bezier approx [0.16, 1, 0.3, 1])
+  const easeOutExpo = (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+
+  // Ease-out-cubic: quick whip retraction
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+  // Update a single laserrope with phase-based animation
+  const updateLaserrope = (rope, deltaTime, mousePos) => {
+    rope.phaseTime += deltaTime;
 
     // Update target to current cursor position
-    t.target.x = mousePos.x;
-    t.target.y = mousePos.y;
+    rope.target.x = mousePos.x;
+    rope.target.y = mousePos.y;
 
-    // Spring physics on P2 (end point chases cursor)
-    const dx = t.target.x - t.p2.x;
-    const dy = t.target.y - t.p2.y;
+    // === PHASE: IGNITING ===
+    if (rope.phase === PHASE_IGNITING) {
+      const t = rope.phaseTime;
 
-    t.velocity.x += dx * SPRING_STRENGTH * deltaTime;
-    t.velocity.y += dy * SPRING_STRENGTH * deltaTime;
+      if (t < IGNITION_FADE_IN) {
+        // Fade in: ease-out-quad
+        const p = t / IGNITION_FADE_IN;
+        rope.ignitionGlow = 1.0 - (1 - p) * (1 - p); // ease-out-quad
+      } else if (t < IGNITION_FADE_IN + IGNITION_PEAK) {
+        // Peak with 8Hz shimmer
+        const shimmer = Math.sin(t * 8.0 * Math.PI * 2) * 0.15;
+        rope.ignitionGlow = 1.0 + shimmer;
+      } else if (t < IGNITION_TOTAL) {
+        // Contract: ease-in-quad
+        const p = (t - IGNITION_FADE_IN - IGNITION_PEAK) / IGNITION_CONTRACT;
+        rope.ignitionGlow = 1.0 - p * p; // ease-in-quad (inverted)
+      } else {
+        // Transition to extending
+        rope.phase = PHASE_EXTENDING;
+        rope.phaseTime = 0;
+        rope.ignitionGlow = 0;
+      }
+      return; // Don't update position during ignition
+    }
 
-    t.velocity.x *= Math.pow(FRICTION, deltaTime * 60);
-    t.velocity.y *= Math.pow(FRICTION, deltaTime * 60);
+    // === SYSTEM 3: EXTENSION with ease-out-expo ===
+    // Per LASERROPE_SPEC.md: 450ms duration, fast burst → slow settle
+    if (rope.phase === PHASE_EXTENDING) {
+      const EXTENSION_DURATION = 0.45; // 450ms per spec
 
-    t.p2.x += t.velocity.x * deltaTime;
-    t.p2.y += t.velocity.y * deltaTime;
+      // Apply per-rope speed variation (0.8-1.2x)
+      const adjustedDuration = EXTENSION_DURATION / rope.speedMultiplier;
+      const rawProgress = rope.phaseTime / adjustedDuration;
 
-    // Extension grows over time (0 → 1 over ~2 seconds)
-    t.extension = Math.min(1.0, t.extension + GROWTH_SPEED * t.growthSpeed * deltaTime);
+      // Ease-out-expo: fast start, slow settle
+      const easedProgress = easeOutExpo(Math.min(1.0, rawProgress));
 
-    // Update control point to create arc with wobble
-    const midX = (t.p0.x + t.p2.x) / 2;
-    const midY = (t.p0.y + t.p2.y) / 2;
-    const perpX = -(t.p2.y - t.p0.y);
-    const perpY = (t.p2.x - t.p0.x);
+      // Full extension - always reach 100% to touch the ring
+      rope.extension = easedProgress;
+      rope.easedExtension = rope.extension;
+
+      // CRITICAL: During extension, p2 position follows the eased extension
+      // This makes the "laser shooting" effect visible
+      rope.p2.x = rope.p0.x + (rope.target.x - rope.p0.x) * rope.extension;
+      rope.p2.y = rope.p0.y + (rope.target.y - rope.p0.y) * rope.extension;
+
+      if (rawProgress >= 1.0) {
+        rope.phase = PHASE_HOLDING;
+        // Initialize velocity for spring physics in holding phase
+        rope.velocity = { x: 0, y: 0 };
+      }
+    } else if (rope.phase === PHASE_HOLDING) {
+      // === TARGETING: Each tendril aims for closest point on ring, not center ===
+      const CURSOR_BOUNDING_RADIUS = 0.015; // Increased ring size
+
+      // Calculate closest point on ring from p0 (origin)
+      const angleFromOrigin = Math.atan2(rope.p0.y - mousePos.y, rope.p0.x - mousePos.x);
+      const ringTargetX = mousePos.x + Math.cos(angleFromOrigin) * CURSOR_BOUNDING_RADIUS;
+      const ringTargetY = mousePos.y + Math.sin(angleFromOrigin) * CURSOR_BOUNDING_RADIUS;
+
+      // Update target to ring edge point (not center)
+      rope.target.x = ringTargetX;
+      rope.target.y = ringTargetY;
+
+      // Spring physics to follow the ring target point
+      // Higher spring = tighter tracking, lower friction = less lag
+      const SPRING_STRENGTH = 25.0;
+      const FRICTION = 0.85;
+
+      const dx = rope.target.x - rope.p2.x;
+      const dy = rope.target.y - rope.p2.y;
+
+      rope.velocity.x += dx * SPRING_STRENGTH * deltaTime;
+      rope.velocity.y += dy * SPRING_STRENGTH * deltaTime;
+
+      rope.velocity.x *= Math.pow(FRICTION, deltaTime * 60);
+      rope.velocity.y *= Math.pow(FRICTION, deltaTime * 60);
+
+      rope.p2.x += rope.velocity.x * deltaTime;
+      rope.p2.y += rope.velocity.y * deltaTime;
+
+      // === SYSTEM 5: CURL - Bounding circle + gripping ===
+      const distToCenter = Math.sqrt(
+        Math.pow(rope.p2.x - mousePos.x, 2) +
+        Math.pow(rope.p2.y - mousePos.y, 2)
+      );
+
+      // Use same radius as targeting
+      if (distToCenter < CURSOR_BOUNDING_RADIUS) {
+        // Push rope tip to circle surface
+        const angle = Math.atan2(rope.p2.y - mousePos.y, rope.p2.x - mousePos.x);
+        rope.p2.x = mousePos.x + Math.cos(angle) * CURSOR_BOUNDING_RADIUS;
+        rope.p2.y = mousePos.y + Math.sin(angle) * CURSOR_BOUNDING_RADIUS;
+
+        // Start wrapping - track contact point and grow wrap angle
+        if (!rope.isWrapping) {
+          rope.isWrapping = true;
+          rope.contactPoint = { x: rope.p2.x, y: rope.p2.y };
+          rope.wrapAngle = 0;
+        }
+
+        // Grow wrap angle over time (45°/sec per spec, up to 180°)
+        const WRAP_SPEED = 45.0; // degrees per second
+        const MAX_WRAP = 180.0;
+        rope.wrapAngle = Math.min(MAX_WRAP, rope.wrapAngle + WRAP_SPEED * deltaTime);
+
+        // Update contact point to current p2 position
+        rope.contactPoint = { x: rope.p2.x, y: rope.p2.y };
+      } else {
+        // Not touching - retract wrap
+        if (rope.isWrapping) {
+          rope.wrapAngle = Math.max(0, rope.wrapAngle - 90.0 * deltaTime); // Faster retract
+          if (rope.wrapAngle <= 0) {
+            rope.isWrapping = false;
+          }
+        }
+      }
+
+      rope.easedExtension = rope.extension;
+
+      // === SYSTEM 4: SNAP - Check stretch ratio ===
+      const currentLength = Math.sqrt(
+        Math.pow(rope.p2.x - rope.p0.x, 2) +
+        Math.pow(rope.p2.y - rope.p0.y, 2)
+      );
+      rope.stretchRatio = currentLength / rope.restLength;
+
+      // Trigger snap at 1.5x stretch
+      if (rope.stretchRatio > 1.5) {
+        // Store snap point and inertia for whip animation
+        rope.snapPoint = { x: rope.p2.x, y: rope.p2.y };
+        rope.snapInertia = { x: rope.velocity.x, y: rope.velocity.y };
+        rope.phase = PHASE_SNAPPING;
+        rope.phaseTime = 0;
+        rope.snapFlash = 0; // No visual flash
+      }
+
+    } else if (rope.phase === PHASE_SNAPPING) {
+      // === SYSTEM 4: SNAP ANIMATION ===
+      // Timeline: FLASH (60ms) → WHIP (200ms) → SETTLE (80ms) → FADE (100ms)
+
+      const FLASH_DURATION = 0.06;
+      const WHIP_DURATION = 0.2;
+      const SETTLE_DURATION = 0.08;
+      const FADE_DURATION = 0.1;
+
+      // FLASH phase (0-60ms) - skip visual flash, just timing delay
+      if (rope.phaseTime < FLASH_DURATION) {
+        rope.snapFlash = 0; // No visual flash
+      }
+      // WHIP phase (60-260ms) - curved retraction toward origin
+      else if (rope.phaseTime < FLASH_DURATION + WHIP_DURATION) {
+        rope.snapFlash = 0;
+        const whipTime = rope.phaseTime - FLASH_DURATION;
+        const t = whipTime / WHIP_DURATION;
+        const eased = easeOutCubic(t);
+
+        // Curved path using inertia influence
+        const toOriginX = rope.p0.x - rope.snapPoint.x;
+        const toOriginY = rope.p0.y - rope.snapPoint.y;
+        const toOriginLen = Math.sqrt(toOriginX * toOriginX + toOriginY * toOriginY);
+
+        // Normalize directions
+        const dirX = toOriginLen > 0.001 ? toOriginX / toOriginLen : 0;
+        const dirY = toOriginLen > 0.001 ? toOriginY / toOriginLen : 0;
+
+        // Mix with inertia for curved path (30% inertia influence)
+        const inertiaLen = Math.sqrt(rope.snapInertia.x * rope.snapInertia.x + rope.snapInertia.y * rope.snapInertia.y);
+        const inertiaX = inertiaLen > 0.001 ? rope.snapInertia.x / inertiaLen : 0;
+        const inertiaY = inertiaLen > 0.001 ? rope.snapInertia.y / inertiaLen : 0;
+
+        const curvedX = dirX * 0.7 + inertiaX * 0.3;
+        const curvedY = dirY * 0.7 + inertiaY * 0.3;
+
+        // Position with 15% overshoot
+        const overshootDist = toOriginLen * 1.15;
+        const currentDist = overshootDist * (1.0 - eased);
+
+        rope.p2.x = rope.p0.x - curvedX * currentDist;
+        rope.p2.y = rope.p0.y - curvedY * currentDist;
+        rope.easedExtension = Math.max(0, currentDist / rope.restLength);
+      }
+      // SETTLE phase (260-340ms) - bounce back from overshoot
+      else if (rope.phaseTime < FLASH_DURATION + WHIP_DURATION + SETTLE_DURATION) {
+        const settleTime = rope.phaseTime - FLASH_DURATION - WHIP_DURATION;
+        const t = settleTime / SETTLE_DURATION;
+        // Settle from 15% overshoot back to origin
+        const overshoot = 0.15 * (1.0 - t * t); // ease-out
+        rope.easedExtension = overshoot;
+        // Keep p2 near origin with small overshoot
+        const angle = Math.atan2(rope.snapPoint.y - rope.p0.y, rope.snapPoint.x - rope.p0.x);
+        rope.p2.x = rope.p0.x - Math.cos(angle) * rope.restLength * overshoot;
+        rope.p2.y = rope.p0.y - Math.sin(angle) * rope.restLength * overshoot;
+      }
+      // FADE phase (340-440ms) - fade out
+      else if (rope.phaseTime < FLASH_DURATION + WHIP_DURATION + SETTLE_DURATION + FADE_DURATION) {
+        rope.easedExtension = 0;
+      }
+      // Done - deactivate
+      else {
+        rope.active = false;
+      }
+    }
+
+    // P1: Control point creates arc with subtle wobble
+    const midX = (rope.p0.x + rope.p2.x) / 2;
+    const midY = (rope.p0.y + rope.p2.y) / 2;
+    const perpX = -(rope.p2.y - rope.p0.y);
+    const perpY = (rope.p2.x - rope.p0.x);
     const perpLen = Math.sqrt(perpX * perpX + perpY * perpY);
 
     if (perpLen > 0.001) {
-      const wobble = Math.sin(performance.now() * 0.003 + t.wobblePhase) * tendrilWobble;
-      t.p1.x = midX + (perpX / perpLen) * (0.05 + wobble);
-      t.p1.y = midY + (perpY / perpLen) * (0.05 + wobble);
+      // Reduced curvature for straighter, more geometric lines (oscilloscope style)
+      const wobble = Math.sin(performance.now() * 0.002 + rope.wobblePhase) * 0.005;
+      rope.p1.x = midX + (perpX / perpLen) * (0.01 + wobble);
+      rope.p1.y = midY + (perpY / perpLen) * (0.01 + wobble);
     }
   };
 
-  // Retract a tendril (when cursor leaves hand)
-  const retractTendril = (t, deltaTime) => {
+  // Retract a laserrope (when cursor leaves hand)
+  const retractLaserrope = (rope, deltaTime) => {
+    // Don't retract snapping ropes - let them complete their animation
+    if (rope.phase === PHASE_SNAPPING) {
+      return;
+    }
+
+    // Fast cursor movement = instant snap away
+    if (cursorVelocityRef.current > 2.0) {
+      rope.active = false;
+      return;
+    }
+
+    // Slow movement = gradual retract
     const RETRACT_SPEED = 1.5;
-    t.extension = Math.max(0, t.extension - RETRACT_SPEED * deltaTime);
-    if (t.extension <= 0) {
-      t.active = false;
+    rope.easedExtension = Math.max(0, rope.easedExtension - RETRACT_SPEED * deltaTime);
+    rope.extension = rope.easedExtension;
+    if (rope.easedExtension <= 0) {
+      rope.active = false;
     }
   };
 
-  // Pack tendril data into uniform array for shader
-  const packTendrilUniforms = (uniforms) => {
-    const data = uniforms.u_tendrilData.value;
+  // Pack laserrope data into uniform array for shader
+  // Data layout per rope: p0.xy, p1.xy, p2.xy, extension, ignitionGlow, wrapAngle, wrapDirection
+  const packLaseropeUniforms = (uniforms) => {
+    const data = uniforms.u_laseropeData.value;
     let count = 0;
 
-    tendrilsRef.current.forEach((t) => {
-      if (!t.active) return;
-      const offset = count * 8;
+    laseropesRef.current.forEach((rope) => {
+      if (!rope.active) return;
+      if (count >= MAX_LASERROPES) return; // Cap at 7
+      const offset = count * 10; // Now 10 floats per rope
 
-      data[offset + 0] = t.p0.x;
-      data[offset + 1] = t.p0.y;
-      data[offset + 2] = t.p1.x;
-      data[offset + 3] = t.p1.y;
-      data[offset + 4] = t.p2.x;
-      data[offset + 5] = t.p2.y;
-      data[offset + 6] = t.extension;
-      data[offset + 7] = t.thickness;
+      data[offset + 0] = rope.p0.x;
+      data[offset + 1] = rope.p0.y;
+      data[offset + 2] = rope.p1.x;
+      data[offset + 3] = rope.p1.y;
+      data[offset + 4] = rope.p2.x;
+      data[offset + 5] = rope.p2.y;
+      data[offset + 6] = rope.easedExtension;
+      // Slot 7: dual purpose
+      // - Positive (0-1): ignition glow during ignition phase
+      // - Negative (-1 to 0): snap progress during snapping phase (abs = progress 0-1)
+      if (rope.phase === PHASE_SNAPPING) {
+        // Pass snap progress as negative value
+        const TOTAL_SNAP_DURATION = 0.06 + 0.2 + 0.08 + 0.1; // flash + whip + settle + fade
+        const snapProgress = Math.min(1.0, rope.phaseTime / TOTAL_SNAP_DURATION);
+        data[offset + 7] = -snapProgress; // Negative to distinguish from ignition
+      } else {
+        data[offset + 7] = rope.ignitionGlow;
+      }
+      // Slot 8: wrap angle (0-1 normalized, where 1 = 180°)
+      data[offset + 8] = rope.wrapAngle / 180.0;
+      // Slot 9: wrap direction
+      data[offset + 9] = rope.wrapDirection;
 
       count++;
     });
 
-    uniforms.u_tendrilCount.value = count;
-    setActiveTendrilCount(count);
+    uniforms.u_laseropeCount.value = count;
+    setActiveLaseropeCount(count);
   };
 
-  // Main tendril update function called every frame
-  const updateTendrils = (deltaTime, uniforms) => {
+  // Main laserrope update function called every frame
+  const updateLaseropes = (deltaTime, uniforms) => {
     // Defensive check - ensure uniforms exist
-    if (!uniforms || !uniforms.u_mouse || !uniforms.u_tendrilData) {
+    if (!uniforms || !uniforms.u_mouse || !uniforms.u_laseropeData) {
       return;
     }
 
+    // Use normalized mouse coordinates with X flip (hand image is mirrored)
     const mousePos = {
-      x: 1.0 - uniforms.u_mouse.value.x, // Flip X to match texture space
+      x: 1.0 - uniforms.u_mouse.value.x,
       y: uniforms.u_mouse.value.y
     };
+
+    // Calculate cursor velocity (actual mouse movement speed)
+    const dx = mousePos.x - lastMousePosRef.current.x;
+    const dy = mousePos.y - lastMousePosRef.current.y;
+    cursorVelocityRef.current = Math.sqrt(dx * dx + dy * dy) / deltaTime;
+    lastMousePosRef.current = { x: mousePos.x, y: mousePos.y };
 
     const cursorOnHand = checkCursorOnHand(mousePos);
 
@@ -625,42 +955,55 @@ const Experiment = () => {
       // Accumulate hover time
       hoverTimeRef.current += deltaTime;
 
-      // Calculate target tendril count based on escalation
-      const escalation = Math.min(hoverTimeRef.current / 5.0, 1.0);
-      const targetCount = Math.floor(3 + escalation * 17); // 3 at start, 20 at max
-
-      // Spawn tendrils up to target count
-      const activeCount = tendrilsRef.current.filter(t => t.active).length;
-      if (activeCount < targetCount) {
-        // Spawn one per frame for gradual buildup
-        spawnTendril(mousePos);
+      // Calculate target laserrope count - staged spawning
+      // 0.0s: 1 rope → 0.5s: +2 (total 3) → 1.0s: +2 (total 5)
+      let targetCount;
+      if (hoverTimeRef.current < 0.5) {
+        targetCount = 1;
+      } else if (hoverTimeRef.current < 1.0) {
+        targetCount = 3;
+      } else {
+        targetCount = 5;
       }
 
-      // Update active tendrils
-      tendrilsRef.current.forEach((t) => {
-        if (t.active) {
-          updateTendril(t, deltaTime, mousePos);
+      // Spawn laseropes up to target count
+      const activeCount = laseropesRef.current.filter(rope => rope.active).length;
+      if (activeCount < targetCount) {
+        // Spawn one per frame for gradual buildup
+        spawnLaserrope(mousePos);
+      }
+
+      // Update active laseropes - chase cursor
+      laseropesRef.current.forEach((rope) => {
+        if (rope.active) {
+          updateLaserrope(rope, deltaTime, mousePos);
         }
       });
     } else {
-      // Decay hover time
-      hoverTimeRef.current = Math.max(0, hoverTimeRef.current - deltaTime * 0.5);
+      // Reset hover time immediately when cursor leaves
+      // This ensures the spawn sequence replays fresh when cursor returns
+      hoverTimeRef.current = 0;
 
-      // Retract all tendrils
-      tendrilsRef.current.forEach((t) => {
-        if (t.active) {
-          retractTendril(t, deltaTime);
+      // Retract all laseropes
+      laseropesRef.current.forEach((rope) => {
+        if (rope.active) {
+          updateLaserrope(rope, deltaTime, mousePos);
+          retractLaserrope(rope, deltaTime);
         }
       });
     }
 
     // Update uniforms
     uniforms.u_hoverTime.value = hoverTimeRef.current;
-    uniforms.u_tendrilTaper.value = tendrilTaper;
-    uniforms.u_tendrilWobble.value = tendrilWobble;
-    uniforms.u_tendrilGlow.value = tendrilGlow;
 
-    packTendrilUniforms(uniforms);
+    // Update structure parameter uniforms
+    uniforms.u_ropeDashFrequency.value = ropeDashFrequency;
+    uniforms.u_ropeGlowRadius.value = ropeGlowRadius;
+    uniforms.u_ropeGlowIntensity.value = ropeGlowIntensity;
+    uniforms.u_ropeThickness.value = ropeThickness;
+    uniforms.u_ropeTipFadeStart.value = ropeTipFadeStart;
+
+    packLaseropeUniforms(uniforms);
 
     // Update UI state (throttled to ~10fps to avoid too many re-renders)
     if (Math.floor(hoverTimeRef.current * 10) !== Math.floor(hoverTime * 10)) {
@@ -670,8 +1013,8 @@ const Experiment = () => {
 
   // onFrame callback for BaseExperimentShader
   const handleFrame = useCallback((deltaTime, uniforms) => {
-    updateTendrils(deltaTime, uniforms);
-  }, [tendrilTaper, tendrilWobble, tendrilGlow]);
+    updateLaseropes(deltaTime, uniforms);
+  }, [ropeDashFrequency, ropeGlowRadius, ropeGlowIntensity, ropeThickness, ropeTipFadeStart]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -858,7 +1201,7 @@ const Experiment = () => {
           <Slider type="range" min="0" max="5" step="0.1" value={waveSpeed} onChange={(e) => setWaveSpeed(parseFloat(e.target.value))} />
         </SliderContainer>
 
-        <SectionLabel>Tendrils (The Reaching)</SectionLabel>
+        <SectionLabel>Laseropes (The Reaching)</SectionLabel>
         <SliderContainer>
           <SliderLabel>
             <span>Hover Time</span>
@@ -875,28 +1218,36 @@ const Experiment = () => {
         </SliderContainer>
         <SliderContainer>
           <SliderLabel>
-            <span>Active Tendrils</span>
-            <span className="value">{activeTendrilCount}/20</span>
+            <span>Active Ropes</span>
+            <span className="value">{activeLaseropeCount}/7</span>
           </SliderLabel>
         </SliderContainer>
         <SliderContainer>
-          <SliderLabel><span>Taper</span><span className="value">{tendrilTaper.toFixed(2)}</span></SliderLabel>
-          <Slider type="range" min="0" max="1" step="0.05" value={tendrilTaper} onChange={(e) => setTendrilTaper(parseFloat(e.target.value))} />
+          <SliderLabel><span>Dash Freq</span><span className="value">{ropeDashFrequency.toFixed(1)}</span></SliderLabel>
+          <Slider type="range" min="4" max="24" step="1" value={ropeDashFrequency} onChange={(e) => setRopeDashFrequency(parseFloat(e.target.value))} />
         </SliderContainer>
         <SliderContainer>
-          <SliderLabel><span>Wobble</span><span className="value">{tendrilWobble.toFixed(2)}</span></SliderLabel>
-          <Slider type="range" min="0" max="0.3" step="0.02" value={tendrilWobble} onChange={(e) => setTendrilWobble(parseFloat(e.target.value))} />
+          <SliderLabel><span>Glow Radius</span><span className="value">{(ropeGlowRadius * 1000).toFixed(1)}</span></SliderLabel>
+          <Slider type="range" min="0.002" max="0.02" step="0.001" value={ropeGlowRadius} onChange={(e) => setRopeGlowRadius(parseFloat(e.target.value))} />
         </SliderContainer>
         <SliderContainer>
-          <SliderLabel><span>Glow</span><span className="value">{tendrilGlow.toFixed(2)}</span></SliderLabel>
-          <Slider type="range" min="0" max="1" step="0.05" value={tendrilGlow} onChange={(e) => setTendrilGlow(parseFloat(e.target.value))} />
+          <SliderLabel><span>Glow Intensity</span><span className="value">{ropeGlowIntensity.toFixed(2)}</span></SliderLabel>
+          <Slider type="range" min="0" max="0.5" step="0.02" value={ropeGlowIntensity} onChange={(e) => setRopeGlowIntensity(parseFloat(e.target.value))} />
+        </SliderContainer>
+        <SliderContainer>
+          <SliderLabel><span>Thickness</span><span className="value">{(ropeThickness * 1000).toFixed(1)}</span></SliderLabel>
+          <Slider type="range" min="0.001" max="0.01" step="0.0005" value={ropeThickness} onChange={(e) => setRopeThickness(parseFloat(e.target.value))} />
+        </SliderContainer>
+        <SliderContainer>
+          <SliderLabel><span>Tip Fade</span><span className="value">{ropeTipFadeStart.toFixed(2)}</span></SliderLabel>
+          <Slider type="range" min="0.5" max="0.95" step="0.05" value={ropeTipFadeStart} onChange={(e) => setRopeTipFadeStart(parseFloat(e.target.value))} />
         </SliderContainer>
       </ControlPanel>
 
       <InfoPanel>
-        <h3>Oscilloscope</h3>
+        <h3>Oscilloscope + Laseropes</h3>
         <p>
-          Lines deform like fabric. Hover over the hand and tendrils will reach toward your cursor. The longer you stay, the more they reach.
+          Lines deform like fabric. Hover over the hand and laseropes will reach toward your cursor. The longer you stay, the more they reach.
         </p>
         <p className="status">
           {texturesLoaded ? '● Loaded' : '○ Loading...'}

@@ -50,6 +50,9 @@ const ExperimentV28 = lazy(() => import('./components/experiments/v28'));
 const ExperimentV29 = lazy(() => import('./components/experiments/v29'));
 const ExperimentV30 = lazy(() => import('./components/experiments/v30'));
 
+// Isolated experiences
+const Pebl = lazy(() => import('./components/Pebl/Pebl'));
+
 // Always loaded components (needed for initial render)
 import Navbar from './components/Navbar';
 import Line from './components/Line';
@@ -365,6 +368,8 @@ function AnimatedRoutes() {
               <ExperimentV30 />
             </PageWrapper>
           } />
+          {/* Isolated experience - no PageWrapper for complete isolation */}
+          <Route path="/pebl" element={<Pebl />} />
         </Routes>
       </Suspense>
     </AnimatePresence>

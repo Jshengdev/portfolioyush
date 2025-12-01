@@ -17,8 +17,10 @@
  */
 const sharedTokens = {
   fonts: {
-    primary: "'work sans', sans-serif",
-    display: "'ade', serif",
+    primary: "'Montserrat', sans-serif",
+    display: "'Cubao Wide', 'ade', serif",
+    displayWide: "'Cubao Extra Wide', 'Cubao Wide', serif",
+    displayVariable: "'Cubao', serif",
   },
 
   spacing: {

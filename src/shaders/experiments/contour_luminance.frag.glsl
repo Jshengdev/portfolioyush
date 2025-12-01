@@ -68,13 +68,17 @@ uniform float u_useDepth;           // 0=off, 1=on
 uniform float u_useLuminance;       // 0=off, 1=on
 uniform float u_useBloom;           // 0=off, 1=on - Disable to remove ghost image
 
-// Phase 3: Tendril system
+// Phase 3: LASERROPE system (max 7 ropes)
 uniform float u_hoverTime;
-uniform float u_tendrilCount;
-uniform float u_tendrilData[160];   // 20 tendrils * 8 floats each
-uniform float u_tendrilTaper;
-uniform float u_tendrilWobble;
-uniform float u_tendrilGlow;
+uniform float u_laseropeCount;
+uniform float u_laseropeData[70];   // 7 ropes * 10 floats each (p0.xy, p1.xy, p2.xy, extension, glow, wrapAngle, wrapDir)
+
+// LASERROPE structure parameters
+uniform float u_ropeDashFrequency;  // 12.0 - dash pattern in base section
+uniform float u_ropeGlowRadius;     // 0.006 - glow extent (3x core)
+uniform float u_ropeGlowIntensity;  // 0.15 - subtle line glow
+uniform float u_ropeThickness;      // 0.002 - core beam width
+uniform float u_ropeTipFadeStart;   // 0.85 - where tip begins fading
 
 // ============================================
 // NOISE FUNCTIONS
@@ -450,7 +454,8 @@ float calculateBloom(vec2 texUV) {
 }
 
 // ============================================
-// PHASE 3: TENDRIL RENDERING
+// PHASE 3: LASERROPE RENDERING
+// 3-segment structure: Base (dashed), Body (solid+glow), Tip (fading)
 // ============================================
 
 // Quadratic Bezier curve evaluation
@@ -459,181 +464,408 @@ vec2 quadBezier(vec2 p0, vec2 p1, vec2 p2, float t) {
     return omt * omt * p0 + 2.0 * omt * t * p1 + t * t * p2;
 }
 
-// Signed distance to a quadratic Bezier curve (approximate)
-float tendrilSDF(vec2 p, vec2 p0, vec2 p1, vec2 p2, float extension) {
-    // Sample points along the Bezier and find minimum distance
+// Find closest point on Bezier and return both distance AND parametric t
+// Returns: x = distance, y = parametric t (0-1 along visible portion)
+vec2 bezierClosestPoint(vec2 p, vec2 p0, vec2 p1, vec2 p2, float extension) {
     float minDist = 1000.0;
-    const int SAMPLES = 16;
+    float closestT = 0.0;
+    const int SAMPLES = 32;  // Higher sampling for accuracy
 
     for (int i = 0; i < SAMPLES; i++) {
-        float t = float(i) / float(SAMPLES - 1);
-        // Only render up to the current extension
-        if (t > extension) break;
-
+        float t = float(i) / float(SAMPLES - 1) * extension;
         vec2 bezierPoint = quadBezier(p0, p1, p2, t);
         float dist = distance(p, bezierPoint);
-        minDist = min(minDist, dist);
+        if (dist < minDist) {
+            minDist = dist;
+            closestT = t;
+        }
     }
 
-    return minDist;
+    // Normalize t to 0-1 based on extension
+    float normalizedT = (extension > 0.01) ? closestT / extension : 0.0;
+    return vec2(minDist, normalizedT);
 }
 
-// Render all active tendrils
-float renderTendrils(vec2 uv) {
+// Render a single LINKTRACE line - matches oscilloscope aesthetic
+// Luminance-based: brighter spawn = thicker, longer, stronger glow
+float renderLaserrope(vec2 uv, vec2 p0, vec2 p1, vec2 p2, float extension, float thickness) {
+    if (extension < 0.01) return 0.0;
+
+    // Get distance and parametric position
+    vec2 closest = bezierClosestPoint(uv, p0, p1, p2, extension);
+    float dist = closest.x;
+    float t = closest.y;  // 0 at origin, 1 at tip
+
+    // Early exit if too far from line
+    if (dist > 0.03) return 0.0;
+
+    // ========================================
+    // LUMINANCE-BASED SCALING
+    // Brighter spawn = thicker line, stronger presence
+    // ========================================
+    float spawnLuminance = getLuminance(texture2D(u_originalImage, p0).rgb);
+    float luminanceOpacity = 0.3 + spawnLuminance * 0.7;
+
+    // Scale thickness by luminance - bright areas get thicker lines
+    float lumThicknessBoost = 1.0 + spawnLuminance * 1.5; // 1.0-2.5x
+    float finalThickness = thickness * lumThicknessBoost;
+
+    // ========================================
+    // DASH PATTERN - Long, boxy segments (oscilloscope style)
+    // Brighter = longer dashes (less gaps)
+    // ========================================
+    float dashGap = 0.25 - spawnLuminance * 0.15; // 0.25-0.10 gap based on luminance
+    float dashPattern = step(dashGap, fract(t * u_ropeDashFrequency * 0.5));
+
+    // ========================================
+    // TIP FADE - Soft termination
+    // ========================================
+    float tipFade = 1.0 - smoothstep(u_ropeTipFadeStart, 1.0, t);
+
+    // ========================================
+    // CORE LINE - Thickness varies with luminance
+    // ========================================
+    float coreWidth = 0.001 * finalThickness;
+    float core = smoothstep(coreWidth, coreWidth * 0.4, dist);
+
+    // ========================================
+    // GLOW - Stronger for high luminance lines
+    // ========================================
+    float glowRadius = coreWidth * 3.0;
+    float glow = exp(-dist * dist / (glowRadius * glowRadius)) * 0.2 * spawnLuminance;
+
+    // Combine: core + glow, with dash pattern, tip fade, and luminance opacity
+    float result = (core + glow) * dashPattern * tipFade * luminanceOpacity;
+
+    return result;
+}
+
+// Render snap dissolve effect - box outlines along rope that flicker out
+// Creates a "disintegrating" visual as the rope snaps back
+float renderSnapDissolve(vec2 uv, vec2 p0, vec2 p1, vec2 p2, float snapProgress, float extension) {
+    if (snapProgress < 0.01 || extension < 0.01) return 0.0;
+
     float result = 0.0;
-    int count = int(u_tendrilCount);
 
-    // WebGL 1.0 requires constant loop bounds
-    for (int i = 0; i < 20; i++) {
-        if (i >= count) break;
+    // Spawn boxes along the rope path
+    const int NUM_BOXES = 12;
 
-        int offset = i * 8;
+    for (int i = 0; i < NUM_BOXES; i++) {
+        float fi = float(i);
 
-        // Unpack tendril data (WebGL 1.0 needs constant index expressions)
-        // We'll use a helper approach with if statements
-        vec2 p0, p1, p2;
-        float ext, thickness;
+        // Hash for this box - stable per-frame
+        float h1 = fract(sin(fi * 127.1) * 43758.5);
+        float h2 = fract(sin(fi * 269.5) * 18273.3);
+        float h3 = fract(sin(fi * 419.2) * 29471.7);
+        float h4 = fract(sin(fi * 631.4) * 51927.1);
+        float h5 = fract(sin(fi * 853.7) * 37159.3);
+        float h6 = fract(sin(fi * 967.3) * 62841.9);
 
-        // Manual unpacking for WebGL 1.0 compatibility
-        if (i == 0) {
-            p0 = vec2(u_tendrilData[0], u_tendrilData[1]);
-            p1 = vec2(u_tendrilData[2], u_tendrilData[3]);
-            p2 = vec2(u_tendrilData[4], u_tendrilData[5]);
-            ext = u_tendrilData[6];
-            thickness = u_tendrilData[7];
-        } else if (i == 1) {
-            p0 = vec2(u_tendrilData[8], u_tendrilData[9]);
-            p1 = vec2(u_tendrilData[10], u_tendrilData[11]);
-            p2 = vec2(u_tendrilData[12], u_tendrilData[13]);
-            ext = u_tendrilData[14];
-            thickness = u_tendrilData[15];
-        } else if (i == 2) {
-            p0 = vec2(u_tendrilData[16], u_tendrilData[17]);
-            p1 = vec2(u_tendrilData[18], u_tendrilData[19]);
-            p2 = vec2(u_tendrilData[20], u_tendrilData[21]);
-            ext = u_tendrilData[22];
-            thickness = u_tendrilData[23];
-        } else if (i == 3) {
-            p0 = vec2(u_tendrilData[24], u_tendrilData[25]);
-            p1 = vec2(u_tendrilData[26], u_tendrilData[27]);
-            p2 = vec2(u_tendrilData[28], u_tendrilData[29]);
-            ext = u_tendrilData[30];
-            thickness = u_tendrilData[31];
-        } else if (i == 4) {
-            p0 = vec2(u_tendrilData[32], u_tendrilData[33]);
-            p1 = vec2(u_tendrilData[34], u_tendrilData[35]);
-            p2 = vec2(u_tendrilData[36], u_tendrilData[37]);
-            ext = u_tendrilData[38];
-            thickness = u_tendrilData[39];
-        } else if (i == 5) {
-            p0 = vec2(u_tendrilData[40], u_tendrilData[41]);
-            p1 = vec2(u_tendrilData[42], u_tendrilData[43]);
-            p2 = vec2(u_tendrilData[44], u_tendrilData[45]);
-            ext = u_tendrilData[46];
-            thickness = u_tendrilData[47];
-        } else if (i == 6) {
-            p0 = vec2(u_tendrilData[48], u_tendrilData[49]);
-            p1 = vec2(u_tendrilData[50], u_tendrilData[51]);
-            p2 = vec2(u_tendrilData[52], u_tendrilData[53]);
-            ext = u_tendrilData[54];
-            thickness = u_tendrilData[55];
-        } else if (i == 7) {
-            p0 = vec2(u_tendrilData[56], u_tendrilData[57]);
-            p1 = vec2(u_tendrilData[58], u_tendrilData[59]);
-            p2 = vec2(u_tendrilData[60], u_tendrilData[61]);
-            ext = u_tendrilData[62];
-            thickness = u_tendrilData[63];
-        } else if (i == 8) {
-            p0 = vec2(u_tendrilData[64], u_tendrilData[65]);
-            p1 = vec2(u_tendrilData[66], u_tendrilData[67]);
-            p2 = vec2(u_tendrilData[68], u_tendrilData[69]);
-            ext = u_tendrilData[70];
-            thickness = u_tendrilData[71];
-        } else if (i == 9) {
-            p0 = vec2(u_tendrilData[72], u_tendrilData[73]);
-            p1 = vec2(u_tendrilData[74], u_tendrilData[75]);
-            p2 = vec2(u_tendrilData[76], u_tendrilData[77]);
-            ext = u_tendrilData[78];
-            thickness = u_tendrilData[79];
-        } else if (i == 10) {
-            p0 = vec2(u_tendrilData[80], u_tendrilData[81]);
-            p1 = vec2(u_tendrilData[82], u_tendrilData[83]);
-            p2 = vec2(u_tendrilData[84], u_tendrilData[85]);
-            ext = u_tendrilData[86];
-            thickness = u_tendrilData[87];
-        } else if (i == 11) {
-            p0 = vec2(u_tendrilData[88], u_tendrilData[89]);
-            p1 = vec2(u_tendrilData[90], u_tendrilData[91]);
-            p2 = vec2(u_tendrilData[92], u_tendrilData[93]);
-            ext = u_tendrilData[94];
-            thickness = u_tendrilData[95];
-        } else if (i == 12) {
-            p0 = vec2(u_tendrilData[96], u_tendrilData[97]);
-            p1 = vec2(u_tendrilData[98], u_tendrilData[99]);
-            p2 = vec2(u_tendrilData[100], u_tendrilData[101]);
-            ext = u_tendrilData[102];
-            thickness = u_tendrilData[103];
-        } else if (i == 13) {
-            p0 = vec2(u_tendrilData[104], u_tendrilData[105]);
-            p1 = vec2(u_tendrilData[106], u_tendrilData[107]);
-            p2 = vec2(u_tendrilData[108], u_tendrilData[109]);
-            ext = u_tendrilData[110];
-            thickness = u_tendrilData[111];
-        } else if (i == 14) {
-            p0 = vec2(u_tendrilData[112], u_tendrilData[113]);
-            p1 = vec2(u_tendrilData[114], u_tendrilData[115]);
-            p2 = vec2(u_tendrilData[116], u_tendrilData[117]);
-            ext = u_tendrilData[118];
-            thickness = u_tendrilData[119];
-        } else if (i == 15) {
-            p0 = vec2(u_tendrilData[120], u_tendrilData[121]);
-            p1 = vec2(u_tendrilData[122], u_tendrilData[123]);
-            p2 = vec2(u_tendrilData[124], u_tendrilData[125]);
-            ext = u_tendrilData[126];
-            thickness = u_tendrilData[127];
-        } else if (i == 16) {
-            p0 = vec2(u_tendrilData[128], u_tendrilData[129]);
-            p1 = vec2(u_tendrilData[130], u_tendrilData[131]);
-            p2 = vec2(u_tendrilData[132], u_tendrilData[133]);
-            ext = u_tendrilData[134];
-            thickness = u_tendrilData[135];
-        } else if (i == 17) {
-            p0 = vec2(u_tendrilData[136], u_tendrilData[137]);
-            p1 = vec2(u_tendrilData[138], u_tendrilData[139]);
-            p2 = vec2(u_tendrilData[140], u_tendrilData[141]);
-            ext = u_tendrilData[142];
-            thickness = u_tendrilData[143];
-        } else if (i == 18) {
-            p0 = vec2(u_tendrilData[144], u_tendrilData[145]);
-            p1 = vec2(u_tendrilData[146], u_tendrilData[147]);
-            p2 = vec2(u_tendrilData[148], u_tendrilData[149]);
-            ext = u_tendrilData[150];
-            thickness = u_tendrilData[151];
-        } else {
-            p0 = vec2(u_tendrilData[152], u_tendrilData[153]);
-            p1 = vec2(u_tendrilData[154], u_tendrilData[155]);
-            p2 = vec2(u_tendrilData[156], u_tendrilData[157]);
-            ext = u_tendrilData[158];
-            thickness = u_tendrilData[159];
-        }
+        // Position along rope (0-1)
+        float t = h1 * extension;
 
-        // Skip if not extended
-        if (ext < 0.01) continue;
+        // Get point on bezier curve
+        float omt = 1.0 - t;
+        vec2 boxCenter = omt * omt * p0 + 2.0 * omt * t * p1 + t * t * p2;
 
-        // Calculate distance to this tendril
-        float dist = tendrilSDF(uv, p0, p1, p2, ext);
+        // Add some offset perpendicular to rope
+        vec2 tangent = normalize(2.0 * (1.0 - t) * (p1 - p0) + 2.0 * t * (p2 - p1));
+        vec2 normal = vec2(-tangent.y, tangent.x);
+        float offsetDist = (h2 - 0.5) * 0.015;
+        boxCenter += normal * offsetDist;
 
-        // Tendril width with taper (thinner at tip)
-        float baseWidth = 0.003 * thickness;
-        float width = baseWidth * (1.0 - u_tendrilTaper * 0.5);
+        // Box size variation (smaller boxes)
+        float boxSize = 0.002 + h3 * 0.004;
+        float lineWidth = 0.0006;
 
-        // Soft falloff for glow
-        float core = smoothstep(width, width * 0.3, dist);
-        float glow = smoothstep(width * 3.0, width * 0.5, dist) * u_tendrilGlow;
+        // Rotation angle
+        float angle = h4 * 3.14159 * 2.0;
 
-        result += core + glow * 0.3;
+        // Rotate UV around box center
+        vec2 delta = uv - boxCenter;
+        float cosA = cos(angle);
+        float sinA = sin(angle);
+        vec2 rotated = vec2(
+            delta.x * cosA - delta.y * sinA,
+            delta.x * sinA + delta.y * cosA
+        );
+
+        // Staggered fade - boxes disappear at different times
+        float fadeDelay = h5 * 0.6;
+        float fadeProgress = clamp((snapProgress - fadeDelay) / (1.0 - fadeDelay), 0.0, 1.0);
+
+        // Flicker effect - random opacity pulsing
+        float flicker = 0.5 + 0.5 * sin(u_time * 30.0 + h6 * 20.0);
+        float flickerIntensity = mix(1.0, flicker, fadeProgress * 0.7);
+
+        // Final opacity - fade out with flicker
+        float opacity = (1.0 - fadeProgress) * flickerIntensity;
+
+        if (opacity < 0.05) continue;
+
+        // Box outline rendering
+        float dx = abs(rotated.x);
+        float dy = abs(rotated.y);
+
+        float onVerticalEdge = step(dx, boxSize) * step(boxSize - lineWidth, dx) * step(dy, boxSize);
+        float onHorizontalEdge = step(dy, boxSize) * step(boxSize - lineWidth, dy) * step(dx, boxSize);
+        float outline = max(onVerticalEdge, onHorizontalEdge);
+
+        result += outline * opacity * 0.8;
     }
 
+    return clamp(result, 0.0, 1.0);
+}
+
+// Render flickering box outlines along ring circumference (replaces solid ring)
+// Thinner, higher quantity, with bloom
+float renderGlitchWrap(vec2 uv, vec2 contactPoint, vec2 cursorCenter, float wrapAngle, float wrapDir, float aspectRatio) {
+    if (wrapAngle < 0.01) return 0.0;
+
+    float result = 0.0;
+    float boundingRadius = 0.027;
+
+    // Higher quantity - 12 boxes along ring circumference
+    for (int b = 0; b < 12; b++) {
+        float fb = float(b);
+
+        // Stable seed that changes slowly
+        float timeSeed = floor(u_time * 4.0 + fb * 0.5);
+        float h1 = fract(sin(fb * 127.1 + timeSeed) * 43758.5);
+        float h2 = fract(sin(fb * 269.5 + timeSeed) * 18273.3);
+        float h3 = fract(sin(fb * 419.2) * 29471.7); // Static for position
+
+        // Only show box based on wrap progress
+        if (h1 > wrapAngle * 1.2 + 0.1) continue;
+
+        // Position ON the ring circumference - perfect circle, evenly spaced
+        float angle = fb * 6.28318 / 12.0; // Even distribution, no variation
+
+        // Boxes sit on the ring edge - aspect ratio corrected for perfect circle
+        vec2 boxCenter = cursorCenter + vec2(
+            cos(angle) * boundingRadius / aspectRatio,  // Compress X by aspect ratio
+            sin(angle) * boundingRadius
+        );
+
+        // Thinner, smaller boxes
+        float boxSize = 0.002 + h2 * 0.002;
+        float lineWidth = 0.0004; // Thinner lines
+
+        // Rotation aligned to ring tangent + slight variation
+        float rotation = angle + 1.5708 + (h1 - 0.5) * 0.5;
+
+        // Rotate UV around box center
+        vec2 delta = uv - boxCenter;
+        float cosA = cos(rotation);
+        float sinA = sin(rotation);
+        vec2 rotated = vec2(
+            delta.x * cosA - delta.y * sinA,
+            delta.x * sinA + delta.y * cosA
+        );
+
+        // Flickering
+        float flickerPhase = u_time * (10.0 + fb * 2.0) + fb * 1.5;
+        float flicker = step(0.35, fract(sin(flickerPhase) * 43758.5));
+
+        // Opacity based on wrap angle
+        float opacity = wrapAngle * 0.7 * flicker;
+
+        if (opacity < 0.05) continue;
+
+        // Box outline rendering
+        float dx = abs(rotated.x);
+        float dy = abs(rotated.y);
+
+        float onVerticalEdge = step(dx, boxSize) * step(boxSize - lineWidth, dx) * step(dy, boxSize);
+        float onHorizontalEdge = step(dy, boxSize) * step(boxSize - lineWidth, dy) * step(dx, boxSize);
+        float outline = max(onVerticalEdge, onHorizontalEdge);
+
+        // Add bloom/glow around box
+        float glowDist = max(dx, dy);
+        float glow = exp(-glowDist * glowDist / (boxSize * boxSize * 4.0)) * 0.3;
+
+        result += (outline + glow) * opacity;
+    }
+
+    return clamp(result, 0.0, 1.0);
+}
+
+// Render ignition spark with blocky squares expanding outward
+// Stronger effect for brighter spawn areas
+float renderIgnitionGlow(vec2 uv, vec2 origin, float intensity) {
+    if (intensity < 0.01) return 0.0;
+
+    vec2 delta = uv - origin;
+    float dist = length(delta);
+
+    // Sample luminance at origin for scaling
+    float originLuminance = getLuminance(texture2D(u_originalImage, origin).rgb);
+    float lumBoost = 1.0 + originLuminance * 1.5; // 1.0-2.5x based on brightness
+
+    // Ease-in burst
+    float burstT = intensity * intensity * intensity; // Cubic for snappier start
+
+    // Stable seed - only changes when a new ignition starts (not every frame)
+    float seed = floor(intensity * 100.0);
+
+    float result = 0.0;
+
+    // Square parameters - scale with luminance
+    float baseSquareSize = 0.004 * lumBoost;
+    float lineWidth = 0.0008 * lumBoost;
+
+    // More squares for brighter areas
+    int numSquares = 6 + int(originLuminance * 6.0); // 6-12 squares
+
+    // Multiple squares expanding outward
+    for (int i = 0; i < 12; i++) {
+        if (i >= numSquares) break;
+        float fi = float(i);
+
+        // Hash for this square - stable per ignition
+        float h1 = fract(sin(fi * 127.1 + seed) * 43758.5);
+        float h2 = fract(sin(fi * 269.5 + seed) * 18273.3);
+        float h3 = fract(sin(fi * 419.2 + seed) * 29471.7);
+        float h4 = fract(sin(fi * 631.4 + seed) * 51927.1);
+        float h5 = fract(sin(fi * 853.7 + seed) * 37159.3);
+
+        // Staggered spawn timing - squares appear at different times
+        float spawnDelay = h1 * 0.6;
+        float t = clamp((burstT - spawnDelay) * 2.5, 0.0, 1.0);
+        if (t < 0.01) continue;
+
+        // Position - expand outward from origin
+        float angle = h2 * 6.28318;
+        float expandDist = (0.01 + h3 * 0.025) * t; // Squares move outward over time
+        vec2 squareCenter = origin + vec2(cos(angle), sin(angle)) * expandDist;
+
+        // Variable square size
+        float squareSize = baseSquareSize * (0.6 + h4 * 0.8);
+
+        // Opacity fades as square expands outward
+        float fadeOut = 1.0 - t * 0.7;
+
+        // Vector to square center
+        vec2 toSq = uv - squareCenter;
+
+        // Square outline - all 4 edges
+        float dx = abs(toSq.x);
+        float dy = abs(toSq.y);
+
+        // Check if on any edge of the square outline
+        float onVerticalEdge = step(dx, squareSize) * step(squareSize - lineWidth, dx) * step(dy, squareSize);
+        float onHorizontalEdge = step(dy, squareSize) * step(squareSize - lineWidth, dy) * step(dx, squareSize);
+        float outline = max(onVerticalEdge, onHorizontalEdge);
+
+        // Variable opacity per square
+        float squareOpacity = 0.7 + h5 * 0.3;
+
+        result += outline * fadeOut * squareOpacity;
+    }
+
+    // Center dot (tiny filled square)
+    float coreDist = max(abs(delta.x), abs(delta.y));
+    float core = step(coreDist, 0.002);
+
+    return clamp(core + result, 0.0, 1.0) * intensity;
+}
+
+// Render all active laserropes (max 7)
+float renderLaserropes(vec2 uv, vec2 cursorCenter, float aspectRatio) {
+    float result = 0.0;
+    int count = int(u_laseropeCount);
+
+    // WebGL 1.0 requires constant loop bounds - now only 7
+    for (int i = 0; i < 7; i++) {
+        if (i >= count) break;
+
+        vec2 p0, p1, p2;
+        float ext, ignitionGlow, wrapAngle, wrapDir;
+
+        // Manual unpacking for WebGL 1.0 compatibility (7 ropes)
+        // Data layout: p0.xy, p1.xy, p2.xy, extension, ignitionGlow, wrapAngle, wrapDir
+        if (i == 0) {
+            p0 = vec2(u_laseropeData[0], u_laseropeData[1]);
+            p1 = vec2(u_laseropeData[2], u_laseropeData[3]);
+            p2 = vec2(u_laseropeData[4], u_laseropeData[5]);
+            ext = u_laseropeData[6];
+            ignitionGlow = u_laseropeData[7];
+            wrapAngle = u_laseropeData[8];
+            wrapDir = u_laseropeData[9];
+        } else if (i == 1) {
+            p0 = vec2(u_laseropeData[10], u_laseropeData[11]);
+            p1 = vec2(u_laseropeData[12], u_laseropeData[13]);
+            p2 = vec2(u_laseropeData[14], u_laseropeData[15]);
+            ext = u_laseropeData[16];
+            ignitionGlow = u_laseropeData[17];
+            wrapAngle = u_laseropeData[18];
+            wrapDir = u_laseropeData[19];
+        } else if (i == 2) {
+            p0 = vec2(u_laseropeData[20], u_laseropeData[21]);
+            p1 = vec2(u_laseropeData[22], u_laseropeData[23]);
+            p2 = vec2(u_laseropeData[24], u_laseropeData[25]);
+            ext = u_laseropeData[26];
+            ignitionGlow = u_laseropeData[27];
+            wrapAngle = u_laseropeData[28];
+            wrapDir = u_laseropeData[29];
+        } else if (i == 3) {
+            p0 = vec2(u_laseropeData[30], u_laseropeData[31]);
+            p1 = vec2(u_laseropeData[32], u_laseropeData[33]);
+            p2 = vec2(u_laseropeData[34], u_laseropeData[35]);
+            ext = u_laseropeData[36];
+            ignitionGlow = u_laseropeData[37];
+            wrapAngle = u_laseropeData[38];
+            wrapDir = u_laseropeData[39];
+        } else if (i == 4) {
+            p0 = vec2(u_laseropeData[40], u_laseropeData[41]);
+            p1 = vec2(u_laseropeData[42], u_laseropeData[43]);
+            p2 = vec2(u_laseropeData[44], u_laseropeData[45]);
+            ext = u_laseropeData[46];
+            ignitionGlow = u_laseropeData[47];
+            wrapAngle = u_laseropeData[48];
+            wrapDir = u_laseropeData[49];
+        } else if (i == 5) {
+            p0 = vec2(u_laseropeData[50], u_laseropeData[51]);
+            p1 = vec2(u_laseropeData[52], u_laseropeData[53]);
+            p2 = vec2(u_laseropeData[54], u_laseropeData[55]);
+            ext = u_laseropeData[56];
+            ignitionGlow = u_laseropeData[57];
+            wrapAngle = u_laseropeData[58];
+            wrapDir = u_laseropeData[59];
+        } else {
+            p0 = vec2(u_laseropeData[60], u_laseropeData[61]);
+            p1 = vec2(u_laseropeData[62], u_laseropeData[63]);
+            p2 = vec2(u_laseropeData[64], u_laseropeData[65]);
+            ext = u_laseropeData[66];
+            ignitionGlow = u_laseropeData[67];
+            wrapAngle = u_laseropeData[68];
+            wrapDir = u_laseropeData[69];
+        }
+
+        // Slot 7 dual purpose:
+        // - During ignition: ignitionGlow (0-1) for blocky squares at origin
+        // - During snapping: snapProgress (0-1, negative to distinguish) for dissolve effect
+        if (ignitionGlow > 0.01) {
+            // Positive = ignition glow
+            result += renderIgnitionGlow(uv, p0, ignitionGlow);
+        } else if (ignitionGlow < -0.01) {
+            // Negative = snap dissolve (abs value is progress 0-1)
+            float snapProgress = -ignitionGlow;
+            float dissolve = renderSnapDissolve(uv, p0, p1, p2, snapProgress, ext);
+            // Exclusion blend mode: result + blend - 2 * result * blend
+            result = result + dissolve - 2.0 * result * dissolve;
+        }
+
+        // Render beam (during extension/holding phase)
+        result += renderLaserrope(uv, p0, p1, p2, ext, 1.0);
+
+        // Render glitch wrap effect when touching cursor ring
+        if (wrapAngle > 0.01) {
+            result += renderGlitchWrap(uv, p2, cursorCenter, wrapAngle, wrapDir, aspectRatio);
+        }
+    }
+
+    // Additive blending allows overlaps to brighten
     return clamp(result, 0.0, 1.0);
 }
 
@@ -687,11 +919,14 @@ void main() {
         bloom = calculateBloom(texUV);
     }
 
-    // Phase 3: Render tendrils
-    float tendrils = renderTendrils(texUV);
+    // Phase 3: Render laserropes (pass cursor center and aspect ratio for perfect circles)
+    // Offset cursor center slightly right (+x) and down (-y) to better align ring with cursor
+    vec2 cursorCenter = vec2(1.0 - u_mouse.x + 0.001, u_mouse.y - 0.001); // Flip X + offset
+    float aspectRatio = u_resolution.x / u_resolution.y;
+    float laserropes = renderLaserropes(texUV, cursorCenter, aspectRatio);
 
-    // Blend: scanlines + bloom + tendrils
-    float finalIntensity = scanlines + bloom * (1.0 - scanlines * 0.5) + tendrils;
+    // Blend: scanlines + bloom + laserropes (additive)
+    float finalIntensity = scanlines + bloom * (1.0 - scanlines * 0.5) + laserropes;
 
     // CRT vignette
     float vignetteX = smoothstep(0.0, 0.08, uv.x) * smoothstep(1.0, 0.92, uv.x);
