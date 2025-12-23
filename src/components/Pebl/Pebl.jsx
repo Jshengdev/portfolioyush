@@ -638,6 +638,7 @@ function Pebl() {
   const [texturesLoaded, setTexturesLoaded] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [currentOnboardingScreen, setCurrentOnboardingScreen] = useState(0);
+  const [prefetchedLocation, setPrefetchedLocation] = useState(null);
 
   // Load textures for current style
   const loadTextures = useCallback((styleIndex) => {
@@ -988,6 +989,37 @@ function Pebl() {
     animateGlow();
   }, [currentOnboardingScreen, onboardingComplete]);
 
+  // Pre-fetch location during onboarding for faster map load
+  useEffect(() => {
+    if (onboardingComplete || prefetchedLocation) return;
+
+    // Start fetching location in background during onboarding
+    const fetchLocation = async () => {
+      if (!navigator.geolocation) {
+        setPrefetchedLocation({ lat: 34.0224, lng: -118.2851 }); // LA default
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setPrefetchedLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          console.log('Pre-fetched location:', position.coords.latitude, position.coords.longitude);
+        },
+        () => {
+          setPrefetchedLocation({ lat: 34.0224, lng: -118.2851 }); // LA default
+        },
+        { timeout: 8000, enableHighAccuracy: false }
+      );
+    };
+
+    // Start fetching after a brief delay (let UI render first)
+    const timer = setTimeout(fetchLocation, 500);
+    return () => clearTimeout(timer);
+  }, [onboardingComplete, prefetchedLocation]);
+
   // Handle onboarding completion
   const handleOnboardingComplete = useCallback(() => {
     setOnboardingComplete(true);
@@ -1016,7 +1048,11 @@ function Pebl() {
       />
 
       {/* Map overlay - shown after onboarding completes */}
-      <PeblMap visible={mapVisible} onClose={() => setMapVisible(false)} />
+      <PeblMap
+        visible={mapVisible}
+        onClose={() => setMapVisible(false)}
+        prefetchedLocation={prefetchedLocation}
+      />
     </PeblContainer>
   );
 }

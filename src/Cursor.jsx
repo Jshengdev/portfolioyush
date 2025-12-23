@@ -53,6 +53,7 @@ const Cursor = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [ringPos, setRingPos] = useState({ x: 0, y: 0 });
   const [isClicking, setIsClicking] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
   const trailRef = useRef([]);
   const segmentAgeRef = useRef([]); // Track how long since segment was at head
@@ -62,6 +63,22 @@ const Cursor = () => {
   const pathRef = useRef("");
   const velocityRef = useRef(0);
   const isSnappingRef = useRef(false); // Track if snap back animation has started
+
+  // Check if cursor should be hidden (when Pebl map is open)
+  useEffect(() => {
+    const checkMapOpen = () => {
+      setIsHidden(document.body.hasAttribute('data-pebl-map-open'));
+    };
+
+    // Check immediately
+    checkMapOpen();
+
+    // Use MutationObserver to watch for attribute changes
+    const observer = new MutationObserver(checkMapOpen);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-pebl-map-open'] });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Initialize trail points and ages
   useEffect(() => {
@@ -75,13 +92,24 @@ const Cursor = () => {
   useEffect(() => {
     const moveCursor = (e) => {
       const prevTarget = targetRef.current;
-      targetRef.current = { x: e.clientX, y: e.clientY };
+
+      // Handle both mouse and touch events
+      let clientX, clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      targetRef.current = { x: clientX, y: clientY };
       lastMoveTimeRef.current = Date.now();
-      setMousePos({ x: e.clientX, y: e.clientY });
+      setMousePos({ x: clientX, y: clientY });
 
       // Calculate and smooth velocity
-      const dx = e.clientX - prevTarget.x;
-      const dy = e.clientY - prevTarget.y;
+      const dx = clientX - prevTarget.x;
+      const dy = clientY - prevTarget.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
       velocityRef.current = velocityRef.current * 0.8 + distance * 0.2;
 
@@ -92,7 +120,12 @@ const Cursor = () => {
     };
 
     document.addEventListener("mousemove", moveCursor);
-    return () => document.removeEventListener("mousemove", moveCursor);
+    document.addEventListener("touchmove", moveCursor, { passive: true }); // Passive to allow scroll
+
+    return () => {
+      document.removeEventListener("mousemove", moveCursor);
+      document.removeEventListener("touchmove", moveCursor);
+    };
   }, []);
 
   // Track clicking
@@ -100,12 +133,28 @@ const Cursor = () => {
     const handleMouseDown = () => setIsClicking(true);
     const handleMouseUp = () => setIsClicking(false);
 
+    // Touch equivalents
+    const handleTouchStart = (e) => {
+      setIsClicking(true);
+      // Also update position on start
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        targetRef.current = { x: touch.clientX, y: touch.clientY };
+        setMousePos({ x: touch.clientX, y: touch.clientY });
+      }
+    };
+    const handleTouchEnd = () => setIsClicking(false);
+
     document.addEventListener("mousedown", handleMouseDown);
     document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("touchstart", handleTouchStart, { passive: true });
+    document.addEventListener("touchend", handleTouchEnd);
 
     return () => {
       document.removeEventListener("mousedown", handleMouseDown);
       document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
@@ -272,6 +321,11 @@ const Cursor = () => {
 
     return segments;
   };
+
+  // Don't render cursor on hidden routes (performance optimization)
+  if (isHidden) {
+    return null;
+  }
 
   return (
     <>

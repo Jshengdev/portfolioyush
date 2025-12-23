@@ -135,10 +135,10 @@ const MapOverlay = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 70vw;
-  height: 70vh;
-  max-width: 800px;
-  max-height: 600px;
+  width: 56vw;
+  height: 56vh;
+  max-width: 640px;
+  max-height: 480px;
   background-color: #F5F2EB;
   z-index: 500;
   display: ${props => props.$visible ? 'block' : 'none'};
@@ -378,16 +378,24 @@ const OSMLayer = styled.svg`
     opacity: 1;
   }
 
-  /* Building main stroke - animated with big sway */
+  /* Building main stroke - animated with subtle sway (limited to 40 buildings) */
   .building {
-    transform-origin: center;
+    /* Use transform-box to make transform-origin work with SVG paths */
+    transform-box: fill-box;
+    transform-origin: center center;
     animation: ${breathe} 3s ease-in-out infinite;
     animation-delay: var(--stagger, 0s);
   }
 
+  /* Static buildings - same look, no animation (performance optimization) */
+  .building-static {
+    opacity: 1;
+  }
+
   /* Park swaying animation */
   .park {
-    transform-origin: center;
+    transform-box: fill-box;
+    transform-origin: center bottom;
     animation: ${sway} 6s ease-in-out infinite;
   }
 
@@ -403,16 +411,103 @@ const OSMLayer = styled.svg`
 `;
 
 // ═══════════════════════════════════════════════════════════════════
-// DEFAULT LOCATION (Los Angeles)
+// DEFAULT LOCATION (Los Angeles) & CACHE CONFIG
 // ═══════════════════════════════════════════════════════════════════
 
 const DEFAULT_LOCATION = { lat: 34.0224, lng: -118.2851 };
+const CACHE_KEY = 'pebl_osm_cache';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in ms
+
+// Pre-generated fallback data for LA (simplified buildings for instant load)
+const FALLBACK_LA_DATA = {
+  buildings: [
+    { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[-118.286, 34.023], [-118.285, 34.023], [-118.285, 34.022], [-118.286, 34.022], [-118.286, 34.023]]] }, properties: { building: 'yes' } },
+    { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[-118.284, 34.024], [-118.283, 34.024], [-118.283, 34.023], [-118.284, 34.023], [-118.284, 34.024]]] }, properties: { building: 'yes' } },
+    { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[-118.287, 34.021], [-118.286, 34.021], [-118.286, 34.020], [-118.287, 34.020], [-118.287, 34.021]]] }, properties: { building: 'yes' } },
+    { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[-118.283, 34.022], [-118.282, 34.022], [-118.282, 34.021], [-118.283, 34.021], [-118.283, 34.022]]] }, properties: { building: 'yes' } },
+    { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[-118.285, 34.025], [-118.284, 34.025], [-118.284, 34.024], [-118.285, 34.024], [-118.285, 34.025]]] }, properties: { building: 'yes' } },
+  ],
+  parks: [
+    { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[-118.288, 34.024], [-118.286, 34.024], [-118.286, 34.022], [-118.288, 34.022], [-118.288, 34.024]]] }, properties: { leisure: 'park' } },
+  ],
+  water: [],
+  roads: [
+    { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-118.290, 34.022], [-118.280, 34.022]] }, properties: { highway: 'primary' } },
+    { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-118.285, 34.027], [-118.285, 34.017]] }, properties: { highway: 'secondary' } },
+  ],
+  center: DEFAULT_LOCATION
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// PROCEDURAL BUILDING GENERATOR (for locations without cached data)
+// ═══════════════════════════════════════════════════════════════════
+
+function generateProceduralBuildings(location) {
+  const { lat, lng } = location;
+  const buildings = [];
+  const roads = [];
+
+  // Generate 8-12 random buildings around the location
+  const buildingCount = 8 + Math.floor(Math.random() * 5);
+  for (let i = 0; i < buildingCount; i++) {
+    // Random offset from center (within ~300m)
+    const offsetLat = (Math.random() - 0.5) * 0.006;
+    const offsetLng = (Math.random() - 0.5) * 0.006;
+
+    // Random building size
+    const size = 0.0003 + Math.random() * 0.0006;
+
+    const baseLat = lat + offsetLat;
+    const baseLng = lng + offsetLng;
+
+    buildings.push({
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[
+          [baseLng, baseLat],
+          [baseLng + size, baseLat],
+          [baseLng + size, baseLat - size],
+          [baseLng, baseLat - size],
+          [baseLng, baseLat]
+        ]]
+      },
+      properties: { building: 'yes' }
+    });
+  }
+
+  // Generate 2 crossing roads
+  roads.push({
+    type: 'Feature',
+    geometry: {
+      type: 'LineString',
+      coordinates: [[lng - 0.004, lat], [lng + 0.004, lat]]
+    },
+    properties: { highway: 'primary' }
+  });
+  roads.push({
+    type: 'Feature',
+    geometry: {
+      type: 'LineString',
+      coordinates: [[lng, lat - 0.004], [lng, lat + 0.004]]
+    },
+    properties: { highway: 'secondary' }
+  });
+
+  return {
+    buildings,
+    parks: [],
+    water: [],
+    roads,
+    center: location
+  };
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════
 
-function PeblMap({ visible, onClose }) {
+function PeblMap({ visible, onClose, prefetchedLocation }) {
   const svgRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -424,6 +519,18 @@ function PeblMap({ visible, onClose }) {
   const [userLocation, setUserLocation] = useState(null);
   const [osmData, setOsmData] = useState(null);
   const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
+
+  // Set body attribute when map is visible (for cursor hiding)
+  useEffect(() => {
+    if (visible) {
+      document.body.setAttribute('data-pebl-map-open', 'true');
+    } else {
+      document.body.removeAttribute('data-pebl-map-open');
+    }
+    return () => {
+      document.body.removeAttribute('data-pebl-map-open');
+    };
+  }, [visible]);
 
   // Parallax effect - subtle map shift on cursor movement
   const handleMouseMove = useCallback((e) => {
@@ -448,15 +555,56 @@ function PeblMap({ visible, onClose }) {
     setParallaxOffset({ x: 0, y: 0 });
   }, []);
 
+  // Cache helpers
+  const getCachedData = useCallback((lat, lng) => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (!cached) return null;
+
+      const { data, timestamp, location } = JSON.parse(cached);
+      const isExpired = Date.now() - timestamp > CACHE_DURATION;
+
+      // Check if cached location is within ~500m of requested location
+      const latDiff = Math.abs(location.lat - lat);
+      const lngDiff = Math.abs(location.lng - lng);
+      const isNearby = latDiff < 0.005 && lngDiff < 0.005;
+
+      if (!isExpired && isNearby) {
+        console.log('Using cached OSM data');
+        return data;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const setCachedData = useCallback((data, lat, lng) => {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        data,
+        timestamp: Date.now(),
+        location: { lat, lng }
+      }));
+    } catch (e) {
+      console.warn('Failed to cache OSM data:', e.message);
+    }
+  }, []);
+
   // Fetch OSM data from Overpass API with fallback servers
   const fetchOSMData = useCallback(async (lat, lng) => {
-    const radius = 400; // meters (reduced for faster response)
+    // Check cache first
+    const cached = getCachedData(lat, lng);
+    if (cached) return cached;
+
+    const radius = 300; // meters - reduced for faster response
+    // Optimized query: only get building outlines, major roads, parks
     const query = `
-      [out:json][timeout:25];
+      [out:json][timeout:15];
       (
         way["building"](around:${radius},${lat},${lng});
         way["leisure"="park"](around:${radius},${lat},${lng});
-        way["highway"~"primary|secondary|tertiary|residential"](around:${radius},${lat},${lng});
+        way["highway"~"primary|secondary|tertiary"](around:${radius},${lat},${lng});
       );
       out body; >; out skel qt;
     `;
@@ -467,6 +615,10 @@ function PeblMap({ visible, onClose }) {
       'https://overpass.kumi.systems/api/interpreter',
     ];
 
+    // Use AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
     for (const server of servers) {
       try {
         console.log('Fetching OSM data from:', server);
@@ -474,7 +626,10 @@ function PeblMap({ visible, onClose }) {
           method: 'POST',
           body: `data=${encodeURIComponent(query)}`,
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           console.log('Server responded with:', response.status);
@@ -483,16 +638,27 @@ function PeblMap({ visible, onClose }) {
 
         const data = await response.json();
         console.log('OSM data received:', data.elements?.length, 'elements');
+
+        // Cache successful response
+        if (data?.elements?.length > 0) {
+          setCachedData(data, lat, lng);
+        }
+
         return data;
       } catch (error) {
-        console.error('OSM fetch error from', server, ':', error.message);
+        if (error.name === 'AbortError') {
+          console.log('Request timed out for:', server);
+        } else {
+          console.error('OSM fetch error from', server, ':', error.message);
+        }
         continue; // Try next server
       }
     }
 
+    clearTimeout(timeoutId);
     console.error('All Overpass servers failed');
     return null;
-  }, []);
+  }, [getCachedData, setCachedData]);
 
   // Convert OSM data to GeoJSON
   const osmToGeoJSON = useCallback((osmData) => {
@@ -518,7 +684,7 @@ function PeblMap({ visible, onClose }) {
           });
         } else if (coords.length >= 3) {
           const closed = [...coords];
-          if (closed[0][0] !== closed[closed.length-1][0] || closed[0][1] !== closed[closed.length-1][1]) {
+          if (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1]) {
             closed.push(closed[0]);
           }
           const feature = { type: 'Feature', geometry: { type: 'Polygon', coordinates: [closed] }, properties: tags };
@@ -564,10 +730,15 @@ function PeblMap({ visible, onClose }) {
     const loadMap = async () => {
       setMapLoading(true);
 
-      // Get user's actual location
-      const location = await getUserLocation();
-      console.log('Got location:', location);
+      // Use prefetched location if available, otherwise fetch now
+      const location = prefetchedLocation || await getUserLocation();
+      console.log('Using location:', location, prefetchedLocation ? '(prefetched)' : '(fetched)');
       setUserLocation(location);
+
+      // Show fallback immediately while fetching real data
+      // This gives instant visual feedback
+      const isNearLA = Math.abs(location.lat - DEFAULT_LOCATION.lat) < 0.1 &&
+                       Math.abs(location.lng - DEFAULT_LOCATION.lng) < 0.1;
 
       // Fetch OSM data for that location
       const data = await fetchOSMData(location.lat, location.lng);
@@ -576,24 +747,38 @@ function PeblMap({ visible, onClose }) {
         const geojson = osmToGeoJSON(data);
         setOsmData({ ...geojson, center: location });
       } else {
-        setOsmData({ buildings: [], parks: [], water: [], roads: [], center: location });
+        // Use fallback data with user's location as center
+        // If near LA, use LA fallback data; otherwise create empty map
+        if (isNearLA || location === DEFAULT_LOCATION) {
+          console.log('Using fallback LA data');
+          setOsmData(FALLBACK_LA_DATA);
+        } else {
+          // Generate simple procedural buildings for any location
+          console.log('Generating procedural fallback for:', location);
+          const proceduralData = generateProceduralBuildings(location);
+          setOsmData(proceduralData);
+        }
       }
 
       setMapLoading(false);
     };
 
     loadMap();
-  }, [visible, osmData, getUserLocation, fetchOSMData, osmToGeoJSON]);
+  }, [visible, osmData, getUserLocation, fetchOSMData, osmToGeoJSON, prefetchedLocation]);
 
   // Render OSM data to SVG
   useEffect(() => {
-    if (!osmData || !svgRef.current || !visible) return;
+    if (!osmData || !svgRef.current || !visible || !mapRef.current) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    // Get the actual container dimensions (not window)
+    const rect = mapRef.current.getBoundingClientRect();
+    // Add 60px extra for parallax buffer (ParallaxContainer is 30px offset each direction)
+    const parallaxBuffer = 60;
+    const width = rect.width + parallaxBuffer;
+    const height = rect.height + parallaxBuffer;
     svg.attr('width', width).attr('height', height);
 
     // Add hand-drawn filter defs
@@ -659,11 +844,19 @@ function PeblMap({ visible, onClose }) {
       }
     });
 
-    // Buildings - light glow base + darker moving stroke
+    // Buildings - light glow base + darker stroke
+    // Performance optimization: Only animate first 40 buildings (closest to center)
+    // All buildings still render with full visual quality
+    const MAX_ANIMATED_BUILDINGS = 40;
+    const buildingCount = osmData.buildings.length;
+
     osmData.buildings.forEach((f, index) => {
       const d = path(f);
       if (d) {
-        // Glow layer - light rose, stays static
+        // Determine if this building should animate (first 40 only)
+        const shouldAnimate = index < MAX_ANIMATED_BUILDINGS;
+
+        // Glow layer - light rose, always static (no animation)
         svg.append('path')
           .attr('d', d)
           .attr('fill', 'none')
@@ -672,7 +865,9 @@ function PeblMap({ visible, onClose }) {
           .attr('stroke-linejoin', 'round')
           .attr('filter', 'url(#handDrawn)')
           .attr('class', 'building-glow');
-        // Main stroke - dark rose, animates
+
+        // Main stroke - dark rose
+        // Only first 40 buildings get animation class for performance
         svg.append('path')
           .attr('d', d)
           .attr('fill', 'none')
@@ -680,10 +875,12 @@ function PeblMap({ visible, onClose }) {
           .attr('stroke-width', 0.5)
           .attr('stroke-linejoin', 'round')
           .attr('filter', 'url(#handDrawn)')
-          .attr('class', 'building')
-          .style('--stagger', `${(index % 20) * 0.15}s`);
+          .attr('class', shouldAnimate ? 'building' : 'building-static')
+          .style('--stagger', shouldAnimate ? `${(index % 20) * 0.15}s` : null);
       }
     });
+
+    console.log(`Map rendered: ${buildingCount} buildings (${Math.min(buildingCount, MAX_ANIMATED_BUILDINGS)} animated)`);
 
     // Roads LAST (on top) - hierarchy by type
     osmData.roads.forEach(f => {

@@ -16,6 +16,7 @@ const Lens = lazy(() => import('./components/Projectfiles/Lens'));
 const Collection = lazy(() => import('./components/Projectfiles/Collection'));
 const Archive = lazy(() => import('./components/Archive'));
 const NextProject = lazy(() => import('./components/NextProject'));
+const WhatsUp = lazy(() => import('./components/WhatsUp'));
 
 // Experimental shader pages
 const ExperimentNav = lazy(() => import('./components/experiments/ExperimentNav'));
@@ -370,6 +371,7 @@ function AnimatedRoutes() {
           } />
           {/* Isolated experience - no PageWrapper for complete isolation */}
           <Route path="/pebl" element={<Pebl />} />
+          <Route path="/whatsup" element={<WhatsUp />} />
         </Routes>
       </Suspense>
     </AnimatePresence>
