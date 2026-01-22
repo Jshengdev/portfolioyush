@@ -54,6 +54,9 @@ const Navbar = () => {
     const handleContactClick = () => {
         navigate('/contact');
     };
+    const handleResumeClick = () => {
+        navigate('/resume');
+    };
 
     return (
         <Section>
@@ -64,6 +67,7 @@ const Navbar = () => {
                         <ListItem onClick={handleProjectClick}>PROJECTS</ListItem>
                         <ListItem onClick={handleArchiveClick}>ARCHIVE</ListItem>
                         <ListItem onClick={handleContactClick}>CONTACT</ListItem>
+                        <ListItem onClick={handleResumeClick}>RESUME</ListItem>
                     </List>
                 </Links>
             </Container>
