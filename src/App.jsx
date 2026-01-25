@@ -18,6 +18,7 @@ const Archive = lazy(() => import('./components/Archive'));
 const NextProject = lazy(() => import('./components/NextProject'));
 const WhatsUp = lazy(() => import('./components/WhatsUp'));
 const Resume = lazy(() => import('./components/Resume'));
+const Gradient = lazy(() => import('./components/Gradient/App'));
 
 // Experimental shader pages
 const ExperimentNav = lazy(() => import('./components/experiments/ExperimentNav'));
@@ -381,6 +382,7 @@ function AnimatedRoutes() {
               </PageWrapper>
             }
           />
+          <Route path="/Gradient" element={<Gradient />} />
         </Routes>
       </Suspense>
     </AnimatePresence>
