@@ -1,13 +1,15 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export default function useScrollReveal(buildTimeline, triggerOpts = {}) {
-  const sectionRef = useRef(null)
+const DEFAULT_OPTS = {}
 
-  const build = useCallback(buildTimeline, [])
+export default function useScrollReveal(buildTimeline, triggerOpts) {
+  const sectionRef = useRef(null)
+  // Stable reference: use provided opts or a module-level constant
+  const opts = triggerOpts || DEFAULT_OPTS
 
   useEffect(() => {
     const el = sectionRef.current
@@ -16,13 +18,13 @@ export default function useScrollReveal(buildTimeline, triggerOpts = {}) {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: el,
-        start: 'top 75%',
+        start: 'top 80%',
         once: true,
-        ...triggerOpts,
+        ...opts,
       },
     })
 
-    build(tl, el)
+    buildTimeline(tl, el)
 
     return () => {
       tl.kill()
@@ -30,7 +32,7 @@ export default function useScrollReveal(buildTimeline, triggerOpts = {}) {
         if (st.trigger === el) st.kill()
       })
     }
-  }, [build, triggerOpts])
+  }, []) // Run once on mount — buildTimeline is already memoized by callers
 
   return sectionRef
 }

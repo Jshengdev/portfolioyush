@@ -1268,11 +1268,10 @@
 }
 
 /* Beat 3: Consequence */
+/* Consequence inherits display:flex / flex-direction:column / centering from
+   .canary-root section — only override background + position here */
 .canary-root .consequence {
   min-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--bg-light);
   position: relative;
 }
@@ -1439,21 +1438,19 @@
   box-shadow: 0 0 80px rgba(99, 102, 241, 0.12);
 }
 
-/* Section pacing overrides */
+/* Section pacing overrides — only set min-height.
+   The parent .canary-root section already provides
+   display:flex / flex-direction:column / align-items:center / justify-content:center */
 .canary-root .hero {
   min-height: 100vh;
 }
 
 .canary-root .section-light#problem {
   min-height: 70vh;
-  display: flex;
-  align-items: center;
 }
 
 .canary-root .section-dark#solution {
   min-height: 80vh;
-  display: flex;
-  align-items: center;
 }
 
 .canary-root .section-light#how {
