@@ -1302,3 +1302,78 @@
   color: #7B7899;
   margin: 0;
 }
+
+/* Beat 7: Invitation */
+.canary-root .invitation {
+  position: relative;
+  background: var(--bg-dark);
+  padding-bottom: 0;
+}
+
+.canary-root .invitation-market {
+  text-align: center;
+  padding: 80px 0 60px;
+}
+
+.canary-root .invitation-market-hero {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700;
+  color: var(--text-light);
+  margin: 16px 0 8px;
+}
+
+.canary-root .invitation-market-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.canary-root .invitation-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 700px;
+  margin: 32px auto 0;
+}
+
+.canary-root .invitation-stat-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.canary-root .invitation-stat-num {
+  font-family: 'Plus Jakarta Sans', system-ui;
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.canary-root .invitation-stat-num.green { color: #10B981; }
+.canary-root .invitation-stat-num.amber { color: #F59E0B; }
+
+.canary-root .invitation-stat-label {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.canary-root .invitation-cta {
+  padding: 60px 0 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
+.canary-root .invitation-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 40px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
