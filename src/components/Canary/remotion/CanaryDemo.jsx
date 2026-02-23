@@ -1,4 +1,5 @@
 import { AbsoluteFill, Sequence, useCurrentFrame, interpolate } from 'remotion'
+import IntroScene from './scenes/IntroScene'
 
 // Placeholder scenes — will be replaced by real scene components
 const PlaceholderScene = ({ label, color }) => {
@@ -24,7 +25,7 @@ export const CanaryDemo = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: '#0D0F1A' }}>
       <Sequence from={0} durationInFrames={90}>
-        <PlaceholderScene label="INTRO" color="#10B981" />
+        <IntroScene />
       </Sequence>
       <Sequence from={90} durationInFrames={150}>
         <PlaceholderScene label="TERMINAL" color="#6366F1" />
