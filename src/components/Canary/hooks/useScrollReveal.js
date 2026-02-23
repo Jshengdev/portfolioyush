@@ -27,7 +27,12 @@ export default function useScrollReveal(buildTimeline, triggerOpts) {
     buildTimeline(tl, el)
 
     return () => {
-      tl.kill()
+      // revert() removes all inline styles GSAP applied, then kills.
+      // Critical for React 18 Strict Mode: without revert(), .from() tweens
+      // leave inline opacity:0 on elements after the first mount/unmount cycle,
+      // and the second mount captures opacity:0 as the "to" value → elements
+      // stay permanently invisible.
+      tl.revert()
       ScrollTrigger.getAll().forEach(st => {
         if (st.trigger === el) st.kill()
       })
