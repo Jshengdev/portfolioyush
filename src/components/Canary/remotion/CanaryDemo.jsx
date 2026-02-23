@@ -2,6 +2,7 @@ import { AbsoluteFill, Sequence, useCurrentFrame, interpolate } from 'remotion'
 import IntroScene from './scenes/IntroScene'
 import TerminalScene from './scenes/TerminalScene'
 import AgentSessionScene from './scenes/AgentSessionScene'
+import QAReportScene from './scenes/QAReportScene'
 
 // Placeholder scenes — will be replaced by real scene components
 const PlaceholderScene = ({ label, color }) => {
@@ -36,7 +37,7 @@ export const CanaryDemo = () => {
         <AgentSessionScene />
       </Sequence>
       <Sequence from={540} durationInFrames={240}>
-        <PlaceholderScene label="QA REPORT" color="#22C55E" />
+        <QAReportScene />
       </Sequence>
       <Sequence from={780} durationInFrames={120}>
         <PlaceholderScene label="CLOSE" color="#E2E0F0" />
