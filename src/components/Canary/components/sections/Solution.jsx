@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import NotifCard from '../design-system/NotifCard'
 import useBayerDither from '../../hooks/useBayerDither'
 import { STATIC_DITHER_OPTS } from '../../lib/constants'
@@ -14,6 +14,8 @@ const CODE_LINES = [
   "canary.connect(myAgent, { apiKey: 'ck_...' })",
 ]
 
+const FULL_CODE_TEXT = CODE_LINES.join('\n')
+
 const NOTIF_DATA = [
   { dot: 'green', agent: 'AGENT_01', action: 'opened /contracts/Q4_vendor.pdf', detail: '14:32:07 · eval: on_task · 89ms', badge: 'OBSERVED', badgeVariant: 'green' },
   { dot: 'green', agent: 'AGENT_01', action: 'input.fill on #compose_message', detail: '14:32:09 · eval: safe_content · no PII', badge: 'OBSERVED', badgeVariant: 'green' },
@@ -23,18 +25,15 @@ const NOTIF_DATA = [
 export default function Solution() {
   const canvasRef = useBayerDither(STATIC_DITHER_OPTS)
   const codeRef = useRef(null)
-  const notifsRef = useRef(null)
   const [codeText, setCodeText] = useState('')
   const [visibleNotifs, setVisibleNotifs] = useState(0)
 
   const sectionRef = useScrollReveal(useCallback((tl, el) => {
-    // Fade in the text content
     tl.from(el.querySelector('.z-elevated:first-child'), {
       opacity: 0, y: 40, duration: 0.6, ease: 'power2.out',
     })
   }, []))
 
-  // Typing + notification orchestration triggered by scroll
   useEffect(() => {
     const el = sectionRef.current
     if (!el) return
@@ -43,7 +42,6 @@ export default function Solution() {
     if (!codeEl) return
 
     let typingInterval = null
-    const fullText = CODE_LINES.join('\n')
     let charIndex = 0
 
     const st = ScrollTrigger.create({
@@ -53,14 +51,14 @@ export default function Solution() {
       onEnter: () => {
         typingInterval = setInterval(() => {
           charIndex++
-          setCodeText(fullText.substring(0, charIndex))
+          setCodeText(FULL_CODE_TEXT.substring(0, charIndex))
 
           // Show notifications at line boundaries
-          const typed = fullText.substring(0, charIndex)
+          const typed = FULL_CODE_TEXT.substring(0, charIndex)
           const lineCount = typed.split('\n').length
           setVisibleNotifs(Math.min(lineCount, NOTIF_DATA.length))
 
-          if (charIndex >= fullText.length) {
+          if (charIndex >= FULL_CODE_TEXT.length) {
             clearInterval(typingInterval)
           }
         }, 35)
@@ -87,12 +85,12 @@ export default function Solution() {
             </p>
             <div className="solution-code" ref={codeRef}>
               {codeText || '\u00A0'}
-              {codeText.length < CODE_LINES.join('\n').length && codeText.length > 0 && (
+              {codeText.length < FULL_CODE_TEXT.length && codeText.length > 0 && (
                 <span className="typing-cursor">|</span>
               )}
             </div>
           </div>
-          <div className="z-elevated" ref={notifsRef}>
+          <div className="z-elevated">
             <div className="solution-notifs">
               {NOTIF_DATA.slice(0, visibleNotifs).map((item, i) => (
                 <div className="solution-notif-item" key={i}>

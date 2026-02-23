@@ -3,7 +3,6 @@ import './styles/canary.css'
 import Nav from './components/sections/Nav'
 import Hero from './components/sections/Hero'
 import Problem from './components/sections/Problem'
-import Consequence from './components/sections/Consequence'
 import Solution from './components/sections/Solution'
 import HowItWorks from './components/sections/HowItWorks'
 import LiveFeed from './components/sections/LiveFeed'
@@ -45,7 +44,6 @@ export default function CanaryApp() {
       <Nav />
       <Hero />
       <Problem />
-      <Consequence />
       <Solution />
       <HowItWorks />
       <LiveFeed />

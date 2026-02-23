@@ -32,14 +32,14 @@ export default function LiveFeed() {
       <div className="section-inner z-elevated">
         <div className="feed-grid">
           <div>
-            <span className="section-label">[OBSERVE]</span>
-            <h2 className="section-headline">Every agent.<br />Every action.<br />In real time.</h2>
+            <span className="section-label">[DASHBOARD]</span>
+            <h2 className="section-headline">Your fleet.<br />One screen.<br />Zero blind spots.</h2>
             <p className="section-body">
-              Canary surfaces what's actually happening across your entire agent fleet.
-              Not API logs. Not text outputs. What the agent did on the computer.
+              Three agents or three hundred — Canary gives you a single pane of glass
+              across every deployment. Anomalies surface before they compound.
             </p>
             <p className="section-body section-body--spaced">
-              Flag anomalies before they compound. Build trust with every deployment.
+              Filter by agent, task, or risk level. Drill into any session in one click.
             </p>
           </div>
           <div>

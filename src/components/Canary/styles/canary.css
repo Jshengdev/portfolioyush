@@ -718,41 +718,6 @@
   margin-bottom: 2.5rem;
 }
 
-.canary-root .stat-card {
-  background: rgba(79,70,229,0.08);
-  border: 1px solid rgba(79,70,229,0.2);
-  border-radius: 6px;
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.canary-root .stat-card-num {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 2.8rem;
-  font-weight: 800;
-  line-height: 1;
-  margin-bottom: 0.5rem;
-}
-
-.canary-root .stat-card-num.amber { color: var(--amber); }
-.canary-root .stat-card-num.green { color: var(--emerald); }
-
-.canary-root .stat-card-label {
-  font-size: 0.72rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-}
-
-.canary-root .stat-card--light {
-  background: #F0EEF8;
-  border-color: rgba(79,70,229,0.15);
-}
-
-.canary-root .stat-card--light .stat-card-label {
-  color: #555;
-}
-
 .canary-root .stat-highlight {
   display: inline;
   background: linear-gradient(120deg, rgba(79,70,229,0.18) 0%, rgba(99,102,241,0.28) 100%);
@@ -821,15 +786,7 @@
   position: relative;
 }
 
-.canary-root .steps-row::before {
-  content: '';
-  position: absolute;
-  top: 1.25rem;
-  left: calc(12.5% + 1.25rem);
-  right: calc(12.5% + 1.25rem);
-  height: 1px;
-  background: linear-gradient(90deg, var(--indigo), rgba(79,70,229,0.3));
-}
+/* steps-row connector: only the animated SVG line is used (see .steps-svg) */
 
 .canary-root .step {
   display: flex;
@@ -1254,7 +1211,7 @@
   .canary-root .problem-grid,
   .canary-root .solution-grid { grid-template-columns: 1fr; gap: 2.5rem; }
   .canary-root .steps-row { grid-template-columns: 1fr 1fr; gap: 2rem; }
-  .canary-root .steps-row::before { display: none; }
+  /* steps-row::before removed — only SVG connector used */
   .canary-root .market-cards { grid-template-columns: 1fr; }
   .canary-root .invitation-stats { grid-template-columns: 1fr; }
   .canary-root .invitation-footer { flex-direction: column; gap: 1rem; text-align: center; }
@@ -1267,46 +1224,7 @@
   .canary-root .sim-tab { padding: 0.45rem 0.65rem; font-size: 0.55rem; }
 }
 
-/* Beat 3: Consequence */
-/* Consequence inherits display:flex / flex-direction:column / centering from
-   .canary-root section — only override background + position here */
-.canary-root .consequence {
-  min-height: 60vh;
-  background: var(--bg-light);
-  position: relative;
-}
-
-.canary-root .consequence-inner {
-  text-align: center;
-  max-width: 600px;
-  padding: 80px 24px;
-}
-
-.canary-root .consequence-stat {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: clamp(80px, 12vw, 160px);
-  font-weight: 900;
-  color: #EF4444;
-  line-height: 1;
-  margin-bottom: 16px;
-}
-
-.canary-root .consequence-sub {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: clamp(18px, 2.5vw, 24px);
-  color: #1a1a2e;
-  font-weight: 600;
-  margin: 0 0 8px;
-}
-
-.canary-root .consequence-detail {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  color: #7B7899;
-  margin: 0;
-}
-
-/* Beat 7: Invitation */
+/* Beat 5: Invitation */
 .canary-root .invitation {
   position: relative;
   background: var(--bg-dark);

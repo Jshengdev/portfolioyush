@@ -5,15 +5,13 @@ import useScrollReveal from '../../hooks/useScrollReveal'
 
 export default function HowItWorks() {
   const sectionRef = useScrollReveal(useCallback((tl, el) => {
-    // Header
     tl.from(el.querySelector('.section-center'), {
       opacity: 0, y: 30, duration: 0.5, ease: 'power2.out',
     })
-    // Steps stagger
     tl.from(el.querySelectorAll('.step'), {
       opacity: 0, y: 40, duration: 0.5, stagger: 0.2, ease: 'power2.out',
     }, '-=0.2')
-    // SVG line draw
+
     const line = el.querySelector('.steps-connector')
     if (line) {
       const length = line.getTotalLength()
@@ -23,7 +21,7 @@ export default function HowItWorks() {
         '-=0.8'
       )
     }
-    // Example notif
+
     tl.from(el.querySelector('.how-example'), {
       opacity: 0, y: 20, duration: 0.4, ease: 'power2.out',
     }, '-=0.3')

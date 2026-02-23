@@ -61,8 +61,7 @@ export default function Invitation() {
             <div className="nav-dot nav-dot--sm" />
             CANARY
           </div>
-          <span>NVSC 2026 · USC Marshall</span>
-          <span>© 2026 Canary · All rights reserved</span>
+          <span>© 2026 Canary</span>
         </footer>
       </div>
     </section>

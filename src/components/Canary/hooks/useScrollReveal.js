@@ -8,7 +8,6 @@ const DEFAULT_OPTS = {}
 
 export default function useScrollReveal(buildTimeline, triggerOpts) {
   const sectionRef = useRef(null)
-  // Stable reference: use provided opts or a module-level constant
   const opts = triggerOpts || DEFAULT_OPTS
 
   useEffect(() => {

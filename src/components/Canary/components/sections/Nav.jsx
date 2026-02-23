@@ -9,7 +9,7 @@ export default function Nav() {
         <li><a href="#problem">[PROBLEM]</a></li>
         <li><a href="#solution">{'{SOLUTION}'}</a></li>
         <li><a href="#how">[HOW IT WORKS]</a></li>
-        <li><a href="#market">(MARKET)</a></li>
+        <li><a href="#live">[DASHBOARD]</a></li>
         <li><a href="#early-access" className="nav-cta">REQUEST ACCESS →</a></li>
       </ul>
     </nav>
