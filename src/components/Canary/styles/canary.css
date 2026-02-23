@@ -1256,8 +1256,12 @@
   .canary-root .steps-row { grid-template-columns: 1fr 1fr; gap: 2rem; }
   .canary-root .steps-row::before { display: none; }
   .canary-root .market-cards { grid-template-columns: 1fr; }
+  .canary-root .invitation-stats { grid-template-columns: 1fr; }
+  .canary-root .invitation-footer { flex-direction: column; gap: 1rem; text-align: center; }
+  .canary-root .feed-grid { grid-template-columns: 1fr; gap: 2.5rem; }
   .canary-root footer { flex-direction: column; gap: 1rem; text-align: center; }
   .canary-root .hero-demo { max-width: 100%; }
+  .canary-root .demo-player-wrap { max-width: 100%; }
   .canary-root .hero-observer-badge { right: 0; top: -10px; font-size: 0.5rem; }
   .canary-root .sim-msg-preview { max-width: 100px; }
   .canary-root .sim-tab { padding: 0.45rem 0.65rem; font-size: 0.55rem; }
