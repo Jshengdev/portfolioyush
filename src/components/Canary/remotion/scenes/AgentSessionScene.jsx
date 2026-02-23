@@ -62,195 +62,241 @@ export default function AgentSessionScene() {
   // Timeline progress
   const progress = interpolate(frame, [0, 280], [0, 100], { extrapolateRight: 'clamp' })
 
+  // Camera zoom keyframes:
+  // 0-25: zoom in from overview (entry)
+  // 25-50: zoom into left panel (message click)
+  // 50-80: ease back to overview
+  // 80-160: zoom into input area (typing)
+  // 160-200: ease to overview
+  // 200-245: overview (send + observe)
+  // 245-275: zoom into right notification panel (FLAGGED card)
+  // 275-299: zoom out for scene exit
+  const camScale = interpolate(
+    frame,
+    [0, 10, 35, 55, 80, 85, 155, 165, 200, 245, 260, 275, 299],
+    [0.9, 1, 1.25, 1.25, 1, 1, 1.2, 1.2, 1, 1, 1.3, 1.3, 0.92],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  )
+  const camX = interpolate(
+    frame,
+    [0, 10, 35, 55, 80, 85, 155, 165, 200, 245, 260, 275, 299],
+    [0, 0, -12, -12, 0, 0, -8, -8, 0, 0, 15, 15, 0],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  )
+  const camY = interpolate(
+    frame,
+    [0, 10, 35, 55, 80, 85, 155, 165, 200, 245, 260, 275, 299],
+    [0, 0, -8, -8, 0, 0, 15, 15, 0, 0, 5, 5, 0],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  )
+  const exitOpacity = interpolate(frame, [288, 299], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+
   return (
     <AbsoluteFill style={{ backgroundColor: '#0D0F1A' }}>
-      <div style={{ display: 'flex', width: '100%', height: '100%', padding: 40, gap: 24 }}>
-        {/* Left: Simulated Slack */}
-        <div style={{
-          flex: 1.2,
-          background: '#1A1B2E',
-          borderRadius: 12,
-          border: '1px solid rgba(255,255,255,0.08)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}>
-          {/* Header tabs */}
+      <div style={{
+        width: '100%',
+        height: '100%',
+        transform: `scale(${camScale}) translate(${camX}%, ${camY}%)`,
+        transformOrigin: 'center center',
+        opacity: exitOpacity,
+      }}>
+        <div style={{ display: 'flex', width: '100%', height: '100%', padding: 40, gap: 24 }}>
+          {/* Left: Simulated Slack */}
           <div style={{
-            display: 'flex',
-            gap: 0,
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            flex: 1.2,
+            background: '#1A1B2E',
+            borderRadius: 12,
+            border: '1px solid rgba(255,255,255,0.08)',
+            position: 'relative',
+            overflow: 'hidden',
           }}>
-            {['#design', '#general', '#analytics'].map((tab, i) => (
-              <div key={i} style={{
-                padding: '12px 20px',
-                color: (i === 0 && frame < 230) || (i === 2 && frame >= 230) ? '#E2E0F0' : '#7B7899',
-                fontSize: 13,
-                fontFamily: 'JetBrains Mono, monospace',
-                borderBottom: (i === 0 && frame < 230) || (i === 2 && frame >= 230) ? '2px solid #6366F1' : '2px solid transparent',
-              }}>
-                {tab}
-              </div>
-            ))}
-          </div>
-
-          {/* Messages */}
-          <div style={{ padding: '16px 20px' }}>
-            {MESSAGES.map((msg) => (
-              <div key={msg.id} style={{
-                padding: '10px 12px',
-                marginBottom: 8,
-                borderRadius: 8,
-                background: msg.id === 1 && msg1Highlighted ? 'rgba(99,102,241,0.12)' : 'transparent',
-                border: msg.id === 1 && msg1Highlighted ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
-                transition: 'all 0.3s',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ color: '#A5B4FC', fontSize: 13, fontWeight: 600 }}>{msg.sender}</span>
-                  <span style={{ color: '#4B4869', fontSize: 11 }}>{msg.time}</span>
-                </div>
-                <div style={{ color: '#C4C1D9', fontSize: 14 }}>{msg.text}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Input bar */}
-          <div style={{
-            position: 'absolute',
-            bottom: 16,
-            left: 16,
-            right: 16,
-            display: 'flex',
-            gap: 8,
-          }}>
+            {/* Header tabs */}
             <div style={{
-              flex: 1,
-              padding: '10px 14px',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 8,
-              color: typingChars > 0 ? '#E2E0F0' : '#4B4869',
-              fontSize: 14,
-              fontFamily: 'system-ui',
+              display: 'flex',
+              gap: 0,
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}>
-              {typingChars > 0 ? replyText.substring(0, typingChars) : 'Type a message...'}
+              {['#design', '#general', '#analytics'].map((tab, i) => (
+                <div key={i} style={{
+                  padding: '12px 20px',
+                  color: (i === 0 && frame < 230) || (i === 2 && frame >= 230) ? '#E2E0F0' : '#7B7899',
+                  fontSize: 14,
+                  fontFamily: 'JetBrains Mono, monospace',
+                  borderBottom: (i === 0 && frame < 230) || (i === 2 && frame >= 230) ? '2px solid #6366F1' : '2px solid transparent',
+                }}>
+                  {tab}
+                </div>
+              ))}
             </div>
+
+            {/* Messages */}
+            <div style={{ padding: '16px 20px' }}>
+              {MESSAGES.map((msg) => (
+                <div key={msg.id} style={{
+                  padding: '12px 14px',
+                  marginBottom: 8,
+                  borderRadius: 8,
+                  background: msg.id === 1 && msg1Highlighted ? 'rgba(99,102,241,0.12)' : 'transparent',
+                  border: msg.id === 1 && msg1Highlighted ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ color: '#A5B4FC', fontSize: 14, fontWeight: 600 }}>{msg.sender}</span>
+                    <span style={{ color: '#4B4869', fontSize: 12 }}>{msg.time}</span>
+                  </div>
+                  <div style={{ color: '#C4C1D9', fontSize: 15 }}>{msg.text}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Input bar */}
             <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              background: frame >= 180 && frame <= 210 ? '#6366F1' : 'rgba(255,255,255,0.06)',
+              position: 'absolute',
+              bottom: 16,
+              left: 16,
+              right: 16,
+              display: 'flex',
+              gap: 8,
+            }}>
+              <div style={{
+                flex: 1,
+                padding: '12px 16px',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 8,
+                color: typingChars > 0 ? '#E2E0F0' : '#4B4869',
+                fontSize: 15,
+                fontFamily: 'system-ui',
+              }}>
+                {typingChars > 0 ? replyText.substring(0, typingChars) : 'Type a message...'}
+              </div>
+              <div style={{
+                width: 40,
+                height: 40,
+                borderRadius: 8,
+                background: frame >= 180 && frame <= 210 ? '#6366F1' : 'rgba(255,255,255,0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#E2E0F0',
+                fontSize: 18,
+              }}>
+                ↑
+              </div>
+            </div>
+
+            {/* Agent cursor */}
+            <div style={{
+              position: 'absolute',
+              left: `${cursor.x}%`,
+              top: `${cursor.y}%`,
+              width: 0,
+              height: 0,
+              borderLeft: '10px solid #6366F1',
+              borderTop: '5px solid transparent',
+              borderBottom: '14px solid transparent',
+              filter: 'drop-shadow(0 0 8px rgba(99,102,241,0.6))',
+              opacity: frame > 10 ? 1 : 0,
+            }} />
+          </div>
+
+          {/* Right: Notification stream */}
+          <div style={{ flex: 0.8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{
+              color: '#7B7899',
+              fontSize: 12,
+              fontFamily: 'JetBrains Mono, monospace',
+              marginBottom: 8,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              color: '#E2E0F0',
-              fontSize: 16,
+              gap: 8,
             }}>
-              ↑
+              <div style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: '#10B981',
+                boxShadow: '0 0 8px rgba(16,185,129,0.5)',
+              }} />
+              CANARY · OBSERVING
             </div>
-          </div>
 
-          {/* Agent cursor */}
+            {NOTIFS.map((n, i) => {
+              const localFrame = frame - n.frame
+              if (localFrame < 0) return null
+
+              const slideIn = spring({
+                frame: localFrame,
+                fps,
+                config: { damping: 15, stiffness: 120 },
+              })
+              const x = interpolate(slideIn, [0, 1], [60, 0])
+              const opacity = interpolate(slideIn, [0, 1], [0, 1])
+
+              const dotColor = { green: '#10B981', amber: '#F59E0B', red: '#EF4444' }[n.dot]
+              const badgeColor = { green: 'rgba(16,185,129,0.15)', amber: 'rgba(245,158,11,0.15)' }[n.variant]
+              const badgeText = { green: '#10B981', amber: '#F59E0B' }[n.variant]
+
+              // Pulse the FLAGGED card border
+              const isFlagged = n.variant === 'amber'
+              const flagPulse = isFlagged && localFrame > 15
+                ? interpolate(Math.sin(localFrame * 0.15), [-1, 1], [0.3, 0.7])
+                : 0
+
+              return (
+                <div key={i} style={{
+                  transform: `translateX(${x}px)`,
+                  opacity,
+                  background: '#1A1B2E',
+                  border: isFlagged && localFrame > 10
+                    ? `1px solid rgba(245,158,11,${0.2 + flagPulse * 0.4})`
+                    : '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: 8,
+                  padding: '12px 16px',
+                  boxShadow: isFlagged && localFrame > 10
+                    ? `0 0 ${12 + flagPulse * 8}px rgba(245,158,11,0.1)`
+                    : 'none',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor }} />
+                    <span style={{ color: '#A5B4FC', fontSize: 13, fontWeight: 600, fontFamily: 'JetBrains Mono, monospace' }}>{n.agent}</span>
+                    <span style={{ color: '#4B4869', fontSize: 13 }}>→</span>
+                    <span style={{ color: '#C4C1D9', fontSize: 13 }}>{n.action}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#4B4869', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>{n.detail}</span>
+                    <span style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      fontFamily: 'JetBrains Mono, monospace',
+                      color: badgeText,
+                      background: badgeColor,
+                      padding: '3px 10px',
+                      borderRadius: 4,
+                    }}>[{n.badge}]</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Bottom: Session timeline */}
+        <div style={{
+          position: 'absolute',
+          bottom: 20,
+          left: 40,
+          right: 40,
+          height: 4,
+          background: 'rgba(255,255,255,0.06)',
+          borderRadius: 2,
+        }}>
           <div style={{
-            position: 'absolute',
-            left: `${cursor.x}%`,
-            top: `${cursor.y}%`,
-            width: 0,
-            height: 0,
-            borderLeft: '8px solid #6366F1',
-            borderTop: '4px solid transparent',
-            borderBottom: '12px solid transparent',
-            filter: 'drop-shadow(0 0 6px rgba(99,102,241,0.5))',
-            opacity: frame > 10 ? 1 : 0,
-            transition: 'opacity 0.3s',
+            width: `${progress}%`,
+            height: '100%',
+            background: 'linear-gradient(90deg, #6366F1, #10B981)',
+            borderRadius: 2,
           }} />
         </div>
-
-        {/* Right: Notification stream */}
-        <div style={{ flex: 0.8, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{
-            color: '#7B7899',
-            fontSize: 11,
-            fontFamily: 'JetBrains Mono, monospace',
-            marginBottom: 8,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}>
-            <div style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: '#10B981',
-              boxShadow: '0 0 8px rgba(16,185,129,0.5)',
-            }} />
-            CANARY · OBSERVING
-          </div>
-
-          {NOTIFS.map((n, i) => {
-            const localFrame = frame - n.frame
-            if (localFrame < 0) return null
-
-            const slideIn = spring({
-              frame: localFrame,
-              fps,
-              config: { damping: 15, stiffness: 120 },
-            })
-            const x = interpolate(slideIn, [0, 1], [60, 0])
-            const opacity = interpolate(slideIn, [0, 1], [0, 1])
-
-            const dotColor = { green: '#10B981', amber: '#F59E0B', red: '#EF4444' }[n.dot]
-            const badgeColor = { green: 'rgba(16,185,129,0.15)', amber: 'rgba(245,158,11,0.15)' }[n.variant]
-            const badgeText = { green: '#10B981', amber: '#F59E0B' }[n.variant]
-
-            return (
-              <div key={i} style={{
-                transform: `translateX(${x}px)`,
-                opacity,
-                background: '#1A1B2E',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 8,
-                padding: '10px 14px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor }} />
-                  <span style={{ color: '#A5B4FC', fontSize: 12, fontWeight: 600, fontFamily: 'JetBrains Mono, monospace' }}>{n.agent}</span>
-                  <span style={{ color: '#4B4869', fontSize: 12 }}>→</span>
-                  <span style={{ color: '#C4C1D9', fontSize: 12 }}>{n.action}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: '#4B4869', fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }}>{n.detail}</span>
-                  <span style={{
-                    fontSize: 10,
-                    fontWeight: 600,
-                    fontFamily: 'JetBrains Mono, monospace',
-                    color: badgeText,
-                    background: badgeColor,
-                    padding: '2px 8px',
-                    borderRadius: 4,
-                  }}>[{n.badge}]</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Bottom: Session timeline */}
-      <div style={{
-        position: 'absolute',
-        bottom: 20,
-        left: 40,
-        right: 40,
-        height: 4,
-        background: 'rgba(255,255,255,0.06)',
-        borderRadius: 2,
-      }}>
-        <div style={{
-          width: `${progress}%`,
-          height: '100%',
-          background: 'linear-gradient(90deg, #6366F1, #10B981)',
-          borderRadius: 2,
-        }} />
       </div>
     </AbsoluteFill>
   )

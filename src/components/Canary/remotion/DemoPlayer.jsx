@@ -13,7 +13,7 @@ export default function DemoPlayer() {
         lazyComponent={lazyComponent}
         compositionWidth={1920}
         compositionHeight={1080}
-        durationInFrames={900}
+        durationInFrames={765}
         fps={30}
         style={{
           width: '100%',
