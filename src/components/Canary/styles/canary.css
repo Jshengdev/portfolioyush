@@ -1402,3 +1402,24 @@
   from { opacity: 0; transform: translateX(50px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+/* HowItWorks SVG connector */
+.canary-root .steps-row-wrap {
+  position: relative;
+}
+
+.canary-root .steps-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.canary-root .steps-connector {
+  stroke: rgba(99, 102, 241, 0.25);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
