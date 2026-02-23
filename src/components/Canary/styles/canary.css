@@ -1377,3 +1377,28 @@
   font-size: 12px;
   color: var(--text-dim);
 }
+
+/* Solution typing + notifications */
+.canary-root .typing-cursor {
+  color: #10B981;
+  animation: canary-blink 0.6s step-end infinite;
+}
+
+@keyframes canary-blink {
+  50% { opacity: 0; }
+}
+
+.canary-root .solution-notifs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.canary-root .solution-notif-item {
+  animation: canary-slideInRight 0.4s ease-out both;
+}
+
+@keyframes canary-slideInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
