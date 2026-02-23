@@ -21,7 +21,6 @@ const slideNames = [
 
 export default function SlideNavigation({ totalSlides = 16 }) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {

@@ -47,6 +47,13 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  cursor: none; /* Use custom cursor */
+}
+
+/* Ensure custom cursor is visible above all content */
+.gradient-experience,
+.gradient-experience * {
+  cursor: none;
 }
 
 /* Section Scroll Snap */
@@ -326,4 +333,21 @@ section {
 .edge-fade-full {
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at center, black 30%, transparent 65%);
   mask-image: radial-gradient(ellipse 70% 60% at center, black 30%, transparent 65%);
+}
+
+/* CSS Fallback: Force visibility when section is in view */
+/* This class is added by JavaScript when section enters viewport */
+.gradient-experience .section-in-view,
+.gradient-experience .section-in-view * {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+/* Smooth transition for the forced visibility */
+.gradient-experience .section-in-view > div,
+.gradient-experience .section-in-view h1,
+.gradient-experience .section-in-view h2,
+.gradient-experience .section-in-view p {
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }

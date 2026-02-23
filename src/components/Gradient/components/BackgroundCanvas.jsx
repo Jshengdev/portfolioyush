@@ -47,7 +47,7 @@ export default function BackgroundCanvas({ totalSlides = 9 }) {
     return () => window.removeEventListener('resize', updateDimensions);
   }, [totalSlides]);
 
-  // Track scroll position
+  // Track scroll position (not currently used for rendering but kept for future use)
   useEffect(() => {
     const handleScroll = () => {
       scrollRef.current = window.scrollY;

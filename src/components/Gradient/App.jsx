@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap, ScrollTrigger } from './hooks/useGsapScroll';
+import './index.css';
 
 import BackgroundCanvas from './components/BackgroundCanvas';
 import SlideNavigation from './components/SlideNavigation';
@@ -42,7 +44,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const TOTAL_SLIDES = 16;
 
-// Scroll to specific slide
+// Scroll to specific slide (using window since we're not inside the portfolio frame)
 function scrollToSlide(index) {
   const slideHeight = window.innerHeight;
   window.scrollTo({
@@ -56,8 +58,70 @@ function Gradient() {
 
   // Initialize GSAP and keyboard navigation
   useEffect(() => {
-    // Refresh ScrollTrigger on load
-    ScrollTrigger.refresh();
+    // Ensure ScrollTrigger refreshes after DOM is fully painted
+    // Use multiple strategies to ensure it works in production
+    const initScrollTrigger = () => {
+      // Force recalculation of all ScrollTriggers
+      ScrollTrigger.refresh(true);
+
+      // Also manually trigger any ScrollTriggers that should be active
+      // based on current scroll position
+      ScrollTrigger.getAll().forEach(trigger => {
+        trigger.refresh();
+      });
+    };
+
+    // Strategy 1: Wait for next frame after mount
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        initScrollTrigger();
+      });
+    });
+
+    // Strategy 2: Delayed refresh for any late content
+    const timeoutId1 = setTimeout(initScrollTrigger, 100);
+    const timeoutId2 = setTimeout(initScrollTrigger, 500);
+    const timeoutId3 = setTimeout(initScrollTrigger, 1000);
+
+    // Strategy 3: Refresh on window load
+    window.addEventListener('load', initScrollTrigger);
+
+    // Strategy 4: Refresh on first scroll (catches edge cases)
+    const onFirstScroll = () => {
+      initScrollTrigger();
+      window.removeEventListener('scroll', onFirstScroll);
+    };
+    window.addEventListener('scroll', onFirstScroll, { once: true });
+
+    // Strategy 5: Fallback - force visibility of sections in viewport
+    // This ensures content is visible even if GSAP fails
+    const checkVisibility = () => {
+      const sections = document.querySelectorAll('.gradient-experience section');
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+        if (isInView) {
+          section.classList.add('section-in-view');
+          // Also directly fix inline styles as a last resort
+          const elements = section.querySelectorAll('[style*="opacity"]');
+          elements.forEach(el => {
+            if (el.style.opacity === '0' || parseFloat(el.style.opacity) < 0.1) {
+              el.style.opacity = '1';
+              el.style.visibility = 'visible';
+            }
+          });
+        }
+      });
+    };
+
+    // Check visibility on scroll
+    const visibilityScrollHandler = () => {
+      checkVisibility();
+    };
+    window.addEventListener('scroll', visibilityScrollHandler, { passive: true });
+
+    // Initial check
+    setTimeout(checkVisibility, 100);
 
     // Keyboard navigation
     const handleKeyDown = (e) => {
@@ -95,6 +159,12 @@ function Gradient() {
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
+      clearTimeout(timeoutId1);
+      clearTimeout(timeoutId2);
+      clearTimeout(timeoutId3);
+      window.removeEventListener('load', initScrollTrigger);
+      window.removeEventListener('scroll', onFirstScroll);
+      window.removeEventListener('scroll', visibilityScrollHandler);
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScroll);
@@ -109,9 +179,26 @@ function Gradient() {
       {/* Slide Navigation */}
       <SlideNavigation totalSlides={TOTAL_SLIDES} />
 
-      {/* Fixed Logo - top left of every page */}
-      <div className="fixed top-6 left-6 z-50">
+      {/* Fixed Logo & Pitch Deck Link - top left of every page */}
+      <div className="fixed top-6 left-6 z-50 flex items-center gap-4">
         <Logo />
+        <Link
+          to="/gradient/pitchdeck"
+          className="text-sm font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
+          style={{
+            color: '#2E2E2E',
+            backgroundColor: 'rgba(159, 184, 160, 0.2)',
+            fontFamily: 'var(--font-sans)',
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = 'rgba(159, 184, 160, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'rgba(159, 184, 160, 0.2)';
+          }}
+        >
+          Pitch Deck
+        </Link>
       </div>
 
       {/* Noise Texture Overlay */}

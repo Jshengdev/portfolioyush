@@ -19,6 +19,10 @@ const NextProject = lazy(() => import('./components/NextProject'));
 const WhatsUp = lazy(() => import('./components/WhatsUp'));
 const Resume = lazy(() => import('./components/Resume'));
 const Gradient = lazy(() => import('./components/Gradient/App'));
+const GradientPitchDeck = lazy(() => import('./components/Gradient/PitchDeck'));
+const Blickey = lazy(() => import('./components/Blickey/BlickeyApp'));
+const Canary = lazy(() => import('./components/Canary/CanaryApp'));
+const NvscCanary = lazy(() => import('./components/NvscCanary/NvscCanaryApp'));
 
 // Experimental shader pages
 const ExperimentNav = lazy(() => import('./components/experiments/ExperimentNav'));
@@ -382,24 +386,62 @@ function AnimatedRoutes() {
               </PageWrapper>
             }
           />
-          <Route path="/Gradient" element={<Gradient />} />
+          <Route path="/gradient" element={<Gradient />} />
+          <Route path="/gradient/pitchdeck" element={<GradientPitchDeck />} />
+          <Route path="/blickey" element={<Blickey />} />
         </Routes>
       </Suspense>
     </AnimatePresence>
   );
 }
 
+// Routes that should render without the portfolio frame (full isolation)
+const ISOLATED_ROUTES = ['/pebl', '/gradient', '/whatsup', '/blickey', '/Canary', '/canary', '/nvsc-canary'];
+
 /**
  * App content component that uses ThemeContext
  * Wraps the app with StyledThemeProvider using the current theme from context
+ * Detects isolated routes and skips rendering the portfolio frame for them
  */
 function AppContent() {
   const { theme } = useContext(ThemeContext);
+  const location = useLocation();
+
+  // Check if current route is an isolated experience
+  const isIsolatedRoute = ISOLATED_ROUTES.some(route =>
+    location.pathname === route || location.pathname.startsWith(route + '/')
+  );
 
   // Set body background color to match theme
   useEffect(() => {
-    document.body.style.backgroundColor = theme.colors.background.primary;
-  }, [theme]);
+    if (!isIsolatedRoute) {
+      document.body.style.backgroundColor = theme.colors.background.primary;
+    }
+  }, [theme, isIsolatedRoute]);
+
+  // Routes that manage their own cursor entirely (no portfolio cursor)
+  const isOwnCursorRoute = location.pathname.toLowerCase() === '/canary';
+
+  // For isolated routes, render just the route content without frame
+  if (isIsolatedRoute) {
+    return (
+      <StyledThemeProvider theme={theme}>
+        {!isOwnCursorRoute && <Cursor />}
+        <Suspense fallback={<LoadingContainer>Loading...</LoadingContainer>}>
+          <Routes location={location}>
+            <Route path="/pebl" element={<Pebl />} />
+            <Route path="/gradient" element={<Gradient />} />
+            <Route path="/gradient/pitchdeck" element={<GradientPitchDeck />} />
+            <Route path="/whatsup" element={<WhatsUp />} />
+            <Route path="/blickey" element={<Blickey />} />
+            <Route path="/Canary" element={<Canary />} />
+            <Route path="/canary" element={<Canary />} />
+            <Route path="/nvsc-canary" element={<NvscCanary />} />
+          </Routes>
+        </Suspense>
+      </StyledThemeProvider>
+    );
+  }
 
   return (
     <StyledThemeProvider theme={theme}>
