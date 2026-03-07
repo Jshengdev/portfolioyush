@@ -23,6 +23,8 @@ const GradientPitchDeck = lazy(() => import('./components/Gradient/PitchDeck'));
 const Blickey = lazy(() => import('./components/Blickey/BlickeyApp'));
 const Canary = lazy(() => import('./components/Canary/CanaryApp'));
 const NvscCanary = lazy(() => import('./components/NvscCanary/NvscCanaryApp'));
+const MimoSlides = lazy(() => import('./components/MimoSlides/MimoSlidesApp'));
+const MimoLanding = lazy(() => import('./components/MimoLanding/MimoLandingApp'));
 
 // Experimental shader pages
 const ExperimentNav = lazy(() => import('./components/experiments/ExperimentNav'));
@@ -396,7 +398,7 @@ function AnimatedRoutes() {
 }
 
 // Routes that should render without the portfolio frame (full isolation)
-const ISOLATED_ROUTES = ['/pebl', '/gradient', '/whatsup', '/blickey', '/Canary', '/canary', '/nvsc-canary'];
+const ISOLATED_ROUTES = ['/pebl', '/gradient', '/whatsup', '/blickey', '/Canary', '/canary', '/nvsc-canary', '/mimo', '/mimo-slides'];
 
 /**
  * App content component that uses ThemeContext
@@ -437,6 +439,8 @@ function AppContent() {
             <Route path="/Canary" element={<Canary />} />
             <Route path="/canary" element={<Canary />} />
             <Route path="/nvsc-canary" element={<NvscCanary />} />
+            <Route path="/mimo" element={<MimoLanding />} />
+            <Route path="/mimo-slides" element={<MimoSlides />} />
           </Routes>
         </Suspense>
       </StyledThemeProvider>
