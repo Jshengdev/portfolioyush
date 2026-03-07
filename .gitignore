@@ -1,0 +1,53 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+package-lock.json
+
+# Testing
+/coverage
+
+# Production
+/build
+/dist
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Large media files
+public/assets/CM/*.mov
+public/assets/CM/*.MOV
+
+# Vite timestamp files
+vite.config.js.timestamp-*
+
+# Claude Code settings
+.claude/
+
+# Root assets directory (duplicate - only /public/assets/ should exist)
+/assets/
+
+.vercel
