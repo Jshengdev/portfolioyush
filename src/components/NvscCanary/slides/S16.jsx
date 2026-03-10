@@ -1,51 +1,68 @@
-import { Label } from '../components'
+import { Label, CanaryLogo } from '../components'
 
 export default function S16() {
-  const milestones = [
-    { date: 'NOW', label: 'Customer discovery + MVP design', sub: 'Building observation layer + cloud infrastructure', now: true },
-    { date: 'WEEKS 4–6', label: 'QA reports + beta launch', sub: 'First developer teams running live QA', now: false },
-    { date: 'APR 16', label: '10 beta teams with quantified data', sub: 'Measurable results on what the platform catches', now: false },
-    { date: 'MONTH 6', label: 'Production launch', sub: 'Enterprise pilots · full platform live', now: false },
-    { date: 'MONTH 12', label: '~43 customers · $774K ARR', sub: 'Organic, developer-first growth', now: false },
-  ]
-
-  const projections = [
-    { year: 'Year 2', customers: '~170', arr: '$5.1M ARR' },
-    { year: 'Year 3', customers: '~500', arr: '$12–15M ARR' },
+  const actions = [
+    { time: '14:32:01', action: 'opened Chrome \u2192 navigated to Gmail', pass: true, badge: 'OBSERVED', type: 'green' },
+    { time: '14:32:04', action: 'composed new message to john@company.com', pass: true, badge: 'OBSERVED', type: 'green' },
+    { time: '14:32:08', action: 'attached file: /reports/q4_summary.pdf', pass: true, badge: 'OBSERVED', type: 'green' },
+    { time: '14:32:11', action: 'attempted read: /admin/passwords.txt', pass: false, badge: 'BLOCKED', type: 'red' },
+    { time: '14:32:15', action: 'sent message to wrong-contact@external.com', pass: false, badge: 'FLAGGED', type: 'red' },
+    { time: '14:32:18', action: 'task.complete: email_report_done', pass: true, badge: 'COMPLETE', type: 'green' },
   ]
 
   return (
     <div className="slide slide-dark">
-      <div className="slide-inner">
-        <Label>MILESTONES</Label>
-        <h1 className="hl-xl">Where we are.<br />Where we're going.</h1>
-
-        <div className="roadmap-grid">
-          <div className="milestones">
-            {milestones.map((m, i) => (
-              <div key={i} className="milestone">
-                <div className="ms-line">
-                  <div className={`ms-dot${m.now ? ' ms-dot--now' : ''}`} />
-                  {i < milestones.length - 1 && <div className="ms-track" />}
-                </div>
-                <div className="ms-content">
-                  <div className="ms-date">{m.date}</div>
-                  <div className="ms-label">{m.label}</div>
-                  <div className="ms-sub">{m.sub}</div>
-                </div>
-              </div>
-            ))}
+      <div className="slide-inner slide-inner--wide">
+        <Label>FEATURE 01</Label>
+        <div className="demo-grid">
+          <div>
+            <h2 className="hl-lg">See what your<br />agent <span className="kw-green">actually did</span>.</h2>
+            <p className="sub-text" style={{ marginTop: '0.75rem', maxWidth: 300 }}>
+              Full behavior traces. Every click, every navigation, every file operation.<br /><br />
+              This data doesn't exist anywhere else. <em className="hi-indigo">No tool captures it. We do.</em>
+            </p>
           </div>
 
-          <div className="projection-cards">
-            <div className="projection-lbl">PATH TO SCALE</div>
-            {projections.map(p => (
-              <div key={p.year} className="projection-card">
-                <div className="projection-year">{p.year}</div>
-                <div className="projection-customers">{p.customers} customers</div>
-                <div className="projection-arr">{p.arr}</div>
+          <div className="dashboard-mock">
+            <div className="dash-header">
+              <CanaryLogo size={12} color="var(--indigo-soft)" />
+              CANARY DASHBOARD
+              <span className="dash-live">{'\u25CF'} LIVE</span>
+            </div>
+            <div className="dash-body">
+              <div className="dash-sidebar">
+                <div className="dash-sidebar-label">SESSIONS</div>
+                {[
+                  { id: 'email_042', status: 'flagged', dot: 'amber', active: true },
+                  { id: 'file_031', status: 'complete', dot: 'green', active: false },
+                  { id: 'ops_028', status: 'complete', dot: 'green', active: false },
+                  { id: 'msg_017', status: 'running', dot: 'indigo', active: false },
+                ].map(s => (
+                  <div key={s.id} className={`sess-item${s.active ? ' sess-active' : ''}`}>
+                    <div className={`dot dot-${s.dot}`} style={{ width: 6, height: 6 }} />
+                    <div>
+                      <div className="sess-id">{s.id}</div>
+                      <div className="sess-status">{s.status}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+
+              <div className="dash-main">
+                <div className="dash-session-title">SESSION: email_agent_042</div>
+                <div className="dash-trace-label">ACTION TRACE</div>
+                {actions.map((a, i) => (
+                  <div key={i} className={`trace-row${!a.pass ? ' trace-row--fail' : ''}`}>
+                    <span className={`trace-mark ${a.pass ? 'pass' : 'fail'}`}>{a.pass ? '\u2713' : '\u2717'}</span>
+                    <span className="trace-time">{a.time}</span>
+                    <span className="trace-action">{a.action}</span>
+                    <div className={`badge badge-${a.type}`} style={{ marginLeft: 'auto', flexShrink: 0, fontSize: '0.48rem' }}>
+                      [{a.badge}]
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

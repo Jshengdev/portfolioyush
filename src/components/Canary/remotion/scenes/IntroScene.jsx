@@ -1,4 +1,6 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion'
+import { smoothInterpolate } from '../utils'
+import SceneBackground from '../SceneBackground'
 
 export default function IntroScene() {
   const frame = useCurrentFrame()
@@ -22,11 +24,12 @@ export default function IntroScene() {
   const showCursor = frame >= typingStart && charsVisible < tagline.length
 
   // Exit zoom-out for smooth scene transition
-  const exitScale = interpolate(frame, [35, 44], [1, 0.92], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
-  const exitOpacity = interpolate(frame, [38, 44], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+  const exitScale = smoothInterpolate(frame, [35, 44], [1, 0.92])
+  const exitOpacity = smoothInterpolate(frame, [38, 44], [1, 0])
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0D0F1A' }}>
+    <AbsoluteFill>
+      <SceneBackground primary={{ color: 'rgba(99,102,241,0.15)', x: '50%', y: '45%', radius: 50 }} />
       <div style={{
         width: '100%',
         height: '100%',
@@ -57,7 +60,7 @@ export default function IntroScene() {
           }} />
           <span style={{
             color: '#E2E0F0',
-            fontSize: 42,
+            fontSize: 48,
             fontWeight: 700,
             letterSpacing: '0.12em',
             fontFamily: 'JetBrains Mono, monospace',
@@ -69,10 +72,10 @@ export default function IntroScene() {
         {/* Tagline */}
         <div style={{
           color: '#7B7899',
-          fontSize: 26,
+          fontSize: 30,
           fontFamily: 'JetBrains Mono, monospace',
           fontWeight: 400,
-          height: 36,
+          height: 42,
         }}>
           {taglineText}
           {showCursor && (

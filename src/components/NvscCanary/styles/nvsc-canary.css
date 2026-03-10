@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400;1,9..144,700&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap');
 
 /* ── SCOPED ROOT — cuts off all inherited portfolio styles ── */
 .nvsc-canary-root {
@@ -119,10 +119,52 @@
 }
 .nvsc-canary-root .sub-text--light { color: #777; }
 
-.nvsc-canary-root em.hi-indigo { font-style: normal; color: var(--indigo-soft); }
-.nvsc-canary-root em.hi-green  { font-style: normal; color: var(--emerald); }
-.nvsc-canary-root em.hi-amber  { font-style: normal; color: var(--amber); }
-.nvsc-canary-root em.hi-red    { font-style: normal; color: var(--red); }
+.nvsc-canary-root em.hi-indigo,
+.nvsc-canary-root em.hi-green,
+.nvsc-canary-root em.hi-amber,
+.nvsc-canary-root em.hi-red {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 1.15em;
+  line-height: inherit;
+}
+.nvsc-canary-root em.hi-indigo { color: var(--indigo-soft); }
+.nvsc-canary-root em.hi-green  { color: var(--emerald); }
+.nvsc-canary-root em.hi-amber  { color: var(--amber); }
+.nvsc-canary-root em.hi-red    { color: var(--red); }
+
+/* Keyword emphasis — serif accent for narrative-critical words */
+.nvsc-canary-root .kw,
+.nvsc-canary-root .kw-indigo,
+.nvsc-canary-root .kw-green,
+.nvsc-canary-root .kw-amber,
+.nvsc-canary-root .kw-red,
+.nvsc-canary-root .kw-white,
+.nvsc-canary-root .kw-glow {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.18em;
+  line-height: inherit;
+}
+
+.nvsc-canary-root .kw       { color: #fff; }
+.nvsc-canary-root .kw-indigo { color: var(--indigo-soft); }
+.nvsc-canary-root .kw-green  { color: var(--emerald); }
+.nvsc-canary-root .kw-amber  { color: var(--amber); }
+.nvsc-canary-root .kw-red    { color: var(--red); }
+.nvsc-canary-root .kw-white  { color: #fff; }
+
+/* On light slides */
+.nvsc-canary-root .slide-light .kw       { color: #1A1628; }
+.nvsc-canary-root .slide-light .kw-white  { color: #1A1628; }
+
+/* Glow variant for hero moments */
+.nvsc-canary-root .kw-glow {
+  color: var(--indigo-soft);
+  font-size: 1.25em;
+  text-shadow: 0 0 24px rgba(99,102,241,0.45);
+}
 
 /* ── SECTION LABEL ── */
 .nvsc-canary-root .label {
@@ -587,6 +629,7 @@
 .nvsc-canary-root .ms-content { padding-bottom: 1.5rem; }
 .nvsc-canary-root .ms-date  { font-size: 0.58rem; letter-spacing: 0.15em; color: var(--indigo-soft); margin-bottom: 0.2rem; }
 .nvsc-canary-root .ms-label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 0.2rem; font-family: 'Plus Jakarta Sans', sans-serif; }
+.nvsc-canary-root .ms-label--hi { color: var(--emerald); }
 .nvsc-canary-root .ms-sub   { font-size: 0.62rem; color: var(--text-dim); line-height: 1.5; }
 .nvsc-canary-root .projection-cards { display: flex; flex-direction: column; gap: 0.75rem; }
 .nvsc-canary-root .projection-lbl { font-size: 0.55rem; letter-spacing: 0.18em; color: var(--indigo-soft); margin-bottom: 0.5rem; }
@@ -595,7 +638,28 @@
 .nvsc-canary-root .projection-customers { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.2rem; }
 .nvsc-canary-root .projection-arr { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--emerald); line-height: 1; }
 
-/* ── SLIDE 17: CLOSE ── */
+/* ── SLIDE 8: EXPLOSION (simplified — two big stats) ── */
+.nvsc-canary-root .explosion-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+.nvsc-canary-root .explosion-stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 2.5rem 2rem; text-align: center; }
+.nvsc-canary-root .explosion-stat-num { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 900; line-height: 1; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
+.nvsc-canary-root .explosion-stat-lbl { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text-light); letter-spacing: 0.04em; margin-bottom: 0.6rem; }
+.nvsc-canary-root .explosion-stat-sub { font-size: 0.68rem; color: var(--text-dim); line-height: 1.6; }
+
+/* ── SLIDE 7: ENLARGED SIGNAL CARDS ── */
+.nvsc-canary-root .signal-grid-lg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.nvsc-canary-root .signal-card--lg { padding: 1.2rem; }
+.nvsc-canary-root .signal-img-wrap--lg { height: 120px; }
+
+/* ── SLIDE 23: WHY NOW (with visual cards) ── */
+.nvsc-canary-root .whynow-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.5rem; }
+.nvsc-canary-root .whynow-card { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem 1.1rem; background: #EEEDF8; border: 1px solid rgba(79,70,229,0.12); border-radius: 6px; position: relative; }
+.nvsc-canary-root .whynow-icon { font-size: 1.4rem; flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(79,70,229,0.1); border-radius: 8px; border: 1px solid rgba(79,70,229,0.2); }
+.nvsc-canary-root .whynow-body { flex: 1; min-width: 0; }
+.nvsc-canary-root .whynow-title { font-size: 0.72rem; font-weight: 600; color: #1A1628; line-height: 1.45; margin-bottom: 0.25rem; }
+.nvsc-canary-root .whynow-sub { font-size: 0.6rem; color: #777; line-height: 1.5; }
+.nvsc-canary-root .whynow-card .whyus-num { position: absolute; top: 0.6rem; right: 0.75rem; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.55rem; font-weight: 900; color: rgba(79,70,229,0.25); }
+
+/* ── SLIDE 26: CLOSE ── */
 .nvsc-canary-root .close-sub { font-size: 0.82rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 1rem; max-width: 500px; }
 
 /* ── IMAGE PLACEHOLDER ── */

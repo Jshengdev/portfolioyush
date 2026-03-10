@@ -1,4 +1,6 @@
 import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion'
+import { smoothInterpolate } from '../utils'
+import SceneBackground from '../SceneBackground'
 
 export default function CloseScene() {
   const frame = useCurrentFrame()
@@ -19,13 +21,14 @@ export default function CloseScene() {
   const dotGlow = interpolate(Math.sin(frame * 0.15), [-1, 1], [0.4, 1])
 
   // Fade to black at end (for seamless loop)
-  const fadeOut = interpolate(frame, [72, 89], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+  const fadeOut = smoothInterpolate(frame, [72, 89], [1, 0])
 
   // Gentle scale breath
-  const breathScale = interpolate(frame, [0, 45, 89], [0.95, 1.02, 0.98], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+  const breathScale = smoothInterpolate(frame, [0, 45, 89], [0.95, 1.02, 0.98])
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0D0F1A' }}>
+    <AbsoluteFill>
+      <SceneBackground primary={{ color: 'rgba(99,102,241,0.2)', x: '50%', y: '40%', radius: 55 }} />
       <div style={{
         width: '100%',
         height: '100%',
@@ -40,10 +43,10 @@ export default function CloseScene() {
         {/* Tagline */}
         <div style={{
           color: '#E2E0F0',
-          fontSize: 38,
+          fontSize: 44,
           fontWeight: 700,
           marginBottom: 28,
-          height: 50,
+          height: 56,
         }}>
           {taglineText}
           {showCursor && (
@@ -58,14 +61,27 @@ export default function CloseScene() {
         <div style={{
           opacity: interpolate(frame, [40, 52], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
           transform: `scale(${pulse})`,
-          padding: '14px 32px',
-          borderRadius: 8,
-          background: '#4F46E5',
+          padding: '16px 36px',
+          borderRadius: 10,
+          background: 'linear-gradient(135deg, #6366F1, #4F46E5, #7C3AED)',
           color: '#fff',
-          fontSize: 18,
+          fontSize: 20,
           fontWeight: 600,
+          boxShadow: '0 0 30px rgba(99,102,241,0.4), 0 4px 20px rgba(0,0,0,0.3)',
+          position: 'relative',
+          overflow: 'hidden',
         }}>
-          Request early access →
+          {/* Shimmer sweep */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)',
+            transform: `translateX(${interpolate(frame % 90, [0, 90], [-120, 120])}%)`,
+          }} />
+          <span style={{ position: 'relative' }}>Request early access →</span>
         </div>
 
         {/* Logo */}

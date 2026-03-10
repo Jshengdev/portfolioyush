@@ -1,28 +1,44 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion'
+import { smoothInterpolate } from '../utils'
+import SceneBackground from '../SceneBackground'
 
 const MESSAGES = [
   { id: 1, sender: 'sarah.chen', text: 'Hey, can you review the Q4 contract?', time: '2:31 PM' },
   { id: 2, sender: 'design-bot', text: 'New mockups uploaded to /shared/v3', time: '2:32 PM' },
 ]
 
+// Viewport-relative cursor path (% of full 1920x1080)
+// Cursor can now cross from left panel to right panel
 const CURSOR_PATH = [
-  { frame: 0,   x: 50, y: 50 },
-  { frame: 30,  x: 25, y: 30 },   // Move to first message
-  { frame: 50,  x: 25, y: 30 },   // Click (dwell)
-  { frame: 80,  x: 55, y: 82 },   // Move to input
-  { frame: 160, x: 55, y: 82 },   // Typing dwell
-  { frame: 180, x: 88, y: 82 },   // Move to send
-  { frame: 200, x: 88, y: 82 },   // Click send
-  { frame: 230, x: 35, y: 8 },    // Navigate to #analytics tab
-  { frame: 250, x: 35, y: 8 },    // Click tab
+  { frame: 0,   x: 50, y: 50 },   // Center start
+  { frame: 22,  x: 16, y: 17 },   // First message (sarah.chen)
+  { frame: 55,  x: 16, y: 17 },   // Dwell/click on message
+  { frame: 80,  x: 79, y: 12 },   // Move RIGHT to first notif card
+  { frame: 108, x: 79, y: 16 },   // Scanning card details
+  { frame: 128, x: 29, y: 92 },   // Move to input bar
+  { frame: 172, x: 29, y: 92 },   // Typing dwell
+  { frame: 185, x: 57, y: 92 },   // Move to send button
+  { frame: 198, x: 57, y: 92 },   // Click send
+  { frame: 215, x: 79, y: 20 },   // Move to second notif
+  { frame: 238, x: 79, y: 28 },   // Scanning down to third notif
+  { frame: 252, x: 15, y: 6 },    // Move to #analytics tab
+  { frame: 260, x: 15, y: 6 },    // Click tab
+  { frame: 275, x: 79, y: 34 },   // Move to FLAGGED notif
+  { frame: 290, x: 79, y: 34 },   // Dwell on flagged
 ]
 
 const NOTIFS = [
-  { frame: 55,  dot: 'green', agent: 'AGENT_01', action: 'opened thread from @sarah.chen', detail: 'eval: on_task · 89ms', badge: 'OBSERVED', variant: 'green' },
-  { frame: 140, dot: 'green', agent: 'AGENT_01', action: 'input.fill on #compose', detail: 'eval: safe_content · no PII', badge: 'OBSERVED', variant: 'green' },
-  { frame: 205, dot: 'green', agent: 'AGENT_01', action: 'button.click → dispatched reply', detail: 'eval: correct_action · verified', badge: 'OBSERVED', variant: 'green' },
-  { frame: 255, dot: 'amber', agent: 'AGENT_01', action: 'navigated to /analytics — off scope', detail: 'eval: off_path · drift: 0.72', badge: 'FLAGGED', variant: 'amber' },
+  { frame: 45,  type: 'click',    model: 'gpt-4o', mode: 'autonomous', dot: 'green', agent: 'AGENT_01', action: 'opened thread from @sarah.chen', detail: 'eval: on_task · 89ms', badge: 'OBSERVED', variant: 'green' },
+  { frame: 145, type: 'input',    model: 'gpt-4o', mode: 'autonomous', dot: 'green', agent: 'AGENT_01', action: 'input.fill on #compose', detail: 'eval: safe_content · no PII', badge: 'OBSERVED', variant: 'green' },
+  { frame: 195, type: 'click',    model: 'gpt-4o', mode: 'autonomous', dot: 'green', agent: 'AGENT_01', action: 'button.click → dispatched reply', detail: 'eval: correct_action · verified', badge: 'OBSERVED', variant: 'green' },
+  { frame: 258, type: 'navigate', model: 'gpt-4o', mode: 'autonomous', dot: 'amber', agent: 'AGENT_01', action: 'navigated to /analytics — off scope', detail: 'eval: off_path · drift: 0.72', badge: 'FLAGGED', variant: 'amber' },
 ]
+
+const TAG_COLORS = {
+  click: { bg: 'rgba(99,102,241,0.15)', text: '#A5B4FC' },
+  input: { bg: 'rgba(16,185,129,0.15)', text: '#6EE7B7' },
+  navigate: { bg: 'rgba(245,158,11,0.15)', text: '#FCD34D' },
+}
 
 function getCursorPos(frame) {
   let prev = CURSOR_PATH[0]
@@ -46,6 +62,9 @@ function getCursorPos(frame) {
   }
 }
 
+// Camera keyframes: 21 points following the cursor
+const CF = [0, 12, 22, 38, 55, 70, 85, 100, 112, 128, 140, 180, 198, 215, 232, 242, 252, 262, 272, 286, 299]
+
 export default function AgentSessionScene() {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
@@ -53,52 +72,43 @@ export default function AgentSessionScene() {
 
   // Reply typing text
   const replyText = 'Looks good, approved for Q4 launch'
-  const typingStart = 90
+  const typingStart = 130
   const typingChars = Math.max(0, Math.min(Math.floor((frame - typingStart) * 0.8), replyText.length))
 
-  // Highlight first message
-  const msg1Highlighted = frame >= 40 && frame < 230
+  // Highlight first message when cursor is there
+  const msg1Highlighted = frame >= 22 && frame < 260
 
   // Timeline progress
-  const progress = interpolate(frame, [0, 280], [0, 100], { extrapolateRight: 'clamp' })
+  const progress = interpolate(frame, [0, 290], [0, 100], { extrapolateRight: 'clamp' })
 
-  // Camera zoom keyframes:
-  // 0-25: zoom in from overview (entry)
-  // 25-50: zoom into left panel (message click)
-  // 50-80: ease back to overview
-  // 80-160: zoom into input area (typing)
-  // 160-200: ease to overview
-  // 200-245: overview (send + observe)
-  // 245-275: zoom into right notification panel (FLAGGED card)
-  // 275-299: zoom out for scene exit
-  const camScale = interpolate(
-    frame,
-    [0, 10, 35, 55, 80, 85, 155, 165, 200, 245, 260, 275, 299],
-    [0.9, 1, 1.25, 1.25, 1, 1, 1.2, 1.2, 1, 1, 1.3, 1.3, 0.92],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  // Active tab switches when cursor clicks #analytics
+  const activeTab = frame >= 260 ? 2 : 0
+
+  // Camera zoom keyframes — corrected signs: +TX=left, -TX=right, +TY=up, -TY=down
+  const camScale = smoothInterpolate(frame, CF,
+    [0.92, 1, 1, 1.25, 1.25, 1, 1, 1.25, 1.25, 1, 1.3, 1.3, 1, 1, 1.25, 1.25, 1, 1.3, 1.35, 1.35, 0.92]
   )
-  const camX = interpolate(
-    frame,
-    [0, 10, 35, 55, 80, 85, 155, 165, 200, 245, 260, 275, 299],
-    [0, 0, -12, -12, 0, 0, -8, -8, 0, 0, 15, 15, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  const camX = smoothInterpolate(frame, CF,
+    [0, 0, 0, 10, 10, 0, 0, -14, -14, 0, 12, 12, 0, 0, -14, -14, 0, 22, -12, -12, 0]
   )
-  const camY = interpolate(
-    frame,
-    [0, 10, 35, 55, 80, 85, 155, 165, 200, 245, 260, 275, 299],
-    [0, 0, -8, -8, 0, 0, 15, 15, 0, 0, 5, 5, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  const camY = smoothInterpolate(frame, CF,
+    [0, 0, 0, 10, 10, 0, 0, 8, 8, 0, -14, -14, 0, 0, 4, 4, 0, 20, 4, 4, 0]
   )
-  const exitOpacity = interpolate(frame, [288, 299], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+  const exitOpacity = smoothInterpolate(frame, [288, 299], [1, 0])
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0D0F1A' }}>
+    <AbsoluteFill>
+      <SceneBackground
+        primary={{ color: 'rgba(99,102,241,0.1)', x: '30%', y: '50%', radius: 45 }}
+        secondary={{ color: 'rgba(16,185,129,0.08)', x: '75%', y: '40%', radius: 40 }}
+      />
       <div style={{
         width: '100%',
         height: '100%',
         transform: `scale(${camScale}) translate(${camX}%, ${camY}%)`,
         transformOrigin: 'center center',
         opacity: exitOpacity,
+        position: 'relative',
       }}>
         <div style={{ display: 'flex', width: '100%', height: '100%', padding: 40, gap: 24 }}>
           {/* Left: Simulated Slack */}
@@ -106,7 +116,7 @@ export default function AgentSessionScene() {
             flex: 1.2,
             background: '#1A1B2E',
             borderRadius: 12,
-            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.1)',
             position: 'relative',
             overflow: 'hidden',
           }}>
@@ -119,10 +129,10 @@ export default function AgentSessionScene() {
               {['#design', '#general', '#analytics'].map((tab, i) => (
                 <div key={i} style={{
                   padding: '12px 20px',
-                  color: (i === 0 && frame < 230) || (i === 2 && frame >= 230) ? '#E2E0F0' : '#7B7899',
-                  fontSize: 14,
+                  color: i === activeTab ? '#E2E0F0' : '#7B7899',
+                  fontSize: 15,
                   fontFamily: 'JetBrains Mono, monospace',
-                  borderBottom: (i === 0 && frame < 230) || (i === 2 && frame >= 230) ? '2px solid #6366F1' : '2px solid transparent',
+                  borderBottom: i === activeTab ? '2px solid #6366F1' : '2px solid transparent',
                 }}>
                   {tab}
                 </div>
@@ -143,7 +153,7 @@ export default function AgentSessionScene() {
                     <span style={{ color: '#A5B4FC', fontSize: 14, fontWeight: 600 }}>{msg.sender}</span>
                     <span style={{ color: '#4B4869', fontSize: 12 }}>{msg.time}</span>
                   </div>
-                  <div style={{ color: '#C4C1D9', fontSize: 15 }}>{msg.text}</div>
+                  <div style={{ color: '#C4C1D9', fontSize: 16 }}>{msg.text}</div>
                 </div>
               ))}
             </div>
@@ -173,7 +183,7 @@ export default function AgentSessionScene() {
                 width: 40,
                 height: 40,
                 borderRadius: 8,
-                background: frame >= 180 && frame <= 210 ? '#6366F1' : 'rgba(255,255,255,0.06)',
+                background: frame >= 185 && frame <= 210 ? '#6366F1' : 'rgba(255,255,255,0.06)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -183,20 +193,6 @@ export default function AgentSessionScene() {
                 ↑
               </div>
             </div>
-
-            {/* Agent cursor */}
-            <div style={{
-              position: 'absolute',
-              left: `${cursor.x}%`,
-              top: `${cursor.y}%`,
-              width: 0,
-              height: 0,
-              borderLeft: '10px solid #6366F1',
-              borderTop: '5px solid transparent',
-              borderBottom: '14px solid transparent',
-              filter: 'drop-shadow(0 0 8px rgba(99,102,241,0.6))',
-              opacity: frame > 10 ? 1 : 0,
-            }} />
           </div>
 
           {/* Right: Notification stream */}
@@ -242,6 +238,9 @@ export default function AgentSessionScene() {
                 ? interpolate(Math.sin(localFrame * 0.15), [-1, 1], [0.3, 0.7])
                 : 0
 
+              // Metadata tag colors
+              const tagStyle = TAG_COLORS[n.type] || TAG_COLORS.click
+
               return (
                 <div key={i} style={{
                   transform: `translateX(${x}px)`,
@@ -249,19 +248,51 @@ export default function AgentSessionScene() {
                   background: '#1A1B2E',
                   border: isFlagged && localFrame > 10
                     ? `1px solid rgba(245,158,11,${0.2 + flagPulse * 0.4})`
-                    : '1px solid rgba(255,255,255,0.06)',
+                    : '1px solid rgba(255,255,255,0.08)',
                   borderRadius: 8,
                   padding: '12px 16px',
                   boxShadow: isFlagged && localFrame > 10
                     ? `0 0 ${12 + flagPulse * 8}px rgba(245,158,11,0.1)`
-                    : 'none',
+                    : '0 2px 12px rgba(0,0,0,0.2)',
                 }}>
+                  {/* Action line */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor }} />
                     <span style={{ color: '#A5B4FC', fontSize: 13, fontWeight: 600, fontFamily: 'JetBrains Mono, monospace' }}>{n.agent}</span>
                     <span style={{ color: '#4B4869', fontSize: 13 }}>→</span>
                     <span style={{ color: '#C4C1D9', fontSize: 13 }}>{n.action}</span>
                   </div>
+                  {/* Metadata tags: type, model, mode */}
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      fontFamily: 'JetBrains Mono, monospace',
+                      color: tagStyle.text,
+                      background: tagStyle.bg,
+                      padding: '2px 8px',
+                      borderRadius: 3,
+                    }}>{n.type}</span>
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      fontFamily: 'JetBrains Mono, monospace',
+                      color: '#7B7899',
+                      background: 'rgba(255,255,255,0.05)',
+                      padding: '2px 8px',
+                      borderRadius: 3,
+                    }}>{n.model}</span>
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      fontFamily: 'JetBrains Mono, monospace',
+                      color: '#7B7899',
+                      background: 'rgba(255,255,255,0.05)',
+                      padding: '2px 8px',
+                      borderRadius: 3,
+                    }}>{n.mode}</span>
+                  </div>
+                  {/* Eval line + badge */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ color: '#4B4869', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>{n.detail}</span>
                     <span style={{
@@ -279,6 +310,23 @@ export default function AgentSessionScene() {
             })}
           </div>
         </div>
+
+        {/* Agent cursor — SVG arrow, positioned in camera wrapper (viewport-relative) */}
+        <svg style={{
+          position: 'absolute',
+          left: `${cursor.x}%`,
+          top: `${cursor.y}%`,
+          width: 24,
+          height: 28,
+          overflow: 'visible',
+          opacity: frame > 10 ? 1 : 0,
+          filter: 'drop-shadow(0 0 6px rgba(99,102,241,0.6))',
+          transform: 'translate(-2px, -2px)',
+          zIndex: 100,
+          pointerEvents: 'none',
+        }} viewBox="0 0 24 28">
+          <path d="M2 2L2 24L8 18L14 26L18 24L12 16L20 14L2 2Z" fill="#6366F1" stroke="#A5B4FC" strokeWidth="1.5" />
+        </svg>
 
         {/* Bottom: Session timeline */}
         <div style={{

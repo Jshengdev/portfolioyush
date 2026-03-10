@@ -1,57 +1,34 @@
 import { Label } from '../components'
 
 export default function S12() {
-  const insights = [
-    {
-      type: 'green',
-      title: 'SUCCESS PATTERN',
-      text: 'Agents that complete email tasks correctly follow this 4-step sequence 90% of the time',
-    },
-    {
-      type: 'red',
-      title: 'FAILURE PATTERN',
-      text: 'Agents that fail at file management skip step 2 in 73% of cases',
-    },
-  ]
-
   return (
     <div className="slide slide-dark">
       <div className="slide-inner">
-        <Label>FEATURE 03</Label>
-        <h1 className="hl-xl">Learn what makes agents better.</h1>
-        <p className="sub-text" style={{ marginBottom: '1.5rem' }}>
-          Aggregate data across all agents on the platform → patterns that make products stronger.
-        </p>
+        <Label>THE GAP</Label>
+        <h1 className="hl-xl">We need <span className="kw-indigo" style={{ fontSize: '1.35em' }}>data</span> to make them better.</h1>
 
-        <div className="pattern-grid">
-          <div>
-            <div className="insight-list">
-              {insights.map(ins => (
-                <div key={ins.title} className="insight-card">
-                  <div className={`badge badge-${ins.type}`} style={{ marginBottom: '0.5rem' }}>[{ins.title}]</div>
-                  <div className="insight-text">{ins.text}</div>
-                </div>
-              ))}
-            </div>
-
+        <div className="missing-flow">
+          <div className="missing-node missing-node--active">
+            <div className="missing-node-icon">{'\u{1F5A5}'}</div>
+            <div className="missing-node-label">Agent on Desktop</div>
+            <div className="missing-node-sub">Actions happening in real-time</div>
           </div>
-
-          <div>
-            <div className="flywheel">
-              <div className="flywheel-lbl">DATA FLYWHEEL</div>
-              <div className="flywheel-steps">
-                {['More agents', 'More behavior data', 'Better patterns', 'Stronger agents', 'More adoption'].map((s, i, a) => (
-                  <span key={s} style={{ display: 'contents' }}>
-                    <div className="fly-step">{s}</div>
-                    {i < a.length - 1 && <div className="fly-arrow">→</div>}
-                  </span>
-                ))}
-              </div>
-              <div className="flywheel-coda">
-                The data compounds. More agents → better patterns → stronger products → more agents.
-              </div>
-            </div>
+          <div className="missing-arrow">{'\u2192'}</div>
+          <div className="missing-node missing-node--gap">
+            <div className="missing-node-icon">{'\u2753'}</div>
+            <div className="missing-node-label">MISSING LAYER</div>
+            <div className="missing-node-sub">No observation. No logging. No data.</div>
           </div>
+          <div className="missing-arrow">{'\u2192'}</div>
+          <div className="missing-node missing-node--active">
+            <div className="missing-node-icon">{'\u{1F4CA}'}</div>
+            <div className="missing-node-label">Developer Dashboard</div>
+            <div className="missing-node-sub">Can't see what happened</div>
+          </div>
+        </div>
+
+        <div className="missing-bottom">
+          Right now, there is <strong className="kw-red">no observation layer</strong> for computer-use agents.
         </div>
       </div>
     </div>

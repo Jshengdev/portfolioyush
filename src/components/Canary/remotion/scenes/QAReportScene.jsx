@@ -1,4 +1,6 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion'
+import { smoothInterpolate } from '../utils'
+import SceneBackground from '../SceneBackground'
 
 const STATS = [
   { label: 'Total Tests', value: 47, delay: 0, color: '#E2E0F0' },
@@ -24,29 +26,22 @@ export default function QAReportScene() {
   const entryScale = interpolate(zoomIn, [0, 1], [0.9, 1])
   const entryOpacity = interpolate(zoomIn, [0, 1], [0, 1])
 
-  // Camera zoom keyframes:
-  // 0-35: overview entry
-  // 35-65: zoom into stats row
-  // 65-95: ease back slightly
-  // 95-130: zoom into failed test step (bottom area)
-  // 130-155: hold on failed step
-  // 155-179: zoom out for exit
-  const camScale = interpolate(
+  // Camera zoom keyframes
+  const camScale = smoothInterpolate(
     frame,
     [0, 35, 50, 65, 95, 110, 130, 155, 179],
-    [1, 1, 1.3, 1.3, 1, 1.25, 1.25, 1.25, 0.92],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    [1, 1, 1.3, 1.3, 1, 1.25, 1.25, 1.25, 0.92]
   )
-  const camY = interpolate(
+  const camY = smoothInterpolate(
     frame,
     [0, 35, 50, 65, 95, 110, 130, 155, 179],
-    [0, 0, -10, -10, 0, 12, 12, 12, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    [0, 0, -10, -10, 0, 12, 12, 12, 0]
   )
-  const exitOpacity = interpolate(frame, [168, 179], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+  const exitOpacity = smoothInterpolate(frame, [168, 179], [1, 0])
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0D0F1A' }}>
+    <AbsoluteFill>
+      <SceneBackground primary={{ color: 'rgba(99,102,241,0.12)', x: '50%', y: '40%', radius: 55 }} />
       <div style={{
         width: '100%',
         height: '100%',
@@ -63,7 +58,7 @@ export default function QAReportScene() {
           width: 860,
           background: '#1A1B2E',
           borderRadius: 16,
-          border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.1)',
           padding: 36,
         }}>
           {/* Header */}
@@ -74,7 +69,7 @@ export default function QAReportScene() {
             marginBottom: 28,
           }}>
             <div>
-              <div style={{ color: '#E2E0F0', fontSize: 22, fontWeight: 700, fontFamily: 'Plus Jakarta Sans, system-ui' }}>
+              <div style={{ color: '#E2E0F0', fontSize: 26, fontWeight: 700, fontFamily: 'Plus Jakarta Sans, system-ui' }}>
                 QA Report — Session #247
               </div>
               <div style={{ color: '#7B7899', fontSize: 14, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
@@ -121,10 +116,11 @@ export default function QAReportScene() {
                   opacity: o,
                   textAlign: 'center',
                   padding: '18px 0',
-                  background: 'rgba(255,255,255,0.03)',
+                  background: `linear-gradient(180deg, ${stat.color}08 0%, rgba(255,255,255,0.03) 40%)`,
                   borderRadius: 8,
+                  borderTop: `2px solid ${stat.color}`,
                 }}>
-                  <div style={{ fontSize: 40, fontWeight: 700, color: stat.color, fontFamily: 'Plus Jakarta Sans' }}>
+                  <div style={{ fontSize: 44, fontWeight: 700, color: stat.color, fontFamily: 'Plus Jakarta Sans' }}>
                     {displayVal}{stat.suffix || ''}
                   </div>
                   <div style={{ fontSize: 13, color: '#7B7899', marginTop: 4, fontFamily: 'JetBrains Mono, monospace' }}>

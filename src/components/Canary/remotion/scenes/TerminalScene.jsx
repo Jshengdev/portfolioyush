@@ -1,16 +1,59 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion'
+import { smoothInterpolate, SYNTAX } from '../utils'
+import SceneBackground from '../SceneBackground'
 
 const LINES = [
-  { text: '$ npm install @canary/sdk', delay: 0, isCmd: true },
-  { text: 'added 12 packages in 2.1s', delay: 30, isCmd: false },
-  { text: '', delay: 42, isCmd: false },
-  { text: "import canary from '@canary/sdk'", delay: 50, isCmd: false, isCode: true },
-  { text: '', delay: 68, isCmd: false },
-  { text: 'canary.observe({', delay: 75, isCmd: false, isCode: true },
-  { text: "  agent: 'my-agent',", delay: 88, isCmd: false, isCode: true },
-  { text: "  apiKey: process.env.CANARY_KEY,", delay: 98, isCmd: false, isCode: true },
-  { text: '})', delay: 110, isCmd: false, isCode: true },
+  { delay: 0, isCmd: true, tokens: [{ text: '$ npm install @canary/sdk', color: SYNTAX.command }] },
+  { delay: 30, tokens: [{ text: 'added 12 packages in 2.1s', color: SYNTAX.output }] },
+  { delay: 42, tokens: [] },
+  { delay: 50, isCode: true, tokens: [
+    { text: 'import', color: SYNTAX.keyword },
+    { text: ' canary ', color: SYNTAX.variable },
+    { text: 'from', color: SYNTAX.keyword },
+    { text: " '@canary/sdk'", color: SYNTAX.string },
+  ]},
+  { delay: 68, tokens: [] },
+  { delay: 75, isCode: true, tokens: [
+    { text: 'canary', color: SYNTAX.variable },
+    { text: '.', color: SYNTAX.punctuation },
+    { text: 'observe', color: SYNTAX.function },
+    { text: '(', color: SYNTAX.punctuation },
+    { text: '{', color: SYNTAX.punctuation },
+  ]},
+  { delay: 88, isCode: true, tokens: [
+    { text: '  agent', color: SYNTAX.property },
+    { text: ': ', color: SYNTAX.punctuation },
+    { text: "'my-agent'", color: SYNTAX.string },
+    { text: ',', color: SYNTAX.punctuation },
+  ]},
+  { delay: 98, isCode: true, tokens: [
+    { text: '  apiKey', color: SYNTAX.property },
+    { text: ': ', color: SYNTAX.punctuation },
+    { text: 'process', color: SYNTAX.variable },
+    { text: '.', color: SYNTAX.punctuation },
+    { text: 'env', color: SYNTAX.property },
+    { text: '.', color: SYNTAX.punctuation },
+    { text: 'CANARY_KEY', color: SYNTAX.variable },
+    { text: ',', color: SYNTAX.punctuation },
+  ]},
+  { delay: 110, isCode: true, tokens: [
+    { text: '}', color: SYNTAX.punctuation },
+    { text: ')', color: SYNTAX.punctuation },
+  ]},
 ]
+
+function renderTokenized(tokens, charsToShow) {
+  const spans = []
+  let charCount = 0
+  for (const token of tokens) {
+    if (charCount >= charsToShow) break
+    const remaining = charsToShow - charCount
+    const text = remaining >= token.text.length ? token.text : token.text.substring(0, remaining)
+    spans.push(<span key={charCount} style={{ color: token.color }}>{text}</span>)
+    charCount += token.text.length
+  }
+  return spans
+}
 
 export default function TerminalScene() {
   const frame = useCurrentFrame()
@@ -22,26 +65,21 @@ export default function TerminalScene() {
   const windowOpacity = interpolate(windowEntry, [0, 1], [0, 1])
 
   // Camera: zoom into code block when canary.observe appears, then zoom out on exit
-  // Frames 0-70: normal overview (scale 1)
-  // Frames 70-90: zoom into lower code area (scale 1.35, shift up to focus on observe block)
-  // Frames 90-125: hold zoom on code
-  // Frames 125-149: zoom out for scene exit
-  const camScale = interpolate(
+  const camScale = smoothInterpolate(
     frame,
     [0, 70, 90, 125, 149],
-    [1, 1, 1.35, 1.35, 0.92],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    [1, 1, 1.35, 1.35, 0.92]
   )
-  const camY = interpolate(
+  const camY = smoothInterpolate(
     frame,
     [0, 70, 90, 125, 149],
-    [0, 0, -12, -12, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    [0, 0, -12, -12, 0]
   )
-  const exitOpacity = interpolate(frame, [140, 149], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+  const exitOpacity = smoothInterpolate(frame, [140, 149], [1, 0])
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0D0F1A' }}>
+    <AbsoluteFill>
+      <SceneBackground primary={{ color: 'rgba(99,102,241,0.12)', x: '30%', y: '35%', radius: 50 }} />
       <div style={{
         width: '100%',
         height: '100%',
@@ -58,7 +96,7 @@ export default function TerminalScene() {
           width: 780,
           background: '#1A1B2E',
           borderRadius: 12,
-          border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.1)',
           overflow: 'hidden',
         }}>
           {/* Titlebar */}
@@ -78,15 +116,15 @@ export default function TerminalScene() {
           </div>
 
           {/* Terminal body */}
-          <div style={{ padding: '20px 24px', fontFamily: 'JetBrains Mono, monospace', fontSize: 16, lineHeight: 1.9 }}>
+          <div style={{ padding: '20px 24px', fontFamily: 'JetBrains Mono, monospace', fontSize: 17, lineHeight: 1.9 }}>
             {LINES.map((line, i) => {
               const lineFrame = frame - line.delay
               if (lineFrame < 0) return null
-              if (line.text === '') return <div key={i} style={{ height: 10 }} />
+              if (line.tokens.length === 0) return <div key={i} style={{ height: 10 }} />
 
-              const charsToShow = Math.min(Math.floor(lineFrame * 2.5), line.text.length)
-              const displayText = line.text.substring(0, charsToShow)
-              const typing = charsToShow < line.text.length
+              const fullText = line.tokens.map(t => t.text).join('')
+              const charsToShow = Math.min(Math.floor(lineFrame * 2.5), fullText.length)
+              const typing = charsToShow < fullText.length
 
               // Highlight the canary.observe block when zoomed
               const isObserveBlock = line.delay >= 75
@@ -96,13 +134,12 @@ export default function TerminalScene() {
 
               return (
                 <div key={i} style={{
-                  color: line.isCmd ? '#E2E0F0' : line.isCode ? '#A5B4FC' : '#7B7899',
                   background: highlightOpacity > 0 ? `rgba(99,102,241,${highlightOpacity})` : 'transparent',
                   borderRadius: 4,
                   padding: highlightOpacity > 0 ? '0 6px' : 0,
                   margin: highlightOpacity > 0 ? '0 -6px' : 0,
                 }}>
-                  {displayText}
+                  {renderTokenized(line.tokens, charsToShow)}
                   {typing && (
                     <span style={{
                       color: '#10B981',
